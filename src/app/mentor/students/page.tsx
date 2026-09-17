@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { ResetPasswordButton } from "./ResetPasswordButton";
 import { ToggleActiveButton } from "./ToggleActiveButton";
+import { ResetBaselineButton } from "./ResetBaselineButton";
 
 export const metadata = { title: "Students" };
 
@@ -45,6 +46,9 @@ export default async function MentorStudentsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <ResetPasswordButton studentId={student.id} />
+                {student.examAttempts.length > 0 && (
+                  <ResetBaselineButton studentId={student.id} />
+                )}
                 <ToggleActiveButton studentId={student.id} isActive={student.isActive} />
               </div>
             </Card>

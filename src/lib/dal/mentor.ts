@@ -12,6 +12,10 @@ export const getAllStudents = cache(async () => {
         where: { isCurrent: true },
         include: { event: { include: { cluster: true } } },
       },
+      examAttempts: {
+        where: { isBaseline: true },
+        select: { id: true },
+      },
     },
   });
 });

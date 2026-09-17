@@ -25,6 +25,12 @@ While building the parser, testing against all 6 staged real exam PDFs (2010–2
 ### Mentor exam upload requires Node's `--conditions=react-server` flag for CLI scripts
 `src/lib/exam-import/extract-pdf-text.ts` and `src/lib/dal/instructional-areas.ts` import `"server-only"`, which throws when required outside Next's own build (it relies on Next setting the `react-server` package-export condition to pick the no-op implementation; plain Node/`tsx` don't set that condition, so it always hits the throwing branch). Since the one-time bulk importer (`scripts/import-exam-pdfs.ts`) needs to import that same shared logic from outside Next, its npm script (`db:import-exams`) sets `NODE_OPTIONS=--conditions=react-server` rather than stripping the `"server-only"` guard from shared modules.
 
+### "Longest streak" personal record interpreted as longest in-attempt correct-answer run
+Spec §6.7 lists "personal records (best score, longest streak)" without defining what the streak counts (days practiced? correct answers in a row? attempts above some threshold?). Interpreted it as the longest run of consecutive correct answers within a single attempt (by question order) — a natural, immediately-computable test-taking record, and the one most directly motivating during practice. `computeLongestCorrectStreak` in `src/lib/exam-engine/streak.ts`, unit-tested. Flagging in case a login-streak or daily-practice-streak was intended instead — easy to add alongside this one later.
+
+### "Score trend... per instructional area" simplified to a weighted weakest-areas list, not N line charts
+Spec §6.7 asks for score trend lines "overall and per instructional area." Built the overall trend as a real line chart (`/progress`), but rendered the per-area view as `computeWeightedWeakAreas`' ranked list (already recency-weighted, matches the "weighted toward recent attempts" requirement in the same section) rather than plotting a separate line per instructional area, which would need small-multiples or an 18-line chart to stay readable. Revisit if a mentor/student specifically wants to see one area's trajectory over time — the underlying per-attempt-per-area data (`getAttemptQuestionHistory`) already supports it.
+
 ## Phase 1
 
 ### Accent color changed from teal to blue (#61a1d7)

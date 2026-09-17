@@ -78,3 +78,26 @@ export async function setStudentActive(formData: FormData): Promise<void> {
 
   revalidatePath("/mentor/students");
 }
+
+/** Mentor-only: clears a student's Baseline Diagnostic attempt(s) so they can retake one (spec 6.6). */
+export async function resetStudentBaseline(formData: FormData): Promise<void> {
+  const mentor = await requireRole("MENTOR");
+  const studentId = formData.get("studentId");
+  if (typeof studentId !== "string") return;
+
+  const student = await prisma.user.findUnique({ where: { id: studentId } });
+  if (!student || student.role !== "STUDENT") return;
+
+  // ExamAttemptQuestion rows cascade-delete with their attempt; MissedQuestion
+  // history from that baseline is intentionally left in place.
+  const { count } = await prisma.examAttempt.deleteMany({
+    where: { userId: studentId, isBaseline: true },
+  });
+  if (count === 0) return;
+
+  await prisma.auditLog.create({
+    data: { actorId: mentor.id, targetUserId: studentId, action: "BASELINE_RESET" },
+  });
+
+  revalidatePath("/mentor/students");
+}
