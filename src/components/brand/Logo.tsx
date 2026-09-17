@@ -26,7 +26,7 @@ export function Logo({ className }: { className?: string }) {
       <span
         className={`font-semibold tracking-wide text-foreground ${className ?? ""}`}
       >
-        DECA <span className="text-accent">Hub</span>
+        Diamond <span className="text-accent">Drills</span>
       </span>
     );
   }

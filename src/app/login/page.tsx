@@ -5,7 +5,7 @@ export const metadata = { title: "Log in" };
 
 export default function LoginPage() {
   return (
-    <AuthShell title="Log in to DECA Hub">
+    <AuthShell title="Log in to Diamond Drills">
       <LoginForm />
     </AuthShell>
   );

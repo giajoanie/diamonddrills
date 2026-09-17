@@ -1,4 +1,4 @@
-// DECA Hub — Prisma schema
+// Diamond Drills — Prisma schema
 // Drafted in Phase 0 to cover Tier 1-3 features so later phases avoid painful
 // migrations. See DECA_HUB_BUILD_PROMPT.md and DECISIONS.md for rationale.
 

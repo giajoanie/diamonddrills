@@ -6,6 +6,12 @@ Ambiguities encountered while building, the default chosen, and why — per work
 
 ## Phase 1
 
+### Product renamed: "DECA Hub" → "Diamond Drills" (full name "Mountain House Diamond Drills")
+Per explicit request, replaced every "DECA Hub" reference in the app UI. There's now one designated spot for the full formal name — the browser tab's default `<title>` (`Mountain House Diamond Drills`) — and every other occurrence (page-title template suffix, meta description, footer, login heading, homepage eyebrow, Logo fallback text) uses the short name "Diamond Drills". `DECA_HUB_BUILD_PROMPT.md` (the original spec) and the historical Phase 0 entries above are left as-is since they're a record of the instructions as given at the time, not living UI copy. The chapter's actual DECA logo image (`/public/brand/deca-logo.png`) is unaffected by this — that's a separate, DECA-branded asset per spec §3, not the product name.
+
+### Button/label casing cleanup
+Fixed "Student sign up" (awkward mid-phrase lowercase) → "Sign up" on the homepage, matching the sentence-case convention already used everywhere else ("Log in", "Save new password", "Reset password"). Also flagged the ALL-CAPS "ROLEPLAY EVENT" / "WRITTEN EVENT" card labels on the dashboard as an intentional small-caps style choice (CSS `uppercase`), not a grammar issue — left those as-is.
+
 ### Mentor seed password hardcoded, per explicit user instruction (overrides the original spec)
 `DECA_HUB_BUILD_PROMPT.md` §5.3 originally said the mentor seed password must come from a `SEED_MENTOR_PASSWORD` env var and never be hardcoded. The user explicitly asked to hardcode it instead — it's a shared chapter password, not a secret, and other mentors are meant to know it. `prisma/seed.ts` now sets it as a constant (`DiamondDrills2026`) directly; removed `SEED_MENTOR_PASSWORD` from `.env` / `.env.example`. Noting this here since it's a direct reversal of a security instruction in the original spec, not a silent judgment call — the user made the call.
 
@@ -33,7 +39,7 @@ The spec allows argon2 or bcrypt. The plain `argon2` npm package requires a nati
 Built a minimal session table (`Session` model) + httpOnly cookie holding a random token, with only the token's SHA-256 hash stored server-side — rather than pulling in NextAuth/Auth.js. The spec calls for straightforward session-based auth with hashed passwords and httpOnly cookies; a full auth framework would add surface area (OAuth providers, adapters) this app doesn't use, since the only two account types are school-issued School ID + password.
 
 ### DECA logo asset not yet provided
-`/public/brand/deca-logo.png` doesn't exist yet (the spec describes it as "chapter-provided"). Built `Logo` as a small client component that renders the image and falls back to a text "DECA Hub" wordmark on load error, so the app doesn't break and nothing resembling an official DECA logo is fabricated. **Action needed from you:** drop the real file at that path (and it'll pick it up automatically, including as favicon) — see `next.config`/`layout.tsx` icon metadata.
+`/public/brand/deca-logo.png` doesn't exist yet (the spec describes it as "chapter-provided"). Built `Logo` as a small client component that renders the image and falls back to a text "Diamond Drills" wordmark on load error, so the app doesn't break and nothing resembling an official DECA logo is fabricated. **Action needed from you:** drop the real file at that path (and it'll pick it up automatically, including as favicon) — see `next.config`/`layout.tsx` icon metadata.
 
 ### Event categorization: Professional Selling stays WRITTEN
 The spec explicitly says: *"Keep it selectable as WRITTEN unless I say otherwise."* Research turned up that DECA's own taxonomy treats Professional Selling, Financial Consulting, and Hospitality and Tourism Professional Selling as one category ("Professional Selling and Consulting") that behaves more like a roleplay (live judged presentation + exam) than a written deliverable. Followed your explicit instruction anyway: Professional Selling = `WRITTEN`; the other two stay `ROLEPLAY` as originally hand-typed. This leaves a real inconsistency across the three sibling events — flagged in `EVENT_VERIFICATION.md` §3 item 5 in case you'd rather make them consistent.

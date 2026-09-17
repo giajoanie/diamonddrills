@@ -10,11 +10,11 @@ const leagueSpartan = League_Spartan({
 
 export const metadata: Metadata = {
   title: {
-    default: "DECA Hub",
-    template: "%s · DECA Hub",
+    default: "Mountain House Diamond Drills",
+    template: "%s · Diamond Drills",
   },
   description:
-    "Diamond Drills DECA Hub: diagnose, practice, and track growth for DECA Roleplay and Written events.",
+    "Diamond Drills: diagnose, practice, and track growth for DECA Roleplay and Written events.",
   icons: {
     icon: "/brand/deca-logo.png",
   },

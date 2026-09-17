@@ -26,7 +26,7 @@ export default function Home() {
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <p className="text-sm font-medium uppercase tracking-widest text-accent">
-            Diamond Drills DECA Hub
+            Diamond Drills
           </p>
           <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             A closed-loop training system for DECA Roleplay and Written events.
@@ -39,7 +39,7 @@ export default function Home() {
           </p>
           <div className="mt-8 flex gap-3">
             <Link href="/signup">
-              <Button>Student sign up</Button>
+              <Button>Sign up</Button>
             </Link>
             <Link href="/login">
               <Button variant="secondary">Log in</Button>
