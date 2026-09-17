@@ -6,6 +6,9 @@ Ambiguities encountered while building, the default chosen, and why — per work
 
 ## Phase 1
 
+### Mentor seed password hardcoded, per explicit user instruction (overrides the original spec)
+`DECA_HUB_BUILD_PROMPT.md` §5.3 originally said the mentor seed password must come from a `SEED_MENTOR_PASSWORD` env var and never be hardcoded. The user explicitly asked to hardcode it instead — it's a shared chapter password, not a secret, and other mentors are meant to know it. `prisma/seed.ts` now sets it as a constant (`DiamondDrills2026`) directly; removed `SEED_MENTOR_PASSWORD` from `.env` / `.env.example`. Noting this here since it's a direct reversal of a security instruction in the original spec, not a silent judgment call — the user made the call.
+
 ### `/signup` was statically prerendered at build time — fixed with `force-dynamic`
 `next build` marked `/signup` as static (`○`) because nothing in its render path calls a Request-time API. That baked the entire event dropdown list into the HTML/RSC payload at build time: a mentor adding, renaming, or deactivating an event afterward would not show up until the next deploy. Added `export const dynamic = "force-dynamic"` to `src/app/signup/page.tsx` so it's server-rendered per request instead (confirmed via a fresh `next build` that it now shows as `ƒ`). `/login` stays static since it has no DB-dependent content. Worth checking again in Phase 3+ as more DB-backed pages are added — same class of bug.
 

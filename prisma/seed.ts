@@ -73,14 +73,11 @@ async function seedEvents() {
   console.log(`Seeded ${EVENT_SEED.length} events.`);
 }
 
+// Not a secret: shared chapter password, fine for other mentors to know.
+const SEED_MENTOR_PASSWORD = "DiamondDrills2026";
+
 async function seedMentors() {
-  const seedPassword = process.env.SEED_MENTOR_PASSWORD;
-  if (!seedPassword) {
-    throw new Error(
-      "SEED_MENTOR_PASSWORD is not set. Set it in .env before seeding — see .env.example.",
-    );
-  }
-  const passwordHash = await hashPassword(seedPassword);
+  const passwordHash = await hashPassword(SEED_MENTOR_PASSWORD);
 
   for (const schoolId of ["1071632", "1078913"]) {
     await prisma.user.upsert({
