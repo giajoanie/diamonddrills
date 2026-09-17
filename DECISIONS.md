@@ -4,6 +4,17 @@ Ambiguities encountered while building, the default chosen, and why — per work
 
 ---
 
+## Phase 1
+
+### `/signup` was statically prerendered at build time — fixed with `force-dynamic`
+`next build` marked `/signup` as static (`○`) because nothing in its render path calls a Request-time API. That baked the entire event dropdown list into the HTML/RSC payload at build time: a mentor adding, renaming, or deactivating an event afterward would not show up until the next deploy. Added `export const dynamic = "force-dynamic"` to `src/app/signup/page.tsx` so it's server-rendered per request instead (confirmed via a fresh `next build` that it now shows as `ƒ`). `/login` stays static since it has no DB-dependent content. Worth checking again in Phase 3+ as more DB-backed pages are added — same class of bug.
+
+### `@prisma/adapter-pg`'s object-config form silently drops the username
+`new PrismaPg({ connectionString: ... })` connects to Postgres but every query fails with a cryptic "no PostgreSQL user name specified in startup packet" / `DatabaseAccessDenied` error — the object form doesn't reach `pg.Pool` correctly in this adapter version. `new PrismaPg(connectionStringAsString)` works. Fixed in `src/lib/prisma.ts`; left a comment there so nobody "fixes" it back to the object form, which looks more idiomatic but is broken.
+
+### `.env` isn't auto-loaded outside the Prisma CLI
+Only `prisma.config.ts` (via its own `import "dotenv/config"`) loads `.env` for `prisma migrate`/`generate`. Running `prisma/seed.ts` directly with `tsx`, or running Vitest, does not — `DATABASE_URL` came back `undefined`, which combined with the adapter-pg bug above initially looked like a permissions problem. Added explicit `import "dotenv/config"` to both `prisma/seed.ts` and `vitest.config.ts`.
+
 ## Phase 0
 
 ### Prisma CLI version pinned to 7.10.0, not npm's "latest" tag

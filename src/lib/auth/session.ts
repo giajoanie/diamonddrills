@@ -4,8 +4,9 @@ import { cookies } from "next/headers";
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { User } from "@/generated/prisma/client";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 
-export const SESSION_COOKIE_NAME = "deca_hub_session";
+export { SESSION_COOKIE_NAME };
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function generateSessionToken(): string {

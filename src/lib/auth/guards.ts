@@ -25,3 +25,15 @@ export async function requireRole(role: Role): Promise<User> {
   if (user.role !== role) redirect("/");
   return user;
 }
+
+/**
+ * Same as requireRole, but also redirects to /change-password when the
+ * account has a forced password change pending. Use this at the top of
+ * every dashboard/app route; the /change-password page itself uses
+ * requireUser directly so it doesn't redirect to itself.
+ */
+export async function requireActiveUser(role: Role): Promise<User> {
+  const user = await requireRole(role);
+  if (user.mustChangePassword) redirect("/change-password");
+  return user;
+}
