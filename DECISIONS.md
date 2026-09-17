@@ -4,6 +4,27 @@ Ambiguities encountered while building, the default chosen, and why — per work
 
 ---
 
+## Phase 2
+
+### `pdf-parse` breaks under Turbopack's server bundling — fixed with `serverExternalPackages`
+`pdf-parse` (built on `pdfjs-dist`) sets up a Node "fake worker" at call time by dynamically resolving a `pdf.worker.mjs` chunk; Turbopack's server-component bundling changes that file's path and the resolve fails with `Setting up fake worker failed`. Fixed by adding `pdf-parse` and `pdfjs-dist` to `serverExternalPackages` in `next.config.ts`, which tells Next.js to `require()` them natively instead of bundling. Required a dev server restart to take effect (config is only read at startup).
+
+### Instructional area codes (BL, CM, CO, CR, EC, EI, FI, HR, IM, MK, MP, NF, OP, PD, PI, PM, PR, SE) verified via research
+Extracted from real exam answer-key "SOURCE:" lines across all 6 staged Marketing exams. Two were genuinely ambiguous from context alone (NF, MK) and confirmed via web research: **NF = Information Management** (the generic/business-core version) and **MK = Marketing** (broad marketing-fundamentals area) — distinct from **IM = Marketing-Information Management** (the Marketing-cluster-specific, marketing-research-flavored version), which coexists with NF in the same exam bank. All 18 codes are stored in `src/lib/exam-import/instructional-areas.ts`. Research access was search-snippet-based (direct fetches to mbaresearch.org/deca.org were blocked in this sandbox), so confidence is "strongly corroborated" rather than verbatim-sourced — flagged if a mentor ever spots a wrong label on the review screen, it's a one-field edit, not a schema problem.
+
+### Instructional areas stored globally, not per exam bank
+The schema supports scoping `InstructionalArea` to a specific `ExamBank`, but research found these code→name mappings are stable across DECA's cluster exams (excluding the IM/NF distinction, which are two different codes, not the same code meaning different things). Seeded with `examBankId: null` (global). Note: Postgres doesn't enforce uniqueness across NULL values in the `@@unique([examBankId, slug])` index, so lookups use `findFirst` + `create` (`getOrCreateGlobalInstructionalArea`) rather than `upsert`.
+
+### Exam PDF parser: real-world layout quirks handled, not a hypothetical
+While building the parser, testing against all 6 staged real exam PDFs (2010–2014, 2026) surfaced actual defects worth recording:
+- **2011 exam PDF has no extractable text layer** (scanned/image-only, 34 blank pages per `pdf-parse`). Flagged as an anomaly and skipped rather than guessed at; needs OCR or manual entry, which is out of scope for now.
+- **2013 exam's first key-page header has a typo** — it still reads "...EXAM 12" instead of "...EXAM—KEY 13" like every other key page. Initially caused an off-by-one that dropped 5 real key entries and fabricated a phantom question. Fixed by detecting the body/key boundary from **content structure** (the first bare "1. `<letter>`" line — a real question stem is never that short) instead of trusting header text, which is more robust regardless of one-off template mistakes in 15-year-old PDFs.
+- **Options render as either one-per-line or two-per-line** (a two-column layout used when both options are short), inconsistently across years and even within the same exam, with the column separator rendered as tabs, multiple spaces, or a single space depending on export tool. Handled with a lazy-match regex that finds the second marker (`C.`/`D.`) if present without needing a fixed separator.
+- Verified parser quality directly against real data before writing any DB-persistence code: 5 of 6 files parsed 100/100 questions matched to their key with zero anomalies (see `PARSE_REPORT.md`); the 6th (2011) was correctly identified as unparseable rather than silently producing garbage.
+
+### Mentor exam upload requires Node's `--conditions=react-server` flag for CLI scripts
+`src/lib/exam-import/extract-pdf-text.ts` and `src/lib/dal/instructional-areas.ts` import `"server-only"`, which throws when required outside Next's own build (it relies on Next setting the `react-server` package-export condition to pick the no-op implementation; plain Node/`tsx` don't set that condition, so it always hits the throwing branch). Since the one-time bulk importer (`scripts/import-exam-pdfs.ts`) needs to import that same shared logic from outside Next, its npm script (`db:import-exams`) sets `NODE_OPTIONS=--conditions=react-server` rather than stripping the `"server-only"` guard from shared modules.
+
 ## Phase 1
 
 ### Accent color changed from teal to blue (#61a1d7)
