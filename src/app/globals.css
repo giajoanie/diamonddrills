@@ -14,11 +14,11 @@
   --color-fg-muted: #9fb0cc;
   --color-fg-subtle: #6c7fa3;
 
-  /* Teal accent */
-  --color-accent: #2dd4bf;
-  --color-accent-strong: #14b8a6;
-  --color-accent-soft: rgba(45, 212, 191, 0.14);
-  --color-accent-fg: #04211d;
+  /* Accent (chapter blue) */
+  --color-accent: #61a1d7;
+  --color-accent-strong: #3d7ab8;
+  --color-accent-soft: rgba(97, 161, 215, 0.16);
+  --color-accent-fg: #05121f;
 
   /* Status */
   --color-success: #34d399;
