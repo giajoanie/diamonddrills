@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
@@ -43,8 +44,19 @@ export async function createSession(
   });
 }
 
-/** Looks up the current session's user from the request cookie, if any. */
-export async function getSessionUser(): Promise<User | null> {
+/**
+ * Looks up the current session's user from the request cookie, if any.
+ *
+ * Wrapped in React's `cache()` so repeated calls within a single render pass
+ * (e.g. from a page, its data-fetching functions, and a shared layout) hit
+ * the database once. This must be called from every page / Server Action /
+ * Route Handler that needs auth — Next.js 16's partial rendering means a
+ * shared layout does not re-run on client-side navigation, so a check placed
+ * only in a layout will not re-verify the session on every route change.
+ * See node_modules/next/dist/docs/01-app/02-guides/authentication.md
+ * ("Layouts and auth checks").
+ */
+export const getSessionUser = cache(async (): Promise<User | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -59,7 +71,7 @@ export async function getSessionUser(): Promise<User | null> {
   }
 
   return session.user;
-}
+});
 
 export async function destroyCurrentSession(): Promise<void> {
   const cookieStore = await cookies();

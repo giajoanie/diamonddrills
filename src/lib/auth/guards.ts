@@ -3,14 +3,23 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import type { Role, User } from "@/generated/prisma/client";
 
-/** Redirects to /login if there is no valid session. */
+/**
+ * Redirects to /login if there is no valid session.
+ *
+ * Call this from every protected page.tsx, Server Action, and Route Handler
+ * — NOT only from a shared layout.tsx. Next.js 16's partial rendering means
+ * layouts don't re-run on client-side navigation between sibling routes, so
+ * a layout-only check would not re-verify the session on every route change.
+ * (`getSessionUser` is React-`cache()`-memoized, so calling this again from
+ * a page whose layout already called it costs no extra query.)
+ */
 export async function requireUser(): Promise<User> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   return user;
 }
 
-/** Redirects to /login (no session) or / (wrong role) — used at the top of every mentor/student route. */
+/** Redirects to /login (no session) or / (wrong role). Same call-site rule as requireUser. */
 export async function requireRole(role: Role): Promise<User> {
   const user = await requireUser();
   if (user.role !== role) redirect("/");
