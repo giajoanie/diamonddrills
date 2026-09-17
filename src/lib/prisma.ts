@@ -5,7 +5,10 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+// NOTE: pass the connection string directly, not `{ connectionString }` —
+// the object form silently drops the username in this adapter-pg version,
+// producing a cryptic "no PostgreSQL user name specified" error at query time.
+const adapter = new PrismaPg(process.env.DATABASE_URL as string);
 
 export const prisma =
   globalForPrisma.prisma ??
