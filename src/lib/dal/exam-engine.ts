@@ -116,3 +116,10 @@ export const getAttemptQuestionHistory = cache(async (userId: string) => {
 export const getMissedQuestionCount = cache(async (userId: string) => {
   return prisma.missedQuestion.count({ where: { userId, isMastered: false } });
 });
+
+/** Missed questions actually due for spaced-repetition review right now (see spaced-repetition.ts). */
+export const getDueMissedQuestionCount = cache(async (userId: string) => {
+  return prisma.missedQuestion.count({
+    where: { userId, isMastered: false, nextDueAt: { lte: new Date() } },
+  });
+});

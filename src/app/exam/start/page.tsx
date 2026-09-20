@@ -3,7 +3,7 @@ import {
   getStudentExamBanks,
   getInstructionalAreasForBank,
   getExistingBaselineAttempt,
-  getMissedQuestionCount,
+  getDueMissedQuestionCount,
 } from "@/lib/dal/exam-engine";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -45,7 +45,7 @@ export default async function StartExamPage({
         hasBaseline: !!(await getExistingBaselineAttempt(user.id, bank.id)),
       })),
     ),
-    getMissedQuestionCount(user.id),
+    getDueMissedQuestionCount(user.id),
   ]);
 
   const validMode = ["BASELINE", "TIMED", "PRACTICE_AREA", "MISSED_REVIEW"].includes(mode ?? "")

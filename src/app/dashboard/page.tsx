@@ -5,7 +5,7 @@ import {
   getStudentExamBanks,
   getExistingBaselineAttempt,
   getScoreHistory,
-  getMissedQuestionCount,
+  getDueMissedQuestionCount,
 } from "@/lib/dal/exam-engine";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
       })),
     ),
     getScoreHistory(user.id),
-    getMissedQuestionCount(user.id),
+    getDueMissedQuestionCount(user.id),
   ]);
 
   const banksMissingBaseline = baselineFlags.filter((b) => !b.hasBaseline).map((b) => b.bank.name);

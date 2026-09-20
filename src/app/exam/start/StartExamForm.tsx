@@ -87,7 +87,7 @@ export function StartExamForm({
               checked={mode === "MISSED_REVIEW"}
               onChange={() => setMode("MISSED_REVIEW")}
             />
-            Review missed questions ({missedCount})
+            Review missed questions due now ({missedCount})
           </label>
         )}
       </fieldset>

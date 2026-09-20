@@ -7,6 +7,7 @@ import { pickRandomSubset, shuffleOptionOrder } from "@/lib/exam-engine/shuffle"
 import { computeScore } from "@/lib/exam-engine/scoring";
 import { computeTimeUsedSeconds, isExpired } from "@/lib/exam-engine/timer";
 import { TIMED_EXAM_PRESETS, BASELINE_PRESET } from "@/lib/exam-engine/presets";
+import { computeNextDueAt, MASTERY_STREAK } from "@/lib/exam-engine/spaced-repetition";
 import type { ExamMode, OptionKey } from "@/generated/prisma/client";
 
 export type StartExamState = { error?: string } | undefined;
@@ -62,10 +63,12 @@ export async function startExam(
     mode = "PRACTICE_BY_AREA";
   } else if (examModeInput === "MISSED_REVIEW") {
     const missed = await prisma.missedQuestion.findMany({
-      where: { userId: user.id, examBankId, isMastered: false },
+      where: { userId: user.id, examBankId, isMastered: false, nextDueAt: { lte: new Date() } },
       select: { questionId: true },
     });
-    if (missed.length === 0) return { error: "No missed questions to review for this bank yet." };
+    if (missed.length === 0) {
+      return { error: "No missed questions are due for review right now — check back later." };
+    }
 
     const selected = pickRandomSubset(missed.map((m) => m.questionId), missed.length);
     return startAttemptWithQuestionIds(
@@ -220,8 +223,15 @@ export async function finalizeAttempt(
             instructionalAreaId: q.question.instructionalAreaId,
             timesMissed: 1,
             correctStreak: 0,
+            nextDueAt: computeNextDueAt(0, now),
           },
-          update: { timesMissed: { increment: 1 }, correctStreak: 0, isMastered: false, lastSeenAt: now },
+          update: {
+            timesMissed: { increment: 1 },
+            correctStreak: 0,
+            isMastered: false,
+            lastSeenAt: now,
+            nextDueAt: computeNextDueAt(0, now),
+          },
         });
       } else {
         const missed = await tx.missedQuestion.findUnique({
@@ -231,7 +241,12 @@ export async function finalizeAttempt(
           const correctStreak = missed.correctStreak + 1;
           await tx.missedQuestion.update({
             where: { id: missed.id },
-            data: { correctStreak, isMastered: correctStreak >= 3, lastSeenAt: now },
+            data: {
+              correctStreak,
+              isMastered: correctStreak >= MASTERY_STREAK,
+              lastSeenAt: now,
+              nextDueAt: computeNextDueAt(correctStreak, now),
+            },
           });
         }
       }
