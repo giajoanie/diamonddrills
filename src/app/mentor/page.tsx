@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileQuestion, BookOpen } from "lucide-react";
+import { Users, FileQuestion, BookOpen, ClipboardCheck } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -53,6 +53,18 @@ export default async function MentorDashboardPage() {
                 <p className="font-medium text-foreground">Resources</p>
                 <p className="text-sm text-foreground-muted">
                   Upload and tag study materials for the right students.
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/mentor/rubrics">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <ClipboardCheck className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">Rubrics</p>
+                <p className="text-sm text-foreground-muted">
+                  Build scoring rubrics to attach to assignments.
                 </p>
               </div>
             </Card>
