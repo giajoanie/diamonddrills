@@ -104,7 +104,7 @@ export async function startExam(
   );
 }
 
-async function startAttemptWithQuestionIds(
+export async function startAttemptWithQuestionIds(
   userId: string,
   examBankId: string,
   mode: ExamMode,
@@ -112,6 +112,7 @@ async function startAttemptWithQuestionIds(
   timeLimitSeconds: number,
   questionIds: string[],
   shortfall = false,
+  assignmentId?: string,
 ): Promise<never> {
   const attempt = await prisma.$transaction(async (tx) => {
     const created = await tx.examAttempt.create({
@@ -123,6 +124,7 @@ async function startAttemptWithQuestionIds(
         timeLimitSeconds,
         questionCount: questionIds.length,
         status: "IN_PROGRESS",
+        assignmentId,
       },
     });
 

@@ -50,6 +50,9 @@ export default async function DashboardPage() {
             Welcome, {user.firstName}
           </h1>
           <nav className="flex gap-4 text-sm">
+            <Link href="/assignments" className="text-accent hover:underline">
+              Assignments
+            </Link>
             <Link href="/resources" className="text-accent hover:underline">
               Resources
             </Link>
