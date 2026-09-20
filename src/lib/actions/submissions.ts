@@ -58,8 +58,30 @@ export async function submitAssignmentFile(
     data: { submissionId: submission.id, fileUrl, versionNumber },
   });
 
+  await prisma.activityLog.create({
+    data: {
+      userId: student.id,
+      type: "SUBMISSION_CREATED",
+      metadata: { assignmentId, submissionId: submission.id, versionNumber, status },
+    },
+  });
+
   revalidatePath(`/assignments/${assignmentId}`);
   revalidatePath("/assignments");
+}
+
+export async function logAssignmentViewed(assignmentId: string, sawFeedback: boolean): Promise<void> {
+  const student = await requireRole("STUDENT");
+
+  await prisma.activityLog.create({
+    data: { userId: student.id, type: "ASSIGNMENT_VIEWED", metadata: { assignmentId } },
+  });
+
+  if (sawFeedback) {
+    await prisma.activityLog.create({
+      data: { userId: student.id, type: "FEEDBACK_VIEWED", metadata: { assignmentId } },
+    });
+  }
 }
 
 export async function startAssignmentExam(formData: FormData): Promise<void> {

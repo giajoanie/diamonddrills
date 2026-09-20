@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { FileComments } from "@/components/FileComments";
 import { computeRubricTotal } from "@/lib/assignments/scoring";
 import { SubmitFileForm } from "./SubmitFileForm";
+import { ViewLogger } from "./ViewLogger";
 
 export const metadata = { title: "Assignment" };
 export const dynamic = "force-dynamic";
@@ -36,8 +37,11 @@ export default async function StudentAssignmentPage({
       ? computeRubricTotal(submission.rubricScores, assignment.rubric.criteria)
       : null;
 
+  const sawFeedback = submission?.status === "GRADED" && !!submission.feedback;
+
   return (
     <>
+      <ViewLogger assignmentId={assignment.id} sawFeedback={sawFeedback} />
       <AppHeader user={user} homeHref="/dashboard" />
       <main className="mx-auto max-w-3xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="text-2xl font-semibold text-foreground">{assignment.title}</h1>
