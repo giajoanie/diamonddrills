@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks, FileText, Lightbulb } from "lucide-react";
+import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks, FileText, Lightbulb, Trophy } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getMentorDashboardData, getStudentNamesByIds } from "@/lib/dal/analytics";
 import { getClustersForTagging } from "@/lib/dal/clusters";
@@ -284,6 +284,18 @@ export default async function MentorDashboardPage({
                 <p className="font-medium text-foreground">Lesson plans</p>
                 <p className="text-sm text-foreground-muted">
                   Rule-based recommendations from the chapter&apos;s weakest areas.
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/mentor/competition-results">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <Trophy className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">Competition results</p>
+                <p className="text-sm text-foreground-muted">
+                  Record placements and scores by student, event, and level.
                 </p>
               </div>
             </Card>
