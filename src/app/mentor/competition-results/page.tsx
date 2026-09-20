@@ -1,5 +1,5 @@
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getAllCompetitionResults } from "@/lib/dal/competition-results";
+import { getAllCompetitionResults, getCompetitionCohortsByYear } from "@/lib/dal/competition-results";
 import { getAllStudents } from "@/lib/dal/mentor";
 import { getClustersForTagging } from "@/lib/dal/clusters";
 import { getAllTeams } from "@/lib/dal/teams";
@@ -24,7 +24,7 @@ export default async function CompetitionResultsPage({
   const user = await requireActiveUser("MENTOR");
   const { level, year } = await searchParams;
 
-  const [results, students, clusters, teams] = await Promise.all([
+  const [results, students, clusters, teams, cohortsByYear] = await Promise.all([
     getAllCompetitionResults({
       level: level && level in LEVEL_LABELS ? (level as CompetitionLevel) : undefined,
       year: year ? parseInt(year, 10) : undefined,
@@ -32,6 +32,7 @@ export default async function CompetitionResultsPage({
     getAllStudents(),
     getClustersForTagging(),
     getAllTeams(),
+    getCompetitionCohortsByYear(),
   ]);
 
   return (
@@ -46,6 +47,27 @@ export default async function CompetitionResultsPage({
         <Card className="mt-6">
           <ResultForm students={students} clusters={clusters} teams={teams.filter((t) => t.members.length > 0)} />
         </Card>
+
+        {cohortsByYear.length > 1 && (
+          <Card className="mt-6">
+            <p className="font-medium text-foreground">Cohorts by year</p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {cohortsByYear.map((c) => (
+                <li key={c.year} className="flex items-center justify-between gap-3">
+                  <span className="text-foreground-muted">
+                    {c.year} · {c.resultCount} result{c.resultCount === 1 ? "" : "s"}
+                  </span>
+                  <span className="text-foreground-subtle">
+                    {c.avgPlacement !== null ? `Avg placement ${c.avgPlacement.toFixed(1)}` : "No placements"}
+                    {c.avgTestScore !== null ? ` · Avg test ${c.avgTestScore.toFixed(1)}` : ""}
+                    {" · "}
+                    {Math.round(c.advancedRate)}% advanced
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
 
         <form className="mt-6 flex flex-wrap items-end gap-3" method="GET">
           <div>

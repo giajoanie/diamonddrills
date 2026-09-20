@@ -132,17 +132,40 @@ export default async function MentorDashboardPage({
             <p className="mt-1 text-sm text-foreground-muted">Not enough data yet.</p>
           )}
           {data.scoreVsBaselineByCluster.length > 0 && (
-            <ul className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
-              {data.scoreVsBaselineByCluster.map((c) => (
-                <li key={c.clusterId} className="flex items-center justify-between gap-3">
-                  <span className="text-foreground-muted">{c.clusterName}</span>
-                  <span className={c.avgChange >= 0 ? "text-success" : "text-danger"}>
-                    {c.avgChange >= 0 ? "+" : ""}
-                    {Math.round(c.avgChange)} pts
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3 border-t border-border pt-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+                By cluster
+              </p>
+              <ul className="mt-1 space-y-1 text-sm">
+                {data.scoreVsBaselineByCluster.map((c) => (
+                  <li key={c.clusterId} className="flex items-center justify-between gap-3">
+                    <span className="text-foreground-muted">{c.clusterName}</span>
+                    <span className={c.avgChange >= 0 ? "text-success" : "text-danger"}>
+                      {c.avgChange >= 0 ? "+" : ""}
+                      {Math.round(c.avgChange)} pts
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {data.scoreVsBaselineByGrade.length > 0 && (
+            <div className="mt-3 border-t border-border pt-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+                By grade
+              </p>
+              <ul className="mt-1 space-y-1 text-sm">
+                {data.scoreVsBaselineByGrade.map((g) => (
+                  <li key={g.grade} className="flex items-center justify-between gap-3">
+                    <span className="text-foreground-muted">Grade {g.grade}</span>
+                    <span className={g.avgChange >= 0 ? "text-success" : "text-danger"}>
+                      {g.avgChange >= 0 ? "+" : ""}
+                      {Math.round(g.avgChange)} pts
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </Card>
 

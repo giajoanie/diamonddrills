@@ -83,6 +83,7 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
       practiceSessionsPerStudentPerWeek: 0,
       scoreVsBaseline: { avgBaseline: 0, avgLatest: 0, avgChange: 0, studentCount: 0 },
       scoreVsBaselineByCluster: [] as { clusterId: string; clusterName: string; avgBaseline: number; avgLatest: number; avgChange: number; studentCount: number }[],
+      scoreVsBaselineByGrade: [] as { grade: number; avgBaseline: number; avgLatest: number; avgChange: number; studentCount: number }[],
       weakestAreas: [] as ReturnType<typeof computeAreaBreakdown>,
       needsAttention: [] as ReturnType<typeof identifyNeedsAttention>,
       ungradedSubmissionsCount: 0,
@@ -126,6 +127,19 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
       return { clusterId: c.id, clusterName: c.name, ...result };
     })
     .filter((c) => c.studentCount > 0);
+
+  const scoreVsBaselineByGrade = [9, 10, 11, 12]
+    .map((grade) => {
+      const ids = studentIds.filter((id) => contextByStudent.get(id)!.grade === grade);
+      const result = computeScoreChangeVsBaseline(
+        ids.map((id) => ({
+          baselinePercentage: baselineByStudent.get(id) ?? null,
+          latestPercentage: latestByStudent.get(id) ?? null,
+        })),
+      );
+      return { grade, ...result };
+    })
+    .filter((g) => g.studentCount > 0);
 
   const studentsWithoutBaseline = studentIds.filter((id) => !baselineByStudent.has(id)).length;
 
@@ -267,6 +281,7 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
     practiceSessionsPerStudentPerWeek,
     scoreVsBaseline,
     scoreVsBaselineByCluster,
+    scoreVsBaselineByGrade,
     weakestAreas,
     needsAttention,
     ungradedSubmissionsCount,
