@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FileComments } from "@/components/FileComments";
+import { computeRubricTotal } from "@/lib/assignments/scoring";
 import { SubmitFileForm } from "./SubmitFileForm";
 
 export const metadata = { title: "Assignment" };
@@ -30,6 +31,10 @@ export default async function StudentAssignmentPage({
 
   const submission = assignment.submissions[0];
   const latestAttempt = assignment.examAttempts[0];
+  const rubricTotal =
+    submission && assignment.rubric
+      ? computeRubricTotal(submission.rubricScores, assignment.rubric.criteria)
+      : null;
 
   return (
     <>
@@ -80,6 +85,11 @@ export default async function StudentAssignmentPage({
                 );
               })}
             </ul>
+            {submission && submission.rubricScores.length > 0 && rubricTotal && (
+              <p className="mt-3 border-t border-border pt-3 text-sm font-medium text-foreground">
+                Total: {rubricTotal.earned} / {rubricTotal.possible}
+              </p>
+            )}
           </Card>
         )}
 

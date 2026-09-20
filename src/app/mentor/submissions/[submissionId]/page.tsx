@@ -4,6 +4,7 @@ import { getSubmissionForGrading } from "@/lib/dal/assignments";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { FileComments } from "@/components/FileComments";
+import { computeRubricTotal } from "@/lib/assignments/scoring";
 import { GradingForm } from "./GradingForm";
 
 export const metadata = { title: "Grade submission" };
@@ -21,6 +22,7 @@ export default async function GradeSubmissionPage({
   if (!submission) notFound();
 
   const criteria = submission.assignment.rubric?.criteria ?? [];
+  const total = computeRubricTotal(submission.rubricScores, criteria);
 
   return (
     <>
@@ -56,6 +58,11 @@ export default async function GradeSubmissionPage({
         </Card>
 
         <Card className="mt-4">
+          {criteria.length > 0 && (
+            <p className="mb-4 text-sm font-medium text-foreground">
+              Total: {total.earned} / {total.possible}
+            </p>
+          )}
           <GradingForm
             submissionId={submission.id}
             criteria={criteria}
