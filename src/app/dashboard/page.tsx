@@ -126,11 +126,16 @@ export default async function DashboardPage() {
             <p className="mt-1 font-medium text-foreground">{written?.event.name}</p>
             <p className="text-sm text-foreground-muted">{written?.event.cluster.name}</p>
             {written && (
-              <EventSwitcher
-                category="WRITTEN"
-                currentEventId={written.event.id}
-                clusters={clusters}
-              />
+              <>
+                <Link href="/written-event" className="mt-1 block text-sm text-accent hover:underline">
+                  Checklist &amp; milestones
+                </Link>
+                <EventSwitcher
+                  category="WRITTEN"
+                  currentEventId={written.event.id}
+                  clusters={clusters}
+                />
+              </>
             )}
           </Card>
         </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks } from "lucide-react";
+import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks, FileText } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -77,6 +77,18 @@ export default async function MentorDashboardPage() {
                 <p className="font-medium text-foreground">Assignments</p>
                 <p className="text-sm text-foreground-muted">
                   Create file, exam, or roleplay-prep assignments for students.
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/mentor/written-events">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <FileText className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">Written events</p>
+                <p className="text-sm text-foreground-muted">
+                  Set page limits, required sections, and milestone deadlines.
                 </p>
               </div>
             </Card>
