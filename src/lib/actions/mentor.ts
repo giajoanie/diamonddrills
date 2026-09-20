@@ -101,3 +101,31 @@ export async function resetStudentBaseline(formData: FormData): Promise<void> {
 
   revalidatePath("/mentor/students");
 }
+
+export type LogInterventionState = { error?: string } | undefined;
+
+/** Mentor-only: logs a note or intervention against a student, optionally tagged to an instructional area. */
+export async function logIntervention(
+  _prevState: LogInterventionState,
+  formData: FormData,
+): Promise<LogInterventionState> {
+  const mentor = await requireRole("MENTOR");
+
+  const studentId = formData.get("studentId");
+  const note = formData.get("note");
+  const instructionalAreaId = formData.get("instructionalAreaId");
+  if (typeof studentId !== "string" || !studentId) return { error: "Missing student." };
+  if (typeof note !== "string" || !note.trim()) return { error: "Write a note first." };
+
+  await prisma.interventionLog.create({
+    data: {
+      studentId,
+      mentorId: mentor.id,
+      note: note.trim(),
+      instructionalAreaId:
+        typeof instructionalAreaId === "string" && instructionalAreaId ? instructionalAreaId : null,
+    },
+  });
+
+  revalidatePath(`/mentor/students/${studentId}`);
+}

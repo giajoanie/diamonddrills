@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAllStudents } from "@/lib/dal/mentor";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -29,7 +30,9 @@ export default async function MentorStudentsPage() {
             >
               <div>
                 <p className="font-medium text-foreground">
-                  {student.firstName}{" "}
+                  <Link href={`/mentor/students/${student.id}`} className="hover:underline">
+                    {student.firstName}
+                  </Link>{" "}
                   <span className="font-normal text-foreground-subtle">
                     · School ID {student.schoolId} · Grade {student.grade}
                   </span>
