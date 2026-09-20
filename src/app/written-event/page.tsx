@@ -3,6 +3,7 @@ import { getCurrentEnrollments } from "@/lib/dal/events";
 import { getWrittenEventWorkspace } from "@/lib/dal/written-events";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
+import { PresentationTimer } from "./PresentationTimer";
 
 export const metadata = { title: "Written event" };
 export const dynamic = "force-dynamic";
@@ -86,6 +87,10 @@ export default async function StudentWrittenEventPage() {
           ) : (
             <p className="text-sm text-foreground-muted">No milestones set yet.</p>
           )}
+        </Card>
+
+        <Card className="mt-4">
+          <PresentationTimer />
         </Card>
       </main>
     </>

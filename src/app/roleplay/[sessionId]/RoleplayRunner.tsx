@@ -2,17 +2,12 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { saveRoleplayNotes, completeRoleplaySession, type CompleteRoleplayState } from "@/lib/actions/roleplay";
+import { formatTime } from "@/lib/format-time";
 import { Button } from "@/components/ui/Button";
 import { Label, Input, FieldError } from "@/components/ui/Field";
 
 type Criterion = { id: string; name: string; maxPoints: number };
 type Rubric = { id: string; name: string; criteria: Criterion[] };
-
-function formatTime(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
 
 export function RoleplayRunner({
   sessionId,

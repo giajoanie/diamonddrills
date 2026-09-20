@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Flag, AlertTriangle } from "lucide-react";
 import { saveAnswer, toggleFlag, submitExam, abandonExam } from "@/lib/actions/exam-engine";
 import { computeRemainingSeconds } from "@/lib/exam-engine/timer";
+import { formatTime } from "@/lib/format-time";
 import { Button } from "@/components/ui/Button";
 
 type OptionKey = "A" | "B" | "C" | "D";
@@ -17,12 +18,6 @@ type ExamQuestion = {
   studentAnswer: OptionKey | null;
   isFlagged: boolean;
 };
-
-function formatTime(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
 
 export function ExamRunner({
   attemptId,
