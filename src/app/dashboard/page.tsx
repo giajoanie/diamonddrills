@@ -45,9 +45,19 @@ export default async function DashboardPage() {
     <>
       <AppHeader user={user} homeHref="/dashboard" />
       <main className="mx-auto max-w-4xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Welcome, {user.firstName}
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold text-foreground">
+            Welcome, {user.firstName}
+          </h1>
+          <nav className="flex gap-4 text-sm">
+            <Link href="/resources" className="text-accent hover:underline">
+              Resources
+            </Link>
+            <Link href="/progress" className="text-accent hover:underline">
+              Progress
+            </Link>
+          </nav>
+        </div>
 
         {banksMissingBaseline.length > 0 && (
           <Card className="mt-4 border-accent/40 bg-accent-soft">
