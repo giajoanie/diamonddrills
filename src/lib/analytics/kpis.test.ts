@@ -92,12 +92,11 @@ describe("computeRubricScoreImprovement", () => {
 
 describe("computePracticeSessionsPerWeek", () => {
   it("divides total sessions by student count and weeks", () => {
-    const starts = Array.from({ length: 20 }, (_, i) => ({ userId: `s${i % 5}` }));
-    expect(computePracticeSessionsPerWeek(starts, 5, 14)).toBe(2);
+    expect(computePracticeSessionsPerWeek(20, 5, 14)).toBe(2);
   });
 
   it("is zero with no students", () => {
-    expect(computePracticeSessionsPerWeek([], 0, 7)).toBe(0);
+    expect(computePracticeSessionsPerWeek(0, 0, 7)).toBe(0);
   });
 });
 

@@ -61,13 +61,13 @@ export function computeRubricScoreImprovement(
 
 /** Average practice-mode exam sessions per student per week, over the given window. */
 export function computePracticeSessionsPerWeek(
-  practiceStarts: { userId: string }[],
+  sessionCount: number,
   studentCount: number,
   windowDays: number,
 ): number {
   if (studentCount === 0 || windowDays <= 0) return 0;
   const weeks = windowDays / 7;
-  return practiceStarts.length / studentCount / weeks;
+  return sessionCount / studentCount / weeks;
 }
 
 export function computeResourceUsageByType(opens: { resourceType: string }[]): Record<string, number> {
