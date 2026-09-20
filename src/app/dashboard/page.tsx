@@ -7,6 +7,7 @@ import {
   getScoreHistory,
   getMissedQuestionCount,
 } from "@/lib/dal/exam-engine";
+import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -26,6 +27,11 @@ export default async function DashboardPage() {
 
   const roleplay = enrollments.find((e) => e.event.category === "ROLEPLAY");
   const written = enrollments.find((e) => e.event.category === "WRITTEN");
+
+  const [roleplayTeam, writtenTeam] = await Promise.all([
+    roleplay ? getTeamForStudentEvent(user.id, roleplay.event.id) : null,
+    written ? getTeamForStudentEvent(user.id, written.event.id) : null,
+  ]);
 
   const [baselineFlags, scoreHistory, missedCount] = await Promise.all([
     Promise.all(
@@ -112,6 +118,14 @@ export default async function DashboardPage() {
             <p className="text-sm text-foreground-muted">{roleplay?.event.cluster.name}</p>
             {roleplay && (
               <>
+                {roleplayTeam && (
+                  <p className="mt-1 text-sm text-foreground-muted">
+                    Team: {roleplayTeam.members
+                      .filter((m) => m.userId !== user.id)
+                      .map((m) => m.user.firstName)
+                      .join(", ") || "You're the only member"}
+                  </p>
+                )}
                 <Link href="/roleplay/start" className="mt-1 block text-sm text-accent hover:underline">
                   Practice roleplay
                 </Link>
@@ -132,6 +146,14 @@ export default async function DashboardPage() {
             <p className="text-sm text-foreground-muted">{written?.event.cluster.name}</p>
             {written && (
               <>
+                {writtenTeam && (
+                  <p className="mt-1 text-sm text-foreground-muted">
+                    Team: {writtenTeam.members
+                      .filter((m) => m.userId !== user.id)
+                      .map((m) => m.user.firstName)
+                      .join(", ") || "You're the only member"}
+                  </p>
+                )}
                 <Link href="/written-event" className="mt-1 block text-sm text-accent hover:underline">
                   Checklist &amp; milestones
                 </Link>

@@ -2,6 +2,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getAllCompetitionResults } from "@/lib/dal/competition-results";
 import { getAllStudents } from "@/lib/dal/mentor";
 import { getClustersForTagging } from "@/lib/dal/clusters";
+import { getAllTeams } from "@/lib/dal/teams";
 import { deleteCompetitionResult } from "@/lib/actions/competition-results";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -23,13 +24,14 @@ export default async function CompetitionResultsPage({
   const user = await requireActiveUser("MENTOR");
   const { level, year } = await searchParams;
 
-  const [results, students, clusters] = await Promise.all([
+  const [results, students, clusters, teams] = await Promise.all([
     getAllCompetitionResults({
       level: level && level in LEVEL_LABELS ? (level as CompetitionLevel) : undefined,
       year: year ? parseInt(year, 10) : undefined,
     }),
     getAllStudents(),
     getClustersForTagging(),
+    getAllTeams(),
   ]);
 
   return (
@@ -42,7 +44,7 @@ export default async function CompetitionResultsPage({
         </p>
 
         <Card className="mt-6">
-          <ResultForm students={students} clusters={clusters} />
+          <ResultForm students={students} clusters={clusters} teams={teams.filter((t) => t.members.length > 0)} />
         </Card>
 
         <form className="mt-6 flex flex-wrap items-end gap-3" method="GET">
