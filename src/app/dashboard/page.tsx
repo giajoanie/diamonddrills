@@ -111,11 +111,16 @@ export default async function DashboardPage() {
             <p className="mt-1 font-medium text-foreground">{roleplay?.event.name}</p>
             <p className="text-sm text-foreground-muted">{roleplay?.event.cluster.name}</p>
             {roleplay && (
-              <EventSwitcher
-                category="ROLEPLAY"
-                currentEventId={roleplay.event.id}
-                clusters={clusters}
-              />
+              <>
+                <Link href="/roleplay/start" className="mt-1 block text-sm text-accent hover:underline">
+                  Practice roleplay
+                </Link>
+                <EventSwitcher
+                  category="ROLEPLAY"
+                  currentEventId={roleplay.event.id}
+                  clusters={clusters}
+                />
+              </>
             )}
           </Card>
 
