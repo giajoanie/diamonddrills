@@ -88,3 +88,33 @@ export const getAssignmentById = cache(async (assignmentId: string) => {
     },
   });
 });
+
+export const getAssignmentWithSubmissionsForMentor = cache(async (assignmentId: string) => {
+  return prisma.assignment.findUnique({
+    where: { id: assignmentId },
+    include: {
+      rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } },
+      submissions: {
+        include: { user: { select: { id: true, firstName: true, schoolId: true } } },
+        orderBy: { submittedAt: "desc" },
+      },
+      examAttempts: {
+        where: { status: { not: "IN_PROGRESS" } },
+        include: { user: { select: { id: true, firstName: true, schoolId: true } } },
+        orderBy: { submittedAt: "desc" },
+      },
+    },
+  });
+});
+
+export const getSubmissionForGrading = cache(async (submissionId: string) => {
+  return prisma.submission.findUnique({
+    where: { id: submissionId },
+    include: {
+      assignment: { include: { rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } } } },
+      user: { select: { id: true, firstName: true, schoolId: true } },
+      files: { orderBy: { versionNumber: "desc" } },
+      rubricScores: true,
+    },
+  });
+});

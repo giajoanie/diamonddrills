@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAllAssignmentsForMentor } from "@/lib/dal/assignments";
 import { getAllStudents } from "@/lib/dal/mentor";
@@ -79,7 +80,9 @@ export default async function MentorAssignmentsPage() {
             >
               <div>
                 <p className="font-medium text-foreground">
-                  {a.title}{" "}
+                  <Link href={`/mentor/assignments/${a.id}`} className="hover:underline">
+                    {a.title}
+                  </Link>{" "}
                   <span className="font-normal text-foreground-subtle">
                     · {TYPE_LABELS[a.type]}
                   </span>
