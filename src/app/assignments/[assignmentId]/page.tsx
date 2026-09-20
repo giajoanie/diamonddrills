@@ -5,6 +5,7 @@ import { startAssignmentExam } from "@/lib/actions/submissions";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { FileComments } from "@/components/FileComments";
 import { SubmitFileForm } from "./SubmitFileForm";
 
 export const metadata = { title: "Assignment" };
@@ -115,18 +116,20 @@ export default async function StudentAssignmentPage({
                 <p className="mb-3 text-sm text-foreground-muted">Feedback: {submission.feedback}</p>
               )}
               {submission && submission.files.length > 0 && (
-                <div className="mb-4 space-y-1">
+                <div className="mb-4 space-y-4">
                   <p className="text-sm font-medium text-foreground">Submitted files</p>
                   {submission.files.map((f) => (
-                    <a
-                      key={f.id}
-                      href={`/files/${f.fileUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm text-accent hover:underline"
-                    >
-                      Version {f.versionNumber} · {f.uploadedAt.toLocaleString()}
-                    </a>
+                    <div key={f.id}>
+                      <a
+                        href={`/files/${f.fileUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-sm text-accent hover:underline"
+                      >
+                        Version {f.versionNumber} · {f.uploadedAt.toLocaleString()}
+                      </a>
+                      <FileComments submissionFileId={f.id} comments={f.comments} />
+                    </div>
                   ))}
                 </div>
               )}

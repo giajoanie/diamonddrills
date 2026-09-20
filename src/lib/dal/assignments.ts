@@ -59,7 +59,18 @@ export const getAssignmentForStudent = cache(async (assignmentId: string, userId
       resources: { include: { resource: true } },
       submissions: {
         where: { userId },
-        include: { files: { orderBy: { versionNumber: "desc" } }, rubricScores: true },
+        include: {
+          files: {
+            orderBy: { versionNumber: "desc" },
+            include: {
+              comments: {
+                include: { author: { select: { firstName: true, role: true } } },
+                orderBy: { createdAt: "asc" },
+              },
+            },
+          },
+          rubricScores: true,
+        },
       },
       examAttempts: { where: { userId }, orderBy: { createdAt: "desc" }, take: 1 },
     },
@@ -113,7 +124,15 @@ export const getSubmissionForGrading = cache(async (submissionId: string) => {
     include: {
       assignment: { include: { rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } } } },
       user: { select: { id: true, firstName: true, schoolId: true } },
-      files: { orderBy: { versionNumber: "desc" } },
+      files: {
+        orderBy: { versionNumber: "desc" },
+        include: {
+          comments: {
+            include: { author: { select: { firstName: true, role: true } } },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      },
       rubricScores: true,
     },
   });

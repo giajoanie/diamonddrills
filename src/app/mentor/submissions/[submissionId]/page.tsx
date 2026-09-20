@@ -3,6 +3,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getSubmissionForGrading } from "@/lib/dal/assignments";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
+import { FileComments } from "@/components/FileComments";
 import { GradingForm } from "./GradingForm";
 
 export const metadata = { title: "Grade submission" };
@@ -34,17 +35,19 @@ export default async function GradeSubmissionPage({
         <Card className="mt-6">
           <p className="mb-2 font-medium text-foreground">Submitted files</p>
           {submission.files.length > 0 ? (
-            <div className="space-y-1">
+            <div className="space-y-4">
               {submission.files.map((f) => (
-                <a
-                  key={f.id}
-                  href={`/files/${f.fileUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-sm text-accent hover:underline"
-                >
-                  Version {f.versionNumber} · {f.uploadedAt.toLocaleString()}
-                </a>
+                <div key={f.id}>
+                  <a
+                    href={`/files/${f.fileUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm text-accent hover:underline"
+                  >
+                    Version {f.versionNumber} · {f.uploadedAt.toLocaleString()}
+                  </a>
+                  <FileComments submissionFileId={f.id} comments={f.comments} />
+                </div>
               ))}
             </div>
           ) : (
