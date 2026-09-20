@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks, FileText, Lightbulb, Trophy, Download, Users2 } from "lucide-react";
+import { Users, FileQuestion, BookOpen, ClipboardCheck, ListChecks, FileText, Lightbulb, Trophy, Download, Users2, Megaphone, CalendarDays } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getMentorDashboardData, getStudentNamesByIds } from "@/lib/dal/analytics";
 import { getClustersForTagging } from "@/lib/dal/clusters";
@@ -320,6 +320,30 @@ export default async function MentorDashboardPage({
                 <p className="font-medium text-foreground">Teams</p>
                 <p className="text-sm text-foreground-muted">
                   Link teammates for Team Decision Making and team written events.
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/mentor/announcements">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <Megaphone className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">Announcements</p>
+                <p className="text-sm text-foreground-muted">
+                  Post updates to everyone, a grade, a cluster, or an event.
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/mentor/calendar">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <CalendarDays className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">Calendar</p>
+                <p className="text-sm text-foreground-muted">
+                  Add competition dates for students to see.
                 </p>
               </div>
             </Card>
