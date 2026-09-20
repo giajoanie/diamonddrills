@@ -3,6 +3,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getStudentProfile } from "@/lib/dal/mentor";
 import { getAttemptQuestionHistory } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
+import { computeInterventionImpact } from "@/lib/analytics/intervention-impact";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { InterventionForm } from "./InterventionForm";
@@ -37,6 +38,10 @@ export default async function MentorStudentProfilePage({
 
   const questionHistory = await getAttemptQuestionHistory(studentId);
   const areaBreakdown = computeAreaBreakdown(questionHistory.flatMap((a) => a.questions));
+
+  const percentagePoints = examAttempts
+    .filter((a): a is typeof a & { submittedAt: Date; percentage: number } => a.submittedAt !== null && a.percentage !== null)
+    .map((a) => ({ submittedAt: a.submittedAt, percentage: a.percentage }));
 
   return (
     <>
@@ -144,15 +149,29 @@ export default async function MentorStudentProfilePage({
         <Card className="mt-4">
           <p className="mb-2 font-medium text-foreground">Mentor notes &amp; interventions</p>
           <ul className="mb-4 space-y-2 text-sm">
-            {interventions.map((i) => (
-              <li key={i.id} className="border-b border-border pb-2 last:border-0">
-                <p className="text-foreground">{i.note}</p>
-                <p className="text-foreground-subtle">
-                  {i.mentor.firstName} · {i.createdAt.toLocaleString()}
-                  {i.instructionalArea ? ` · ${i.instructionalArea.name}` : ""}
-                </p>
-              </li>
-            ))}
+            {interventions.map((i) => {
+              const impact = computeInterventionImpact(i.createdAt, percentagePoints);
+              return (
+                <li key={i.id} className="border-b border-border pb-2 last:border-0">
+                  <p className="text-foreground">{i.note}</p>
+                  <p className="text-foreground-subtle">
+                    {i.mentor.firstName} · {i.createdAt.toLocaleString()}
+                    {i.instructionalArea ? ` · ${i.instructionalArea.name}` : ""}
+                  </p>
+                  {impact.change !== null ? (
+                    <p className={impact.change >= 0 ? "text-success" : "text-danger"}>
+                      {Math.round(impact.beforeAvg!)}% → {Math.round(impact.afterAvg!)}% (
+                      {impact.change >= 0 ? "+" : ""}
+                      {Math.round(impact.change)} pts since)
+                    </p>
+                  ) : (
+                    <p className="text-foreground-subtle">
+                      Not enough exam data yet to measure impact.
+                    </p>
+                  )}
+                </li>
+              );
+            })}
             {interventions.length === 0 && <li className="text-foreground-muted">No notes yet.</li>}
           </ul>
           <InterventionForm studentId={student.id} instructionalAreas={instructionalAreas} />
