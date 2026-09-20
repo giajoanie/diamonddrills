@@ -11,6 +11,7 @@ import {
   computeResourceUsageByType,
   identifyNeedsAttention,
 } from "@/lib/analytics/kpis";
+import { generateLessonPlanRecommendations } from "@/lib/analytics/lesson-plan";
 
 export type DashboardFilters = {
   grade?: number;
@@ -25,11 +26,8 @@ const INACTIVE_DAYS = 14;
 const DECLINING_THRESHOLD = 5;
 const LOW_SCORE_THRESHOLD = 60;
 
-export const getMentorDashboardData = cache(async (filters: DashboardFilters) => {
-  const now = new Date();
-  const dateFrom = filters.dateFrom ?? new Date(0);
-  const dateTo = filters.dateTo ?? now;
-
+/** Shared cohort resolution for every filterable mentor analytics view. */
+async function resolveCohort(filters: DashboardFilters) {
   const students = await prisma.user.findMany({
     where: {
       role: "STUDENT",
@@ -55,6 +53,26 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
   });
 
   const studentIds = students.map((s) => s.id);
+  const contextByStudent = new Map(
+    students.map((s) => [
+      s.id,
+      {
+        grade: s.grade,
+        currentEventIds: s.enrollments.map((e) => e.eventId),
+        currentClusterIds: [...new Set(s.enrollments.map((e) => e.event.clusterId))],
+      },
+    ]),
+  );
+
+  return { students, studentIds, contextByStudent };
+}
+
+export const getMentorDashboardData = cache(async (filters: DashboardFilters) => {
+  const now = new Date();
+  const dateFrom = filters.dateFrom ?? new Date(0);
+  const dateTo = filters.dateTo ?? now;
+
+  const { students, studentIds, contextByStudent } = await resolveCohort(filters);
   const activeStudentCount = students.filter((s) => s.isActive).length;
 
   if (studentIds.length === 0) {
@@ -73,17 +91,6 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
       resourceUsageByType: {} as Record<string, number>,
     };
   }
-
-  const contextByStudent = new Map(
-    students.map((s) => [
-      s.id,
-      {
-        grade: s.grade,
-        currentEventIds: s.enrollments.map((e) => e.eventId),
-        currentClusterIds: [...new Set(s.enrollments.map((e) => e.event.clusterId))],
-      },
-    ]),
-  );
 
   const attempts = await prisma.examAttempt.findMany({
     where: { userId: { in: studentIds }, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] } },
@@ -269,6 +276,70 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
   };
 });
 
+export const getLessonPlanRecommendations = cache(async (filters: DashboardFilters, topN = 3) => {
+  const { studentIds } = await resolveCohort(filters);
+  if (studentIds.length === 0) return [];
+
+  const questionResults = await prisma.examAttemptQuestion.findMany({
+    where: {
+      examAttempt: { userId: { in: studentIds }, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] } },
+    },
+    select: {
+      isCorrect: true,
+      examAttempt: { select: { userId: true } },
+      question: { select: { instructionalArea: { select: { id: true, name: true } } } },
+    },
+  });
+
+  const chapterWeakAreas = computeAreaBreakdown(
+    questionResults.map((q) => ({
+      areaName: q.question.instructionalArea?.name ?? null,
+      isCorrect: q.isCorrect ?? false,
+    })),
+  ).filter((a) => a.areaName !== "Uncategorized");
+
+  const areaIdByName = new Map<string, string>();
+  const perStudentPerArea = new Map<string, Map<string, { correct: number; total: number }>>();
+  for (const q of questionResults) {
+    const area = q.question.instructionalArea;
+    if (!area) continue;
+    areaIdByName.set(area.name, area.id);
+
+    const byArea = perStudentPerArea.get(area.id) ?? new Map();
+    const entry = byArea.get(q.examAttempt.userId) ?? { correct: 0, total: 0 };
+    entry.total += 1;
+    if (q.isCorrect) entry.correct += 1;
+    byArea.set(q.examAttempt.userId, entry);
+    perStudentPerArea.set(area.id, byArea);
+  }
+
+  const weakAreasWithIds = chapterWeakAreas
+    .map((a) => ({ areaId: areaIdByName.get(a.areaName), areaName: a.areaName, accuracy: a.accuracy }))
+    .filter((a): a is { areaId: string; areaName: string; accuracy: number } => !!a.areaId);
+
+  const areaIds = weakAreasWithIds.slice(0, topN).map((a) => a.areaId);
+
+  const taggedResources = await prisma.resourceInstructionalArea.findMany({
+    where: { instructionalAreaId: { in: areaIds }, resource: { isActive: true } },
+    select: { instructionalAreaId: true, resourceId: true },
+  });
+  const resourceIdsByArea: Record<string, string[]> = {};
+  for (const r of taggedResources) {
+    (resourceIdsByArea[r.instructionalAreaId] ??= []).push(r.resourceId);
+  }
+
+  const studentAccuracyByArea: Record<string, { userId: string; accuracy: number }[]> = {};
+  for (const areaId of areaIds) {
+    const byStudent = perStudentPerArea.get(areaId) ?? new Map();
+    studentAccuracyByArea[areaId] = [...byStudent.entries()].map(([userId, { correct, total }]) => ({
+      userId,
+      accuracy: total > 0 ? (correct / total) * 100 : 0,
+    }));
+  }
+
+  return generateLessonPlanRecommendations(weakAreasWithIds, resourceIdsByArea, studentAccuracyByArea, topN);
+});
+
 export const getUngradedSubmissionsQueue = cache(async () => {
   return prisma.submission.findMany({
     where: { status: { in: ["SUBMITTED", "LATE"] } },
@@ -286,4 +357,12 @@ export const getStudentNamesByIds = cache(async (userIds: string[]) => {
     select: { id: true, firstName: true, schoolId: true },
   });
   return new Map(students.map((s) => [s.id, s]));
+});
+
+export const getResourceNamesByIds = cache(async (resourceIds: string[]) => {
+  const resources = await prisma.resource.findMany({
+    where: { id: { in: resourceIds } },
+    select: { id: true, name: true },
+  });
+  return new Map(resources.map((r) => [r.id, r.name]));
 });
