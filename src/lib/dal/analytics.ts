@@ -397,3 +397,11 @@ export const getResourceNamesByIds = cache(async (resourceIds: string[]) => {
   });
   return new Map(resources.map((r) => [r.id, r.name]));
 });
+
+export const getActivityTimeline = cache(async (userId: string, limit = 100) => {
+  return prisma.activityLog.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+});

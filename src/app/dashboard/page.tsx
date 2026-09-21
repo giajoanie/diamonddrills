@@ -76,6 +76,9 @@ export default async function DashboardPage() {
             <Link href="/progress" className="text-accent hover:underline">
               Progress
             </Link>
+            <Link href="/activity" className="text-accent hover:underline">
+              Activity
+            </Link>
             <Link href="/announcements" className="text-accent hover:underline">
               Announcements
             </Link>

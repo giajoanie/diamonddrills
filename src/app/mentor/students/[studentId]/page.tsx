@@ -4,24 +4,13 @@ import { getStudentProfile } from "@/lib/dal/mentor";
 import { getAttemptQuestionHistory } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
 import { computeInterventionImpact } from "@/lib/analytics/intervention-impact";
+import { describeActivity } from "@/lib/analytics/activity-labels";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { InterventionForm } from "./InterventionForm";
 
 export const metadata = { title: "Student profile" };
 export const dynamic = "force-dynamic";
-
-const ACTIVITY_LABELS: Record<string, string> = {
-  LOGIN: "Logged in",
-  LOGOUT: "Logged out",
-  EXAM_START: "Started an exam",
-  EXAM_COMPLETE: "Completed an exam",
-  EXAM_ABANDON: "Abandoned an exam",
-  RESOURCE_OPEN: "Opened a resource",
-  SUBMISSION_CREATED: "Submitted an assignment",
-  FEEDBACK_VIEWED: "Viewed feedback",
-  ASSIGNMENT_VIEWED: "Viewed an assignment",
-};
 
 export default async function MentorStudentProfilePage({
   params,
@@ -138,7 +127,7 @@ export default async function MentorStudentProfilePage({
           <ul className="space-y-1 text-sm">
             {activityLog.map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-3">
-                <span className="text-foreground-muted">{ACTIVITY_LABELS[a.type] ?? a.type}</span>
+                <span className="text-foreground-muted">{describeActivity(a.type)}</span>
                 <span className="text-foreground-subtle">{a.createdAt.toLocaleString()}</span>
               </li>
             ))}

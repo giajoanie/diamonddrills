@@ -127,5 +127,9 @@ export async function logIntervention(
     },
   });
 
+  await prisma.activityLog.create({
+    data: { userId: studentId, type: "INTERVENTION_LOGGED", metadata: { mentorId: mentor.id } },
+  });
+
   revalidatePath(`/mentor/students/${studentId}`);
 }
