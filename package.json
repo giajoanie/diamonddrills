@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-demo": "tsx prisma/seed-demo.ts",
+    "db:remove-demo": "tsx prisma/remove-demo.ts",
     "db:import-exams": "NODE_OPTIONS=--conditions=react-server tsx scripts/import-exam-pdfs.ts"
   },
   "dependencies": {
