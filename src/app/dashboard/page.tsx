@@ -79,6 +79,9 @@ export default async function DashboardPage() {
             <Link href="/activity" className="text-accent hover:underline">
               Activity
             </Link>
+            <Link href="/study-plan" className="text-accent hover:underline">
+              Study plan
+            </Link>
             <Link href="/announcements" className="text-accent hover:underline">
               Announcements
             </Link>

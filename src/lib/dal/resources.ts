@@ -120,3 +120,26 @@ export const getAllResourcesForMentor = cache(async () => {
     },
   });
 });
+
+/** One visible resource tagged to this area, for the auto-generated study plan (Tier 3). */
+export const getResourceForArea = cache(async (userId: string, instructionalAreaId: string) => {
+  const ctx = await getStudentVisibilityContext(userId);
+
+  return prisma.resource.findFirst({
+    where: {
+      isActive: true,
+      resourceAreas: { some: { instructionalAreaId } },
+      AND: [
+        { OR: [{ grade: null }, { grade: ctx.grade }] },
+        {
+          OR: [
+            { allEvents: true },
+            { resourceClusters: { some: { clusterId: { in: ctx.currentClusterIds } } } },
+            { resourceEvents: { some: { eventId: { in: ctx.currentEventIds } } } },
+          ],
+        },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+});
