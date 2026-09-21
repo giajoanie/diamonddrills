@@ -30,6 +30,22 @@ describe("toCsv", () => {
   it("produces just the header with no rows", () => {
     expect(toCsv(["a", "b"], [])).toBe("a,b");
   });
+
+  it("neutralizes a leading formula character in a string field", () => {
+    expect(toCsv(["note"], [{ note: "=cmd|'/c calc'!A1" }])).toBe("note\r\n'=cmd|'/c calc'!A1");
+    expect(toCsv(["note"], [{ note: "+1" }])).toBe("note\r\n'+1");
+    expect(toCsv(["note"], [{ note: "@SUM(A1)" }])).toBe("note\r\n'@SUM(A1)");
+  });
+
+  it("does not mangle a legitimately negative number", () => {
+    expect(toCsv(["change"], [{ change: -5 }])).toBe("change\r\n-5");
+  });
+
+  it("applies the same guard to any string starting with a formula character, even if not a real formula", () => {
+    // A deliberate tradeoff: spreadsheet software can't tell a real formula
+    // from ordinary text starting with =/+/-/@ either, so this errs safe.
+    expect(toCsv(["note"], [{ note: "-5 points this week" }])).toBe("note\r\n'-5 points this week");
+  });
 });
 
 describe("buildAnonymousIdMap", () => {

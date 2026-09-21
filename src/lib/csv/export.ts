@@ -2,10 +2,22 @@
  * Minimal CSV serialization, kept dependency-free and pure so it's
  * unit-testable. Escapes per RFC 4180: any field containing a comma,
  * double quote, or newline is wrapped in quotes, with quotes doubled.
+ *
+ * Also guards against CSV/formula injection: a field that starts with
+ * =, +, -, or @ is interpreted as a formula by Excel/Sheets when the file
+ * is opened, so user-supplied text (a judge's name, a competition note)
+ * flowing into an export could otherwise execute a formula on open. A
+ * leading apostrophe forces those tools to treat it as plain text.
  */
 function escapeCsvField(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "";
-  const str = String(value);
+  let str = String(value);
+  // Only strings need the formula-injection guard — a numeric field's
+  // string form (e.g. "-5") would otherwise be misdetected as a formula
+  // and corrupted with a spurious leading apostrophe.
+  if (typeof value === "string" && /^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }

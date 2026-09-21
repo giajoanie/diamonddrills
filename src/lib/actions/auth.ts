@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import {
@@ -11,6 +12,12 @@ import {
 import { ChangePasswordSchema, LoginSchema, SignupSchema } from "@/lib/validation/auth";
 import { requireUser } from "@/lib/auth/guards";
 import { nextFailedLoginState } from "@/lib/auth/lockout";
+import { isRateLimited } from "@/lib/rate-limit";
+
+async function clientIp(): Promise<string> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? "unknown";
+}
 
 export type FormState = {
   errors?: Record<string, string[]>;
@@ -21,6 +28,10 @@ export async function signup(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  if (isRateLimited(`signup:${await clientIp()}`, 5, 60 * 60 * 1000)) {
+    return { message: "Too many signup attempts from this network. Try again later." };
+  }
+
   const validated = SignupSchema.safeParse({
     schoolId: formData.get("schoolId"),
     firstName: formData.get("firstName"),

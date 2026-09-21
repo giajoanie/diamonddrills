@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
-import { saveUploadedFile } from "@/lib/files/storage";
+import { saveUploadedFile, MAX_UPLOAD_BYTES } from "@/lib/files/storage";
 import { getAssignmentForStudent } from "@/lib/dal/assignments";
 import { deriveSubmissionStatus } from "@/lib/assignments/status";
 import { pickRandomSubset } from "@/lib/exam-engine/shuffle";
-import { startAttemptWithQuestionIds } from "@/lib/actions/exam-engine";
+import { startAttemptWithQuestionIds } from "@/lib/exam-engine/attempt-lifecycle";
 
 export type SubmitAssignmentState = { error?: string } | undefined;
 
@@ -21,6 +21,9 @@ export async function submitAssignmentFile(
   const file = formData.get("file");
   if (typeof assignmentId !== "string" || !assignmentId) return { error: "Missing assignment." };
   if (!(file instanceof File) || file.size === 0) return { error: "Choose a file to upload." };
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { error: `That file is too large — the limit is ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB.` };
+  }
 
   const assignment = await getAssignmentForStudent(assignmentId, student.id);
   if (!assignment) return { error: "That assignment isn't available." };

@@ -3,7 +3,7 @@
  */
 import "dotenv/config"; // running via `tsx` directly does not auto-load .env like the Prisma CLI does
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth/password";
+import { hashPassword, generateTemporaryPassword } from "@/lib/auth/password";
 import { CLUSTER_SEED, EXAM_BANK_SEED, EVENT_SEED } from "@/lib/seed-data";
 
 async function seedClusters() {
@@ -73,17 +73,19 @@ async function seedEvents() {
   console.log(`Seeded ${EVENT_SEED.length} events.`);
 }
 
-// Not a secret: shared chapter password, fine for other mentors to know.
-const SEED_MENTOR_PASSWORD = "DiamondDrills2026";
-
+// A committed, hardcoded password would be knowable to anyone with repo
+// access even before a mentor's first login (mustChangePassword only forces
+// a change *after* that first login). Generate a random one per account
+// instead and print it once here — never persisted anywhere but the hash.
 async function seedMentors() {
-  const passwordHash = await hashPassword(SEED_MENTOR_PASSWORD);
-
   for (const schoolId of ["1071632", "1078913"]) {
-    await prisma.user.upsert({
-      where: { schoolId },
-      update: {},
-      create: {
+    const existing = await prisma.user.findUnique({ where: { schoolId } });
+    if (existing) continue;
+
+    const temporaryPassword = generateTemporaryPassword();
+    const passwordHash = await hashPassword(temporaryPassword);
+    await prisma.user.create({
+      data: {
         schoolId,
         role: "MENTOR",
         firstName: "Advisor",
@@ -91,6 +93,7 @@ async function seedMentors() {
         mustChangePassword: true,
       },
     });
+    console.log(`  Mentor ${schoolId} temporary password: ${temporaryPassword}`);
   }
   console.log("Seeded 2 mentor accounts (password change forced on first login).");
 }

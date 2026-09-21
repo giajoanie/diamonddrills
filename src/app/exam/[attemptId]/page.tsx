@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAttemptForTaking } from "@/lib/dal/exam-engine";
 import { isExpired } from "@/lib/exam-engine/timer";
-import { finalizeAttempt } from "@/lib/actions/exam-engine";
+import { finalizeAttempt } from "@/lib/exam-engine/attempt-lifecycle";
 import { ExamRunner } from "./ExamRunner";
 
 export const metadata = { title: "Exam in progress" };

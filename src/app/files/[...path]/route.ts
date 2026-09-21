@@ -12,12 +12,20 @@ import { prisma } from "@/lib/prisma";
  * expects, e.g. "resources/<resourceId>/<name>" or
  * "submissions/<submissionId>/<name>".
  */
+/** Every stored fileUrl is exactly "<category>/<ownerId>/<filename>" (see storage.ts) — reject anything else, including traversal segments, before touching the filesystem or the auth check. */
+function isSafeSegment(segment: string | undefined): segment is string {
+  return !!segment && segment !== "." && segment !== ".." && !segment.includes("/") && !segment.includes("\\");
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const user = await requireUser();
   const { path: segments } = await params;
+  if (segments.length !== 3 || !segments.every(isSafeSegment)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const [category, ownerId] = segments;
 
   if (category === "resources" && ownerId) {

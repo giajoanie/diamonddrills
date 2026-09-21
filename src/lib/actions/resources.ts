@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole, requireUser } from "@/lib/auth/guards";
-import { saveUploadedFile } from "@/lib/files/storage";
+import { saveUploadedFile, MAX_UPLOAD_BYTES } from "@/lib/files/storage";
 import type { CompetitionLevel, ResourceType } from "@/generated/prisma/client";
 
 export type CreateResourceState = { error?: string } | undefined;
@@ -46,6 +46,9 @@ export async function createResource(
   const hasFile = file instanceof File && file.size > 0;
   const hasUrl = typeof externalUrl === "string" && externalUrl.trim().length > 0;
   if (!hasFile && !hasUrl) return { error: "Attach a file or an external URL." };
+  if (hasFile && (file as File).size > MAX_UPLOAD_BYTES) {
+    return { error: `That file is too large — the limit is ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB.` };
+  }
   if (!allEvents && clusterIds.length === 0 && eventIds.length === 0) {
     return { error: "Tag this resource to at least one cluster, event, or \"all events\"." };
   }
