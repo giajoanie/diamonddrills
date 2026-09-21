@@ -1,7 +1,23 @@
 # PARSE_REPORT.md
 
-Results of importing the staged exam PDFs in `seed/exams/marketing/` via `scripts/import-exam-pdfs.ts`.
+Results of importing the staged exam PDFs in `seed/exams/<bank>/` via `scripts/import-exam-pdfs.ts`.
 A file is auto-published only when every question matched an answer-key entry with zero anomalies; anything else is left as a draft for a mentor to fix on the review screen (`/mentor/exams/<bank>`).
+
+## business-management-administration
+
+| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
+|---|---|---|---|---|---|---|---|
+| 2018_business-management-administration_sample_exam.pdf | 2018 Business Management and Administration Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+
+## entrepreneurship
+
+| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
+|---|---|---|---|---|---|---|---|
+| 2017_entrepreneurship_sample_exam.pdf | 2017 Entrepreneurship Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2019_entrepreneurship_sample_exam.pdf | 2019 Entrepreneurship Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2022_entrepreneurship_state_exam.pdf | 2022 Entrepreneurship State Exam | needs-review | 100 | 100 | 0 | 93 | 7 |
+
+## marketing
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
 |---|---|---|---|---|---|---|---|
@@ -12,12 +28,29 @@ A file is auto-published only when every question matched an answer-key entry wi
 | 2013_marketing_icdc_exam.pdf | 2013 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2013_marketing_icdc_exam_v2.pdf | 2013 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2014_marketing_sample_exam.pdf | 2014 Marketing Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
-| 2021_marketing_sample_exam.pdf | 2021 Marketing Sample Exam | needs-review | 100 | 100 | 0 | 95 | 5 |
-| 2022_marketing_state_exam.pdf | 2022 Marketing State Exam | published | 100 | 100 | 0 | 96 | 4 |
+| 2021_marketing_sample_exam.pdf | 2021 Marketing Sample Exam | needs-review | 100 | 100 | 0 | 0 | 100 |
+| 2022_marketing_state_exam.pdf | 2022 Marketing State Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2026_marketing_icdc_exam.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2026_marketing_icdc_exam_final.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 
+
 ## Anomalies
+
+### 2018_business-management-administration_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: EN, KM, PJ, QM, RM, SM
+
+### 2017_entrepreneurship_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: EN, QM, RM, SM
+
+### 2019_entrepreneurship_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: EN, QM, RM, SM
+
+### 2022_entrepreneurship_state_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: EN, SM, RM, QM
 
 ### 2011_marketing_icdc_exam.pdf
 
@@ -29,7 +62,7 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 ## Summary
 
-- 11 files processed
+- 15 files processed
 - 9 auto-published (clean parse)
-- 2 need manual review or were skipped
-- 191 total questions created
+- 6 need manual review or were skipped
+- 393 total questions created

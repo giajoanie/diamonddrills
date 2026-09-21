@@ -1,6 +1,7 @@
 /**
  * One-time/rerunnable bulk importer for the exam PDFs staged in
- * seed/exams/<cluster>/. Mirrors the mentor upload Server Action
+ * seed/exams/<exam-bank-slug>/ — one subdirectory per exam bank, processed
+ * for every subdirectory present. Mirrors the mentor upload Server Action
  * (src/lib/actions/exam-import.ts) but runs from the CLI, since that
  * action requires an authenticated mentor request context.
  *
@@ -20,8 +21,7 @@ import { normalizeStem } from "@/lib/exam-import/dedupe";
 import { getOrCreateGlobalInstructionalArea } from "@/lib/dal/instructional-areas";
 import type { OptionKey } from "@/generated/prisma/client";
 
-const EXAM_BANK_SLUG = "marketing";
-const EXAM_DIR = path.join(process.cwd(), "seed/exams/marketing");
+const EXAMS_ROOT = path.join(process.cwd(), "seed/exams");
 
 type FileReport = {
   file: string;
@@ -41,22 +41,33 @@ type FileReport = {
 // (e.g. a State/Province exam, which would otherwise get mislabeled "ICDC").
 const LABEL_OVERRIDES: Record<string, { sourceExam: string; sourceYear: number | null }> = {
   "2022_marketing_state_exam.pdf": { sourceExam: "2022 Marketing State Exam", sourceYear: 2022 },
+  "2022_entrepreneurship_state_exam.pdf": {
+    sourceExam: "2022 Entrepreneurship State Exam",
+    sourceYear: 2022,
+  },
 };
 
-function labelFor(filename: string): { sourceExam: string; sourceYear: number | null } {
+function labelFor(
+  examBankName: string,
+  filename: string,
+): { sourceExam: string; sourceYear: number | null } {
   if (LABEL_OVERRIDES[filename]) return LABEL_OVERRIDES[filename];
   const yearMatch = filename.match(/^(\d{4})/);
   const sourceYear = yearMatch ? parseInt(yearMatch[1], 10) : null;
   const isSample = /sample/i.test(filename);
   const sourceExam = sourceYear
-    ? `${sourceYear} Marketing ${isSample ? "Sample" : "ICDC"} Exam`
+    ? `${sourceYear} ${examBankName} ${isSample ? "Sample" : "ICDC"} Exam`
     : filename.replace(/\.pdf$/i, "");
   return { sourceExam, sourceYear };
 }
 
-async function importFile(examBankId: string, filePath: string): Promise<FileReport> {
+async function importFile(
+  examBankId: string,
+  examBankName: string,
+  filePath: string,
+): Promise<FileReport> {
   const filename = path.basename(filePath);
-  const { sourceExam, sourceYear } = labelFor(filename);
+  const { sourceExam, sourceYear } = labelFor(examBankName, filename);
   const buffer = fs.readFileSync(filePath);
 
   let rawText: string;
@@ -171,42 +182,62 @@ async function importFile(examBankId: string, filePath: string): Promise<FileRep
 }
 
 async function main() {
-  const examBank = await prisma.examBank.findUniqueOrThrow({ where: { slug: EXAM_BANK_SLUG } });
-  const files = fs
-    .readdirSync(EXAM_DIR)
-    .filter((f) => f.endsWith(".pdf"))
+  const bankDirs = fs
+    .readdirSync(EXAMS_ROOT, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)
     .sort();
 
-  const reports: FileReport[] = [];
-  for (const file of files) {
-    console.log(`Importing ${file}...`);
-    const report = await importFile(examBank.id, path.join(EXAM_DIR, file));
-    reports.push(report);
-    console.log(
-      `  -> ${report.status}: ${report.created} created (${report.duplicatesSkipped} duplicates skipped), ${report.anomalies.length} anomalies`,
-    );
+  const reportsByBank: { bankSlug: string; reports: FileReport[] }[] = [];
+
+  for (const bankSlug of bankDirs) {
+    const examBank = await prisma.examBank.findUniqueOrThrow({ where: { slug: bankSlug } });
+    const examDir = path.join(EXAMS_ROOT, bankSlug);
+    const files = fs
+      .readdirSync(examDir)
+      .filter((f) => f.endsWith(".pdf"))
+      .sort();
+
+    const reports: FileReport[] = [];
+    for (const file of files) {
+      console.log(`[${bankSlug}] Importing ${file}...`);
+      const report = await importFile(examBank.id, examBank.name, path.join(examDir, file));
+      reports.push(report);
+      console.log(
+        `  -> ${report.status}: ${report.created} created (${report.duplicatesSkipped} duplicates skipped), ${report.anomalies.length} anomalies`,
+      );
+    }
+    reportsByBank.push({ bankSlug, reports });
   }
 
   const reportPath = path.join(process.cwd(), "PARSE_REPORT.md");
-  fs.writeFileSync(reportPath, renderReport(reports));
+  fs.writeFileSync(reportPath, renderReport(reportsByBank));
   console.log(`\nWrote ${reportPath}`);
 }
 
-function renderReport(reports: FileReport[]): string {
+function renderReport(reportsByBank: { bankSlug: string; reports: FileReport[] }[]): string {
+  const reports = reportsByBank.flatMap((b) => b.reports);
   const lines: string[] = [
     "# PARSE_REPORT.md",
     "",
-    "Results of importing the staged exam PDFs in `seed/exams/marketing/` via `scripts/import-exam-pdfs.ts`.",
+    "Results of importing the staged exam PDFs in `seed/exams/<bank>/` via `scripts/import-exam-pdfs.ts`.",
     "A file is auto-published only when every question matched an answer-key entry with zero anomalies; anything else is left as a draft for a mentor to fix on the review screen (`/mentor/exams/<bank>`).",
     "",
-    "| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |",
-    "|---|---|---|---|---|---|---|---|",
   ];
 
-  for (const r of reports) {
+  for (const { bankSlug, reports } of reportsByBank) {
     lines.push(
-      `| ${r.file} | ${r.sourceExam} | ${r.status} | ${r.questionsFound} | ${r.matched} | ${r.missingKey} | ${r.created} | ${r.duplicatesSkipped} |`,
+      `## ${bankSlug}`,
+      "",
+      "| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |",
+      "|---|---|---|---|---|---|---|---|",
     );
+    for (const r of reports) {
+      lines.push(
+        `| ${r.file} | ${r.sourceExam} | ${r.status} | ${r.questionsFound} | ${r.matched} | ${r.missingKey} | ${r.created} | ${r.duplicatesSkipped} |`,
+      );
+    }
+    lines.push("");
   }
 
   lines.push("", "## Anomalies", "");
