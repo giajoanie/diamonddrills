@@ -3,7 +3,15 @@ import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const STORAGE_ROOT = path.resolve(process.cwd(), process.env.FILE_STORAGE_DIR ?? "./.data/uploads");
+// turbopackIgnore: without it, Next's file-tracer can't prove this dynamic
+// (env-var-derived) path stays inside the project, so it conservatively
+// bundles the *entire* repo (node_modules, public/, everything) into every
+// serverless function that imports this module — which is what was blowing
+// past Vercel's function size limit and taking the whole deployment down.
+const STORAGE_ROOT = path.resolve(
+  /* turbopackIgnore: true */ process.cwd(),
+  process.env.FILE_STORAGE_DIR ?? "./.data/uploads",
+);
 
 /** Shared cap for anything a mentor or student can upload (resources, submissions). */
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
@@ -20,7 +28,7 @@ function sanitizeFilename(name: string): string {
  * `resources/<resourceId>` or `submissions/<submissionId>/<version>`.
  */
 export async function saveUploadedFile(file: File, category: string): Promise<string> {
-  const dir = path.join(STORAGE_ROOT, category);
+  const dir = path.join(/* turbopackIgnore: true */ STORAGE_ROOT, category);
   await mkdir(dir, { recursive: true });
 
   const uniquePrefix = randomBytes(8).toString("hex");
@@ -33,7 +41,7 @@ export async function saveUploadedFile(file: File, category: string): Promise<st
 
 /** Reads a previously-saved file back by its stored relative path. Throws if outside the storage root. */
 export async function readStoredFile(relativePath: string): Promise<Buffer> {
-  const fullPath = path.join(STORAGE_ROOT, relativePath);
+  const fullPath = path.join(/* turbopackIgnore: true */ STORAGE_ROOT, relativePath);
   // path.relative + the leading-".." check (rather than a bare startsWith)
   // avoids the classic false-positive where STORAGE_ROOT is a string
   // prefix of a *sibling* directory, e.g. ".../uploads" vs ".../uploads-backup".
