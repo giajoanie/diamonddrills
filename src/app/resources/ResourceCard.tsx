@@ -2,7 +2,7 @@
 
 import { FileText, Link as LinkIcon } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
-import { Card } from "@/components/ui/Card";
+import { RuledCard } from "@/components/binder/RuledCard";
 
 type Resource = {
   id: string;
@@ -18,7 +18,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
   const href = resource.fileUrl ? `/files/${resource.fileUrl}` : resource.externalUrl!;
 
   return (
-    <Card>
+    <RuledCard className="transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
       <a
         href={href}
         target="_blank"
@@ -26,14 +26,18 @@ export function ResourceCard({ resource }: { resource: Resource }) {
         onClick={() => void logResourceOpen(resource.id)}
         className="flex items-start gap-3"
       >
-        {resource.fileUrl ? (
-          <FileText className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
-        ) : (
-          <LinkIcon className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
-        )}
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+          {resource.fileUrl ? (
+            <FileText className="h-4 w-4 text-accent-strong" aria-hidden />
+          ) : (
+            <LinkIcon className="h-4 w-4 text-accent-strong" aria-hidden />
+          )}
+        </span>
         <div>
-          <p className="font-medium text-foreground">{resource.name}</p>
-          <p className="text-xs uppercase tracking-wide text-foreground-subtle">{resource.type}</p>
+          <p className="font-display font-bold text-foreground">{resource.name}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
+            {resource.type}
+          </p>
           {resource.description && (
             <p className="mt-1 text-sm text-foreground-muted">{resource.description}</p>
           )}
@@ -44,6 +48,6 @@ export function ResourceCard({ resource }: { resource: Resource }) {
           )}
         </div>
       </a>
-    </Card>
+    </RuledCard>
   );
 }

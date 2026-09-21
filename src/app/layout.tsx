@@ -1,10 +1,32 @@
 import type { Metadata } from "next";
-import { League_Spartan } from "next/font/google";
+import { League_Spartan, Montserrat, Patrick_Hand } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const leagueSpartan = League_Spartan({
   variable: "--font-league-spartan",
   subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const patrickHand = Patrick_Hand({
+  variable: "--font-patrick-hand",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const milkTea = localFont({
+  src: "../../public/fonts/hazelnut-milk-tea.ttf",
+  variable: "--font-milk-tea",
   display: "swap",
 });
 
@@ -16,14 +38,17 @@ export const metadata: Metadata = {
   description:
     "Diamond Drills: diagnose, practice, and track growth for DECA Roleplay and Written events.",
   icons: {
-    icon: "/brand/deca-logo.png",
+    icon: "/brand/mhhs-deca.png",
   },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${leagueSpartan.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html
+      lang="en"
+      className={`${leagueSpartan.variable} ${montserrat.variable} ${patrickHand.variable} ${milkTea.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground font-body">
         {children}
       </body>
     </html>

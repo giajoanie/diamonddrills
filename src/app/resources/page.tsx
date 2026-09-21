@@ -2,8 +2,8 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getVisibleResourcesForStudent, getRecommendedResources } from "@/lib/dal/resources";
 import { getAttemptQuestionHistory, getInstructionalAreasForBank } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { Card } from "@/components/ui/Card";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
+import { RuledCard } from "@/components/binder/RuledCard";
 import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { ResourceCard } from "./ResourceCard";
@@ -50,14 +50,13 @@ export default async function StudentResourcesPage({
   const recommended = await getRecommendedResources(user.id, weakAreaIds);
 
   return (
-    <>
-      <AppHeader user={user} homeHref="/dashboard" />
-      <main className="mx-auto max-w-4xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-semibold text-foreground">Resources</h1>
+    <BinderPageShell user={user} homeHref="/dashboard" title="Resource Drawer">
+      <div className="mx-auto max-w-4xl">
+        <h2 className="font-display text-2xl font-bold text-foreground">Resources</h2>
 
         {recommended.length > 0 && (
           <div className="mt-4">
-            <h2 className="mb-2 font-medium text-foreground">Recommended for you</h2>
+            <h3 className="mb-2 font-display font-bold text-foreground">Recommended for you</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               {recommended.map((r) => (
                 <ResourceCard key={r.id} resource={{ ...r, resourceAreas: [] }} />
@@ -66,7 +65,10 @@ export default async function StudentResourcesPage({
           </div>
         )}
 
-        <form className="mt-6 flex flex-wrap items-end gap-3" method="GET">
+        <form
+          className="binder-ruled mt-6 flex flex-wrap items-end gap-4 rounded-xl border-2 border-border bg-surface p-4"
+          method="GET"
+        >
           <div>
             <Label htmlFor="q">Search</Label>
             <Input id="q" name="q" type="text" defaultValue={q ?? ""} placeholder="Name or description…" />
@@ -114,11 +116,11 @@ export default async function StudentResourcesPage({
         </div>
 
         {resources.length === 0 && (
-          <Card className="mt-4">
+          <RuledCard className="mt-4">
             <p className="text-foreground-muted">No resources match yet.</p>
-          </Card>
+          </RuledCard>
         )}
-      </main>
-    </>
+      </div>
+    </BinderPageShell>
   );
 }

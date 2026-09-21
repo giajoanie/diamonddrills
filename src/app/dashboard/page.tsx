@@ -11,10 +11,21 @@ import {
 } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { Card } from "@/components/ui/Card";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
+import { BinderTabNav } from "@/components/binder/BinderTabNav";
+import { RuledCard } from "@/components/binder/RuledCard";
 import { Button } from "@/components/ui/Button";
 import { EventSwitcher } from "./EventSwitcher";
+
+const QUICK_LINKS = [
+  { label: "Assignments", href: "/assignments" },
+  { label: "Resources", href: "/resources" },
+  { label: "Progress", href: "/progress" },
+  { label: "Activity", href: "/activity" },
+  { label: "Study plan", href: "/study-plan" },
+  { label: "Announcements", href: "/announcements" },
+  { label: "Calendar", href: "/calendar" },
+];
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -59,40 +70,36 @@ export default async function DashboardPage() {
     .filter((a): a is typeof a & { areaId: string } => !!a.areaId);
 
   return (
-    <>
-      <AppHeader user={user} homeHref="/dashboard" />
-      <main className="mx-auto max-w-4xl flex-1 px-4 py-8 sm:px-6">
+    <BinderPageShell
+      user={user}
+      homeHref="/dashboard"
+      title="My Binder"
+      nav={
+        <BinderTabNav
+          tabs={QUICK_LINKS.map((l) => ({ label: l.label, href: l.href }))}
+        />
+      }
+    >
+      <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-foreground">
+          <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}
-          </h1>
-          <nav className="flex gap-4 text-sm">
-            <Link href="/assignments" className="text-accent hover:underline">
-              Assignments
-            </Link>
-            <Link href="/resources" className="text-accent hover:underline">
-              Resources
-            </Link>
-            <Link href="/progress" className="text-accent hover:underline">
-              Progress
-            </Link>
-            <Link href="/activity" className="text-accent hover:underline">
-              Activity
-            </Link>
-            <Link href="/study-plan" className="text-accent hover:underline">
-              Study plan
-            </Link>
-            <Link href="/announcements" className="text-accent hover:underline">
-              Announcements
-            </Link>
-            <Link href="/calendar" className="text-accent hover:underline">
-              Calendar
-            </Link>
+          </h2>
+          <nav className="flex flex-wrap gap-2 text-xs lg:hidden">
+            {QUICK_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="rounded-full border border-border-strong bg-surface px-3 py-1.5 font-medium text-accent hover:bg-surface-hover"
+              >
+                {l.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
         {banksMissingBaseline.length > 0 && (
-          <Card className="mt-4 border-accent/40 bg-accent-soft">
+          <RuledCard className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-foreground">
                 You haven&apos;t taken your Baseline Diagnostic for {banksMissingBaseline.join(", ")}{" "}
@@ -102,11 +109,11 @@ export default async function DashboardPage() {
                 <Button>Take baseline</Button>
               </Link>
             </div>
-          </Card>
+          </RuledCard>
         )}
 
         {examBanks.length > 0 && (
-          <Card className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <RuledCard className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               {latestAttempt ? (
                 <p className="text-sm text-foreground">
@@ -129,12 +136,12 @@ export default async function DashboardPage() {
             <Link href="/exam/start">
               <Button variant="secondary">Practice now</Button>
             </Link>
-          </Card>
+          </RuledCard>
         )}
 
         {recommendedPractice.length > 0 && (
-          <Card className="mt-4">
-            <p className="text-sm font-medium text-foreground">Recommended for you</p>
+          <RuledCard className="mt-4">
+            <p className="font-display text-sm font-bold text-foreground">Recommended for you</p>
             <p className="text-sm text-foreground-muted">Your weakest areas, weighted toward recent attempts.</p>
             <ul className="mt-2 space-y-1">
               {recommendedPractice.map((a) => (
@@ -151,15 +158,15 @@ export default async function DashboardPage() {
                 </li>
               ))}
             </ul>
-          </Card>
+          </RuledCard>
         )}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+          <RuledCard>
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Roleplay event
             </p>
-            <p className="mt-1 font-medium text-foreground">{roleplay?.event.name}</p>
+            <p className="mt-1 font-display font-bold text-foreground">{roleplay?.event.name}</p>
             <p className="text-sm text-foreground-muted">{roleplay?.event.cluster.name}</p>
             {roleplay && (
               <>
@@ -189,13 +196,13 @@ export default async function DashboardPage() {
                 />
               </>
             )}
-          </Card>
+          </RuledCard>
 
-          <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+          <RuledCard>
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Written event
             </p>
-            <p className="mt-1 font-medium text-foreground">{written?.event.name}</p>
+            <p className="mt-1 font-display font-bold text-foreground">{written?.event.name}</p>
             <p className="text-sm text-foreground-muted">{written?.event.cluster.name}</p>
             {written && (
               <>
@@ -217,9 +224,9 @@ export default async function DashboardPage() {
                 />
               </>
             )}
-          </Card>
+          </RuledCard>
         </div>
-      </main>
-    </>
+      </div>
+    </BinderPageShell>
   );
 }

@@ -1,32 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  /* Base surfaces (dark navy) */
-  --color-bg: #070c17;
-  --color-bg-elevated: #0e1626;
-  --color-surface: #121d33;
-  --color-surface-hover: #17233d;
-  --color-border: #223252;
-  --color-border-strong: #2e4269;
+  /* Base surfaces (binder light) */
+  --color-bg: #eaf2ff;
+  --color-bg-elevated: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f9ff;
+  --color-border: #b9d2ff;
+  --color-border-strong: #5b8ae6;
 
   /* Text */
-  --color-fg: #e7edf7;
-  --color-fg-muted: #9fb0cc;
-  --color-fg-subtle: #6c7fa3;
+  --color-fg: #123a7a;
+  --color-fg-muted: #3a5c9c;
+  --color-fg-subtle: #6d84b8;
 
   /* Accent (chapter blue) */
-  --color-accent: #61a1d7;
-  --color-accent-strong: #3d7ab8;
-  --color-accent-soft: rgba(97, 161, 215, 0.16);
-  --color-accent-fg: #05121f;
+  --color-accent: #2a58b8;
+  --color-accent-strong: #123a7a;
+  --color-accent-soft: rgba(42, 88, 184, 0.12);
+  --color-accent-fg: #ffffff;
 
-  /* Status */
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
+  /* Highlight (yellow/gold — ring holes, tape, callouts) */
+  --color-highlight: #f2c14e;
+  --color-highlight-fg: #123a7a;
 
-  --font-sans: var(--font-league-spartan), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, sans-serif;
+  /* Status (pastel bg + saturated fg pairs) */
+  --color-success-bg: #e7f7ef;
+  --color-success-fg: #1d6b4c;
+  --color-warning-bg: #fdf9ec;
+  --color-warning-fg: #8a6412;
+  --color-warning-border: #f2c14e;
+  --color-danger-bg: #fdecec;
+  --color-danger-fg: #8c2f22;
+
+  --font-display: var(--font-league-spartan), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-hand: var(--font-milk-tea), var(--font-patrick-hand), cursive;
+  --font-sans: var(--font-body);
 }
 
 @theme inline {
@@ -46,15 +56,25 @@
   --color-accent-soft: var(--color-accent-soft);
   --color-accent-foreground: var(--color-accent-fg);
 
-  --color-success: var(--color-success);
-  --color-warning: var(--color-warning);
-  --color-danger: var(--color-danger);
+  --color-highlight: var(--color-highlight);
+  --color-highlight-foreground: var(--color-highlight-fg);
+
+  --color-success: var(--color-success-fg);
+  --color-success-soft: var(--color-success-bg);
+  --color-warning: var(--color-warning-fg);
+  --color-warning-soft: var(--color-warning-bg);
+  --color-warning-border: var(--color-warning-border);
+  --color-danger: var(--color-danger-fg);
+  --color-danger-soft: var(--color-danger-bg);
 
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-hand: var(--font-hand);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -73,4 +93,38 @@ body {
 ::selection {
   background: var(--color-accent-soft);
   color: var(--color-fg);
+}
+
+/* Binder/notebook decorative helpers, shared by src/components/binder/*. */
+.binder-header-band {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--color-accent) 0,
+      var(--color-accent) 10px,
+      var(--color-accent-strong) 10px,
+      var(--color-accent-strong) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 10px,
+      rgba(255, 255, 255, 0.06) 10px,
+      rgba(255, 255, 255, 0.06) 20px
+    );
+}
+
+.binder-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+}
+
+.binder-ruled {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 33px,
+    rgba(18, 58, 122, 0.07) 33px,
+    rgba(18, 58, 122, 0.07) 34px
+  );
 }

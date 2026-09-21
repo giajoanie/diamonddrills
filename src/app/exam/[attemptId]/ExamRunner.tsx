@@ -86,19 +86,19 @@ export function ExamRunner({
   const isWarningTime = remaining <= 300;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <header
-        className={`sticky top-0 z-10 border-b border-border px-4 py-3 sm:px-6 ${
-          isLowTime ? "bg-danger/10" : isWarningTime ? "bg-warning/10" : "bg-background"
+        className={`binder-header-band binder-dots sticky top-0 z-10 border-b-4 border-accent-strong px-4 py-3 sm:px-6 ${
+          isLowTime ? "brightness-90 saturate-150" : ""
         }`}
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="font-medium text-foreground">
+          <span className="font-display font-bold text-white">
             Question {currentIndex + 1} of {initialQuestions.length}
           </span>
           <span
-            className={`font-mono text-lg font-semibold ${
-              isLowTime ? "text-danger" : isWarningTime ? "text-warning" : "text-foreground"
+            className={`rounded-full bg-white/15 px-3 py-1 font-mono text-lg font-semibold text-white ${
+              isLowTime ? "animate-pulse" : ""
             }`}
           >
             {formatTime(remaining)}
@@ -110,9 +110,12 @@ export function ExamRunner({
               }
             }}
           >
-            <Button type="submit" variant="ghost">
+            <button
+              type="submit"
+              className="rounded-full px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/15 hover:text-white"
+            >
               Abandon
-            </Button>
+            </button>
           </form>
         </div>
       </header>
@@ -120,30 +123,31 @@ export function ExamRunner({
       <main className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-4 py-6 sm:px-6 md:grid-cols-[1fr_220px]">
         <div>
           {showShortfallNotice && (
-            <div className="mb-4 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+            <div className="mb-4 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
               Fewer questions were available than requested, so this exam uses all the questions
               currently in the bank.
             </div>
           )}
           {isWarningTime && (
-            <div className="mb-4 flex items-center gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+            <div className="mb-4 flex items-center gap-2 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
               <AlertTriangle className="h-4 w-4" aria-hidden />
               {isLowTime ? "Less than 1 minute left!" : "5 minutes remaining."}
             </div>
           )}
 
-          <div className="rounded-lg border border-border bg-background-elevated p-5">
+          {/* "Test booklet" panel */}
+          <div className="binder-ruled rounded-xl border-2 border-border bg-background-elevated p-5 shadow-[3px_3px_0_var(--color-border)]">
             <div className="flex items-start justify-between gap-4">
-              <p className="text-foreground">{current.stem}</p>
+              <p className="font-body text-foreground">{current.stem}</p>
               <button
                 type="button"
                 onClick={toggleCurrentFlag}
                 aria-pressed={flags[current.questionId]}
                 aria-label="Flag this question for review"
-                className={`shrink-0 rounded-md p-2 ${
+                className={`shrink-0 rounded-full p-2 ${
                   flags[current.questionId]
-                    ? "text-warning"
-                    : "text-foreground-subtle hover:text-foreground-muted"
+                    ? "bg-warning-soft text-warning"
+                    : "text-foreground-subtle hover:bg-surface-hover hover:text-foreground-muted"
                 }`}
               >
                 <Flag className="h-5 w-5" fill={flags[current.questionId] ? "currentColor" : "none"} />
@@ -159,13 +163,21 @@ export function ExamRunner({
                     key={displayLetter}
                     type="button"
                     onClick={() => selectAnswer(current.questionId, originalLetter)}
-                    className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
+                    className={`flex w-full items-start gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-colors ${
                       isSelected
-                        ? "border-accent bg-accent-soft text-foreground"
+                        ? "border-accent-strong bg-accent-soft text-foreground"
                         : "border-border text-foreground-muted hover:border-border-strong"
                     }`}
                   >
-                    <span className="font-medium">{displayLetter}.</span>
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
+                        isSelected
+                          ? "border-accent-strong bg-accent-strong text-accent-foreground"
+                          : "border-border-strong text-foreground-subtle"
+                      }`}
+                    >
+                      {displayLetter}
+                    </span>
                     <span>{current.options[originalLetter]}</span>
                   </button>
                 );
@@ -189,34 +201,37 @@ export function ExamRunner({
           </div>
         </div>
 
+        {/* "Punched answer sheet" navigator */}
         <nav aria-label="Question navigator" className="order-first md:order-none">
-          <p className="mb-2 text-sm font-medium text-foreground-muted">
-            {answeredCount}/{initialQuestions.length} answered
-          </p>
-          <div className="grid grid-cols-8 gap-1.5 md:grid-cols-5">
-            {initialQuestions.map((q, i) => {
-              const answered = answers[q.questionId] !== null;
-              const flagged = flags[q.questionId];
-              return (
-                <button
-                  key={q.questionId}
-                  type="button"
-                  onClick={() => setCurrentIndex(i)}
-                  className={`relative h-9 rounded text-xs font-medium ${
-                    i === currentIndex
-                      ? "ring-2 ring-accent"
-                      : answered
-                        ? "bg-accent-soft text-foreground"
-                        : "bg-surface text-foreground-muted"
-                  }`}
-                >
-                  {i + 1}
-                  {flagged && (
-                    <Flag className="absolute -right-1 -top-1 h-3 w-3 fill-warning text-warning" />
-                  )}
-                </button>
-              );
-            })}
+          <div className="rounded-xl border-2 border-border bg-background-elevated p-3 shadow-[3px_3px_0_var(--color-border)]">
+            <p className="mb-2 text-sm font-medium text-foreground-muted">
+              {answeredCount}/{initialQuestions.length} answered
+            </p>
+            <div className="grid grid-cols-8 gap-1.5 md:grid-cols-5">
+              {initialQuestions.map((q, i) => {
+                const answered = answers[q.questionId] !== null;
+                const flagged = flags[q.questionId];
+                return (
+                  <button
+                    key={q.questionId}
+                    type="button"
+                    onClick={() => setCurrentIndex(i)}
+                    className={`relative h-9 rounded-full text-xs font-medium ${
+                      i === currentIndex
+                        ? "ring-2 ring-accent-strong ring-offset-1"
+                        : answered
+                          ? "bg-accent-soft text-foreground"
+                          : "bg-surface-hover text-foreground-muted"
+                    }`}
+                  >
+                    {i + 1}
+                    {flagged && (
+                      <Flag className="absolute -right-1 -top-1 h-3 w-3 fill-warning text-warning" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <Button className="mt-4 w-full" onClick={() => setShowConfirmSubmit(true)}>
             Submit exam
@@ -226,8 +241,8 @@ export function ExamRunner({
 
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-lg border border-border bg-background-elevated p-5">
-            <h2 className="text-lg font-semibold text-foreground">Submit this exam?</h2>
+          <div className="w-full max-w-sm rounded-xl border-2 border-border bg-background-elevated p-5 shadow-[4px_4px_0_var(--color-accent-strong)]">
+            <h2 className="font-display text-lg font-bold text-foreground">Submit this exam?</h2>
             <p className="mt-2 text-sm text-foreground-muted">
               {unansweredCount} unanswered, {flaggedCount} flagged for review. This can&apos;t be
               undone.

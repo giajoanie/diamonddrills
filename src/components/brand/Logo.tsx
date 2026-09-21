@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Renders the chapter-provided DECA logo from /public/brand/deca-logo.png.
- * Falls back to a text wordmark until that asset is supplied (see DECISIONS.md).
+ * Renders the chapter wordmark from /public/brand/dd-wordmark.png.
+ * Falls back to a text wordmark if that asset is ever missing.
  *
  * The image can fail to load before React hydrates and attaches `onError`
  * (the browser doesn't refire `error` for an already-failed request), so on
@@ -35,8 +35,8 @@ export function Logo({ className }: { className?: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       ref={imgRef}
-      src="/brand/deca-logo.png"
-      alt="DECA chapter logo"
+      src="/brand/dd-wordmark.png"
+      alt="Diamond Drills"
       className={className}
       onError={() => setFailed(true)}
     />

@@ -5,8 +5,8 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getAttemptForResults } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
 import { startRoleplayFromExamResults } from "@/lib/actions/roleplay";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { Card } from "@/components/ui/Card";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
+import { RuledCard } from "@/components/binder/RuledCard";
 import { Button } from "@/components/ui/Button";
 import { AreaBreakdownChart } from "@/components/charts/AreaBreakdownChart";
 
@@ -44,14 +44,13 @@ export default async function ExamResultsPage({
   const minutesUsed = attempt.timeUsedSeconds ? Math.round(attempt.timeUsedSeconds / 60) : 0;
 
   return (
-    <>
-      <AppHeader user={user} homeHref="/dashboard" />
-      <main className="mx-auto max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-semibold text-foreground">Results</h1>
+    <BinderPageShell user={user} homeHref="/dashboard" title="Graded Paper">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="font-display text-2xl font-bold text-foreground">Results</h2>
 
         {attempt.mode === "COMPETITION_SIMULATION" && attempt.eventId && (
-          <Card className="mt-4 border-accent/50">
-            <p className="font-medium text-foreground">Competition day isn&apos;t over yet</p>
+          <RuledCard className="mt-4 border-accent-strong/60">
+            <p className="font-display font-bold text-foreground">Competition day isn&apos;t over yet</p>
             <p className="mt-1 text-sm text-foreground-muted">
               Head straight into your timed roleplay now, just like the real thing.
             </p>
@@ -59,20 +58,20 @@ export default async function ExamResultsPage({
               <input type="hidden" name="eventId" value={attempt.eventId} />
               <Button type="submit">Start your roleplay now</Button>
             </form>
-          </Card>
+          </RuledCard>
         )}
 
-        <Card className="mt-4">
+        <RuledCard className="mt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div>
-              <p className="text-4xl font-semibold text-foreground">
+              <p className="font-hand text-5xl font-bold text-accent-strong">
                 {Math.round(attempt.percentage ?? 0)}%
               </p>
               <p className="text-sm text-foreground-muted">
                 {attempt.score} of {attempt.questionCount} correct · {minutesUsed} min used
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {weakestAreaId && (
                 <Link href={`/exam/start?examBankId=${attempt.examBankId}&mode=PRACTICE_AREA&area=${weakestAreaId}`}>
                   <Button variant="secondary">Practice my weakest area</Button>
@@ -83,20 +82,20 @@ export default async function ExamResultsPage({
               </Link>
             </div>
           </div>
-        </Card>
+        </RuledCard>
 
-        <Card className="mt-4">
-          <h2 className="mb-3 font-medium text-foreground">Instructional area breakdown</h2>
+        <RuledCard className="mt-4">
+          <h3 className="mb-3 font-display font-bold text-foreground">Instructional area breakdown</h3>
           {breakdown.length > 0 ? (
             <AreaBreakdownChart data={breakdown} />
           ) : (
             <p className="text-sm text-foreground-muted">No tagged questions in this attempt.</p>
           )}
-        </Card>
+        </RuledCard>
 
         <div className="mt-6 space-y-4">
           {attempt.questions.map((q, i) => (
-            <Card key={q.id}>
+            <RuledCard key={q.id}>
               <div className="flex items-start gap-2">
                 {q.isCorrect ? (
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden />
@@ -115,20 +114,20 @@ export default async function ExamResultsPage({
                       return (
                         <div
                           key={letter}
-                          className={`rounded-md border px-3 py-2 text-sm ${
+                          className={`rounded-lg border-2 px-3 py-2 text-sm ${
                             isCorrectAnswer
-                              ? "border-success/50 bg-success/10 text-foreground"
+                              ? "border-success/40 bg-success-soft text-foreground"
                               : isStudent
-                                ? "border-danger/50 bg-danger/10 text-foreground"
+                                ? "border-danger/40 bg-danger-soft text-foreground"
                                 : "border-border text-foreground-muted"
                           }`}
                         >
                           {text}
                           {isStudent && !isCorrectAnswer && (
-                            <span className="ml-2 text-xs text-danger">(your answer)</span>
+                            <span className="ml-2 text-xs font-semibold text-danger">(your answer)</span>
                           )}
                           {isCorrectAnswer && (
-                            <span className="ml-2 text-xs text-success">(correct)</span>
+                            <span className="ml-2 text-xs font-semibold text-success">(correct)</span>
                           )}
                         </div>
                       );
@@ -145,10 +144,10 @@ export default async function ExamResultsPage({
                   )}
                 </div>
               </div>
-            </Card>
+            </RuledCard>
           ))}
         </div>
-      </main>
-    </>
+      </div>
+    </BinderPageShell>
   );
 }
