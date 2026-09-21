@@ -1,65 +1,51 @@
 import Link from "next/link";
-import {
-  ClipboardCheck,
-  LineChart,
-  Repeat,
-  Target,
-  Trophy,
-} from "lucide-react";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-
-const loopSteps = [
-  { icon: Target, label: "Diagnose", detail: "Baseline exam by event" },
-  { icon: Repeat, label: "Practice", detail: "Targeted drills by area" },
-  { icon: LineChart, label: "Analyze", detail: "Instructional-area breakdown" },
-  { icon: ClipboardCheck, label: "Reassess", detail: "Growth vs. baseline" },
-  { icon: Trophy, label: "Compete", detail: "Record placements" },
-];
+import Image from "next/image";
 
 export default function Home() {
   return (
-    <>
-      <SiteHeader />
-      <main className="flex-1">
-        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <p className="text-sm font-medium uppercase tracking-widest text-accent">
-            Diamond Drills
-          </p>
-          <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            A closed-loop training system for DECA Roleplay and Written events.
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-foreground-muted">
-            Not a resource library with quizzes bolted on. Every practice
-            session, exam, and submission feeds one loop: diagnose, practice,
-            analyze, recommend, reassess, and measure growth toward
-            competition.
-          </p>
-          <div className="mt-8 flex gap-3">
-            <Link href="/signup">
-              <Button>Sign up</Button>
-            </Link>
-            <Link href="/login">
-              <Button variant="secondary">Log in</Button>
-            </Link>
-          </div>
-        </section>
+    <div className="splash-shell">
+      <div className="splash-dots" aria-hidden />
 
-        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-            {loopSteps.map(({ icon: Icon, label, detail }) => (
-              <Card key={label} className="flex flex-col items-start gap-2">
-                <Icon className="h-5 w-5 text-accent" aria-hidden />
-                <div className="font-medium text-foreground">{label}</div>
-                <div className="text-sm text-foreground-muted">{detail}</div>
-              </Card>
-            ))}
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </>
+      <Image
+        src="/brand/mhhs-deca.png"
+        alt="Mountain House High School DECA"
+        width={168}
+        height={38}
+        className="absolute right-6 top-6 h-auto w-28 opacity-95 sm:w-36"
+      />
+
+      <div className="relative mb-8 px-4">
+        <Image
+          src="/brand/dd-wordmark.png"
+          alt="Diamond Drills"
+          width={620}
+          height={92}
+          priority
+          className="h-auto w-full max-w-[620px]"
+        />
+      </div>
+
+      <div className="relative flex w-full max-w-[340px] flex-col gap-3.5 px-4">
+        <Link
+          href="/signup"
+          className="relative block overflow-hidden rounded-full bg-gradient-to-b from-white to-border px-5 py-3.5 text-center font-display text-lg font-bold text-accent-strong shadow-[0_4px_0_rgba(10,32,74,0.4)]"
+        >
+          New Student
+          <span className="splash-sheen" aria-hidden />
+        </Link>
+        <Link
+          href="/login"
+          className="block rounded-full bg-gradient-to-b from-white to-border px-5 py-3.5 text-center font-display text-lg font-bold text-accent-strong shadow-[0_4px_0_rgba(10,32,74,0.4)]"
+        >
+          Returning Student
+        </Link>
+        <Link
+          href="/login"
+          className="block rounded-full border-2 border-white/55 bg-gradient-to-b from-white/22 to-border/22 px-5 py-3.5 text-center font-display text-lg font-bold text-white"
+        >
+          Mentor
+        </Link>
+      </div>
+    </div>
   );
 }

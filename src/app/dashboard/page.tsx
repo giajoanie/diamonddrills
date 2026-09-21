@@ -12,8 +12,8 @@ import {
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
-import { BinderTabNav } from "@/components/binder/BinderTabNav";
-import { RuledCard } from "@/components/binder/RuledCard";
+import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EventSwitcher } from "./EventSwitcher";
 
@@ -70,22 +70,14 @@ export default async function DashboardPage() {
     .filter((a): a is typeof a & { areaId: string } => !!a.areaId);
 
   return (
-    <BinderPageShell
-      user={user}
-      homeHref="/dashboard"
-      title="My Binder"
-      nav={
-        <BinderTabNav
-          tabs={QUICK_LINKS.map((l) => ({ label: l.label, href: l.href }))}
-        />
-      }
-    >
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <TabbedCard>
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}
           </h2>
-          <nav className="flex flex-wrap gap-2 text-xs lg:hidden">
+          <nav className="flex flex-wrap gap-2 text-xs">
             {QUICK_LINKS.map((l) => (
               <Link
                 key={l.href}
@@ -99,7 +91,7 @@ export default async function DashboardPage() {
         </div>
 
         {banksMissingBaseline.length > 0 && (
-          <RuledCard className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">
+          <Card className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-foreground">
                 You haven&apos;t taken your Baseline Diagnostic for {banksMissingBaseline.join(", ")}{" "}
@@ -109,11 +101,11 @@ export default async function DashboardPage() {
                 <Button>Take baseline</Button>
               </Link>
             </div>
-          </RuledCard>
+          </Card>
         )}
 
         {examBanks.length > 0 && (
-          <RuledCard className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <Card className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               {latestAttempt ? (
                 <p className="text-sm text-foreground">
@@ -136,11 +128,11 @@ export default async function DashboardPage() {
             <Link href="/exam/start">
               <Button variant="secondary">Practice now</Button>
             </Link>
-          </RuledCard>
+          </Card>
         )}
 
         {recommendedPractice.length > 0 && (
-          <RuledCard className="mt-4">
+          <Card className="mt-4">
             <p className="font-display text-sm font-bold text-foreground">Recommended for you</p>
             <p className="text-sm text-foreground-muted">Your weakest areas, weighted toward recent attempts.</p>
             <ul className="mt-2 space-y-1">
@@ -158,11 +150,11 @@ export default async function DashboardPage() {
                 </li>
               ))}
             </ul>
-          </RuledCard>
+          </Card>
         )}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <RuledCard>
+          <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Roleplay event
             </p>
@@ -196,9 +188,9 @@ export default async function DashboardPage() {
                 />
               </>
             )}
-          </RuledCard>
+          </Card>
 
-          <RuledCard>
+          <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Written event
             </p>
@@ -224,9 +216,10 @@ export default async function DashboardPage() {
                 />
               </>
             )}
-          </RuledCard>
+          </Card>
         </div>
       </div>
+      </TabbedCard>
     </BinderPageShell>
   );
 }

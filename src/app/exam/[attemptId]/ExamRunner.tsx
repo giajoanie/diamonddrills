@@ -6,6 +6,9 @@ import { saveAnswer, toggleFlag, submitExam, abandonExam } from "@/lib/actions/e
 import { computeRemainingSeconds } from "@/lib/exam-engine/timer";
 import { formatTime } from "@/lib/format-time";
 import { Button } from "@/components/ui/Button";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
+import { FolderTabs } from "@/components/binder/FolderTabs";
+import type { User } from "@/generated/prisma/client";
 
 type OptionKey = "A" | "B" | "C" | "D";
 
@@ -20,12 +23,14 @@ type ExamQuestion = {
 };
 
 export function ExamRunner({
+  user,
   attemptId,
   serverStartTimeIso,
   timeLimitSeconds,
   questions: initialQuestions,
   showShortfallNotice,
 }: {
+  user: User;
   attemptId: string;
   serverStartTimeIso: string;
   timeLimitSeconds: number;
@@ -45,6 +50,7 @@ export function ExamRunner({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   const current = initialQuestions[currentIndex];
 
@@ -69,13 +75,15 @@ export function ExamRunner({
 
   function selectAnswer(questionId: string, letter: OptionKey) {
     setAnswers((prev) => ({ ...prev, [questionId]: letter }));
-    void saveAnswer(attemptId, questionId, letter);
+    setSaveStatus("saving");
+    void saveAnswer(attemptId, questionId, letter).then(() => setSaveStatus("saved"));
   }
 
   function toggleCurrentFlag() {
     const next = !flags[current.questionId];
     setFlags((prev) => ({ ...prev, [current.questionId]: next }));
-    void toggleFlag(attemptId, current.questionId, next);
+    setSaveStatus("saving");
+    void toggleFlag(attemptId, current.questionId, next).then(() => setSaveStatus("saved"));
   }
 
   const answeredCount = Object.values(answers).filter((a) => a !== null).length;
@@ -86,19 +94,21 @@ export function ExamRunner({
   const isWarningTime = remaining <= 300;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header
-        className={`binder-header-band binder-dots sticky top-0 z-10 border-b-4 border-accent-strong px-4 py-3 sm:px-6 ${
-          isLowTime ? "brightness-90 saturate-150" : ""
-        }`}
-      >
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="font-display font-bold text-white">
-            Question {currentIndex + 1} of {initialQuestions.length}
-          </span>
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <FolderTabs
+          tabs={[
+            { label: `Question ${currentIndex + 1} of ${initialQuestions.length}`, active: true },
+            {
+              label:
+                saveStatus === "saving" ? "Saving…" : saveStatus === "saved" ? "Saved" : "Autosave on",
+            },
+          ]}
+        />
+        <div className="flex items-center gap-2">
           <span
-            className={`rounded-full bg-white/15 px-3 py-1 font-mono text-lg font-semibold text-white ${
-              isLowTime ? "animate-pulse" : ""
+            className={`rounded-full bg-background-elevated px-4 py-1.5 font-mono text-lg font-semibold shadow-lg ${
+              isLowTime ? "animate-pulse text-danger" : isWarningTime ? "text-warning" : "text-accent-strong"
             }`}
           >
             {formatTime(remaining)}
@@ -118,9 +128,9 @@ export function ExamRunner({
             </button>
           </form>
         </div>
-      </header>
+      </div>
 
-      <main className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-4 py-6 sm:px-6 md:grid-cols-[1fr_220px]">
+      <main className="grid w-full flex-1 gap-6 md:grid-cols-[1fr_220px]">
         <div>
           {showShortfallNotice && (
             <div className="mb-4 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
@@ -258,6 +268,6 @@ export function ExamRunner({
           </div>
         </div>
       )}
-    </div>
+    </BinderPageShell>
   );
 }

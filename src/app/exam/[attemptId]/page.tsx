@@ -53,6 +53,7 @@ export default async function ExamAttemptPage({
 
   return (
     <ExamRunner
+      user={user}
       attemptId={attemptId}
       serverStartTimeIso={attempt.serverStartTime.toISOString()}
       timeLimitSeconds={attempt.timeLimitSeconds}

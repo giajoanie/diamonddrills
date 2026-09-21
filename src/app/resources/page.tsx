@@ -3,7 +3,8 @@ import { getVisibleResourcesForStudent, getRecommendedResources } from "@/lib/da
 import { getAttemptQuestionHistory, getInstructionalAreasForBank } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
-import { RuledCard } from "@/components/binder/RuledCard";
+import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Card } from "@/components/ui/Card";
 import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { ResourceCard } from "./ResourceCard";
@@ -50,7 +51,8 @@ export default async function StudentResourcesPage({
   const recommended = await getRecommendedResources(user.id, weakAreaIds);
 
   return (
-    <BinderPageShell user={user} homeHref="/dashboard" title="Resource Drawer">
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <TabbedCard>
       <div className="mx-auto max-w-4xl">
         <h2 className="font-display text-2xl font-bold text-foreground">Resources</h2>
 
@@ -66,7 +68,7 @@ export default async function StudentResourcesPage({
         )}
 
         <form
-          className="binder-ruled mt-6 flex flex-wrap items-end gap-4 rounded-xl border-2 border-border bg-surface p-4"
+          className="mt-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-4"
           method="GET"
         >
           <div>
@@ -116,11 +118,12 @@ export default async function StudentResourcesPage({
         </div>
 
         {resources.length === 0 && (
-          <RuledCard className="mt-4">
+          <Card className="mt-4">
             <p className="text-foreground-muted">No resources match yet.</p>
-          </RuledCard>
+          </Card>
         )}
       </div>
+      </TabbedCard>
     </BinderPageShell>
   );
 }

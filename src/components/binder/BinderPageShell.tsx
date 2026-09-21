@@ -1,87 +1,60 @@
 import Link from "next/link";
-import Image from "next/image";
 import { LogOut } from "lucide-react";
-import { Logo } from "@/components/brand/Logo";
 import { logout } from "@/lib/actions/auth";
 import type { User } from "@/generated/prisma/client";
 
 /**
- * Shared binder/notebook page shell used across the redesigned surfaces
- * (dashboard, resources, exam runtime/results, mentor console). Renders the
- * diagonal-stripe header band with the chapter wordmark + badge, the page
- * title, the student/mentor identity chip with logout, and a left "spine"
- * column with binder-ring holes on sm+ screens. `nav` is an optional slot
- * for a right-side vertical tab rail (see BinderTabNav).
+ * Shared binder/notebook page chrome: a full-bleed dark "shell" mat
+ * (diagonal stripe + dot texture, matching the mockups) with a ring-hole
+ * spine down the left edge and a small top row (home link, identity/logout
+ * when authenticated). Does not impose a tabs/card structure on its
+ * children — pages that want the folder-tab + ruled-paper-card look (see
+ * FolderTabs + the `binder-ruled` CSS class) compose that themselves, since
+ * some (like the signup wizard) need the active tab driven by client state.
  */
 export function BinderPageShell({
   user,
   homeHref,
-  title,
-  nav,
   children,
 }: {
-  user: User;
+  user?: User;
   homeHref: string;
-  title: string;
-  nav?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-full flex flex-col">
-      <header className="binder-header-band binder-dots sticky top-0 z-10 border-b-4 border-accent-strong">
-        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href={homeHref} className="flex items-center gap-3">
-            <Logo className="h-8 w-auto brightness-0 invert" />
-            <Image
-              src="/brand/mhhs-deca.png"
-              alt=""
-              width={120}
-              height={28}
-              className="hidden h-7 w-auto sm:block"
-            />
-          </Link>
-          <h1 className="font-display text-lg font-bold uppercase tracking-wide text-white sm:text-xl">
-            {title}
-          </h1>
-          <div className="flex items-center gap-3">
-            <span className="hidden rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white sm:inline">
-              {user.firstName} · {user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`}
-            </span>
-            <form action={logout}>
-              <button
-                type="submit"
-                aria-label="Log out"
-                className="flex items-center gap-1.5 rounded-full p-2 text-white/90 transition-colors hover:bg-white/15 hover:text-white"
-              >
-                <LogOut className="h-4 w-4" aria-hidden />
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto flex w-full max-w-6xl flex-1 items-stretch">
-        <div
-          aria-hidden
-          className="relative hidden w-6 shrink-0 border-r-4 border-dashed border-accent/30 bg-accent-soft sm:block"
-        >
-          <div className="sticky top-24 flex flex-col items-center gap-6 py-8">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <span
-                key={i}
-                className="h-3 w-3 rounded-full border-2 border-border-strong bg-background"
-              />
-            ))}
-          </div>
+    <div className="shell-diamond-bg min-h-full flex-1">
+      <div className="mx-auto flex max-w-6xl gap-3 px-3 py-6 sm:gap-5 sm:px-6">
+        <div className="spine-rule hidden shrink-0 flex-col items-center gap-7 pr-4 pt-16 sm:flex">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <span key={i} className="spine-hole" />
+          ))}
         </div>
 
-        <main className="flex-1 px-4 py-8 sm:px-6">{children}</main>
-
-        {nav && (
-          <div className="hidden shrink-0 pt-8 lg:block" aria-label="Section navigation">
-            {nav}
+        <div className="min-w-0 flex-1">
+          <div className="mb-3 flex items-center justify-between gap-3 px-1">
+            <Link href={homeHref} className="text-sm font-bold text-white/90 hover:text-white">
+              Diamond Drills
+            </Link>
+            {user && (
+              <div className="flex items-center gap-3">
+                <span className="hidden text-sm text-white/80 sm:inline">
+                  {user.firstName} · {user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`}
+                </span>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    aria-label="Log out"
+                    className="flex items-center gap-1.5 rounded-full p-2 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden />
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
-        )}
+
+          {children}
+        </div>
       </div>
     </div>
   );

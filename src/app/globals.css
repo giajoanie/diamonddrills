@@ -95,23 +95,20 @@ body {
   color: var(--color-fg);
 }
 
-/* Binder/notebook decorative helpers, shared by src/components/binder/*. */
-.binder-header-band {
+/* Binder/notebook decorative helpers, shared by src/components/binder/*.
+   The "shell" is the full-bleed dark navy mat that the white ruled-paper
+   card sits on top of (see the design mockups) — distinct from the app's
+   base light theme, which stays untouched for pages outside this redesign. */
+.shell-diamond-bg {
+  background-color: #2a56ad;
   background-image:
-    repeating-linear-gradient(
-      45deg,
-      var(--color-accent) 0,
-      var(--color-accent) 10px,
-      var(--color-accent-strong) 10px,
-      var(--color-accent-strong) 20px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0,
-      transparent 10px,
-      rgba(255, 255, 255, 0.06) 10px,
-      rgba(255, 255, 255, 0.06) 20px
-    );
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.055) 0 22px, transparent 22px 44px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.055) 0 22px, transparent 22px 44px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.14) 1.3px, transparent 1.4px);
+  background-size:
+    auto,
+    auto,
+    10px 10px;
 }
 
 .binder-dots {
@@ -119,12 +116,96 @@ body {
   background-size: 10px 10px;
 }
 
+/* Left "spine": binder-ring holes + a pink rule line, sitting directly on
+   the dark shell background (see BinderPageShell). */
+.spine-rule {
+  position: relative;
+}
+.spine-rule::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2px;
+  background: #f3a99a;
+}
+.spine-hole {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
 .binder-ruled {
   background-image: repeating-linear-gradient(
     180deg,
     transparent 0,
-    transparent 33px,
-    rgba(18, 58, 122, 0.07) 33px,
-    rgba(18, 58, 122, 0.07) 34px
+    transparent 32px,
+    rgba(18, 58, 122, 0.12) 32px,
+    rgba(18, 58, 122, 0.12) 33px
   );
+}
+
+/* Splash screen (mockup 1b). The dot texture is animated with `transform`
+   (compositor-only) rather than `background-position` — the mockup's own
+   background-position keyframe forces a full repaint every frame, which is
+   what caused the visible stutter/slowness. */
+.splash-shell {
+  position: relative;
+  min-height: 100dvh;
+  background-color: #2a56ad;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.055) 0 26px, transparent 26px 52px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.055) 0 26px, transparent 26px 52px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-dots {
+  position: absolute;
+  inset: -30px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.4px, transparent 1.5px);
+  background-size: 11px 11px;
+  animation: splash-dots-drift 5s linear infinite;
+  will-change: transform;
+}
+
+@keyframes splash-dots-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-22px, -22px, 0);
+  }
+}
+
+.splash-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: splash-sheen-sweep 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes splash-sheen-sweep {
+  0% {
+    transform: translateX(-60%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-dots,
+  .splash-sheen {
+    animation: none;
+  }
 }

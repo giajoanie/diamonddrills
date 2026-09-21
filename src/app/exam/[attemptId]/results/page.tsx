@@ -6,7 +6,8 @@ import { getAttemptForResults } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
 import { startRoleplayFromExamResults } from "@/lib/actions/roleplay";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
-import { RuledCard } from "@/components/binder/RuledCard";
+import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AreaBreakdownChart } from "@/components/charts/AreaBreakdownChart";
 
@@ -42,14 +43,23 @@ export default async function ExamResultsPage({
   const weakestAreaId = weakestArea ? areaIdByName.get(weakestArea.areaName) : undefined;
 
   const minutesUsed = attempt.timeUsedSeconds ? Math.round(attempt.timeUsedSeconds / 60) : 0;
+  const missedCount = attempt.questionCount - (attempt.score ?? 0);
 
   return (
-    <BinderPageShell user={user} homeHref="/dashboard" title="Graded Paper">
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <TabbedCard
+        tabs={[
+          { label: "Results", active: true },
+          {
+            label: `Review ${missedCount} missed`,
+            href: `/exam/start?examBankId=${attempt.examBankId}&mode=MISSED_REVIEW`,
+          },
+          { label: "History", href: "/progress" },
+        ]}
+      >
       <div className="mx-auto max-w-3xl">
-        <h2 className="font-display text-2xl font-bold text-foreground">Results</h2>
-
         {attempt.mode === "COMPETITION_SIMULATION" && attempt.eventId && (
-          <RuledCard className="mt-4 border-accent-strong/60">
+          <Card className="mt-4 border-accent-strong/60">
             <p className="font-display font-bold text-foreground">Competition day isn&apos;t over yet</p>
             <p className="mt-1 text-sm text-foreground-muted">
               Head straight into your timed roleplay now, just like the real thing.
@@ -58,10 +68,10 @@ export default async function ExamResultsPage({
               <input type="hidden" name="eventId" value={attempt.eventId} />
               <Button type="submit">Start your roleplay now</Button>
             </form>
-          </RuledCard>
+          </Card>
         )}
 
-        <RuledCard className="mt-4">
+        <Card className="mt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div>
               <p className="font-hand text-5xl font-bold text-accent-strong">
@@ -82,20 +92,20 @@ export default async function ExamResultsPage({
               </Link>
             </div>
           </div>
-        </RuledCard>
+        </Card>
 
-        <RuledCard className="mt-4">
+        <Card className="mt-4">
           <h3 className="mb-3 font-display font-bold text-foreground">Instructional area breakdown</h3>
           {breakdown.length > 0 ? (
             <AreaBreakdownChart data={breakdown} />
           ) : (
             <p className="text-sm text-foreground-muted">No tagged questions in this attempt.</p>
           )}
-        </RuledCard>
+        </Card>
 
         <div className="mt-6 space-y-4">
           {attempt.questions.map((q, i) => (
-            <RuledCard key={q.id}>
+            <Card key={q.id}>
               <div className="flex items-start gap-2">
                 {q.isCorrect ? (
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden />
@@ -144,10 +154,11 @@ export default async function ExamResultsPage({
                   )}
                 </div>
               </div>
-            </RuledCard>
+            </Card>
           ))}
         </div>
       </div>
+      </TabbedCard>
     </BinderPageShell>
   );
 }

@@ -4,7 +4,8 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getMentorDashboardData, getStudentNamesByIds } from "@/lib/dal/analytics";
 import { getClustersForTagging } from "@/lib/dal/clusters";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
-import { RuledCard } from "@/components/binder/RuledCard";
+import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Card } from "@/components/ui/Card";
 import { Sticker } from "@/components/binder/Sticker";
 import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
@@ -38,12 +39,21 @@ export default async function MentorDashboardPage({
   const attentionNames = await getStudentNamesByIds(data.needsAttention.map((s) => s.userId));
 
   return (
-    <BinderPageShell user={user} homeHref="/mentor" title="Roster Binder">
+    <BinderPageShell user={user} homeHref="/mentor">
+      <TabbedCard
+        tabs={[
+          { label: "Overview", active: true },
+          { label: "Roster", href: "/mentor/students" },
+          { label: "Assignments", href: "/mentor/assignments" },
+          { label: "Exam bank", href: "/mentor/exams" },
+          { label: "Reports", href: "/mentor/exports" },
+        ]}
+      >
       <div className="mx-auto max-w-4xl">
         <h2 className="font-display text-2xl font-bold text-foreground">Welcome, {user.firstName}</h2>
 
         <form
-          className="binder-ruled mt-4 flex flex-wrap items-end gap-4 rounded-xl border-2 border-border bg-surface p-4"
+          className="mt-4 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-4"
           method="GET"
         >
           <div>
@@ -95,31 +105,31 @@ export default async function MentorDashboardPage({
         </form>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <RuledCard>
+          <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Active students
             </p>
             <p className="mt-1 font-hand text-3xl font-bold text-accent-strong">
               {data.activeStudentCount} / {data.totalStudentCount}
             </p>
-          </RuledCard>
-          <RuledCard>
+          </Card>
+          <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               No baseline yet
             </p>
             <p className="mt-1 font-hand text-3xl font-bold text-accent-strong">{data.studentsWithoutBaseline}</p>
-          </RuledCard>
-          <RuledCard>
+          </Card>
+          <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
               Practice sessions / student / week
             </p>
             <p className="mt-1 font-hand text-3xl font-bold text-accent-strong">
               {data.practiceSessionsPerStudentPerWeek.toFixed(1)}
             </p>
-          </RuledCard>
+          </Card>
         </div>
 
-        <RuledCard className="mt-4">
+        <Card className="mt-4">
           <p className="font-display font-bold text-foreground">Score now vs. baseline</p>
           {data.scoreVsBaseline.studentCount > 0 ? (
             <p className="mt-1 text-sm text-foreground-muted">
@@ -170,10 +180,10 @@ export default async function MentorDashboardPage({
               </ul>
             </div>
           )}
-        </RuledCard>
+        </Card>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <RuledCard>
+          <Card>
             <p className="font-medium text-foreground">Chapter-wide weakest areas</p>
             {data.weakestAreas.length > 0 ? (
               <ul className="mt-2 space-y-1 text-sm">
@@ -187,9 +197,9 @@ export default async function MentorDashboardPage({
             ) : (
               <p className="mt-1 text-sm text-foreground-muted">No exam data yet.</p>
             )}
-          </RuledCard>
+          </Card>
 
-          <RuledCard>
+          <Card>
             <p className="font-medium text-foreground">Assignments</p>
             {data.assignmentCompletion.sampleSize > 0 ? (
               <p className="mt-1 text-sm text-foreground-muted">
@@ -206,11 +216,11 @@ export default async function MentorDashboardPage({
               {data.ungradedSubmissionsCount} ungraded submission
               {data.ungradedSubmissionsCount === 1 ? "" : "s"} →
             </Link>
-          </RuledCard>
+          </Card>
         </div>
 
         {data.needsAttention.length > 0 && (
-          <RuledCard className="relative mt-4 overflow-visible border-danger/40">
+          <Card className="relative mt-4 overflow-visible border-danger/40">
             <Sticker color="danger" />
             <p className="font-display font-bold text-foreground">Needs attention</p>
             <ul className="mt-2 space-y-1 text-sm">
@@ -228,12 +238,12 @@ export default async function MentorDashboardPage({
                 );
               })}
             </ul>
-          </RuledCard>
+          </Card>
         )}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <Link href="/mentor/students">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Users className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Students</p>
@@ -241,11 +251,11 @@ export default async function MentorDashboardPage({
                   View the roster, reset passwords, and manage accounts.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/exams">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <FileQuestion className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Exam banks</p>
@@ -253,11 +263,11 @@ export default async function MentorDashboardPage({
                   Upload exam PDFs and review parsed questions before publishing.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/resources">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <BookOpen className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Resources</p>
@@ -265,11 +275,11 @@ export default async function MentorDashboardPage({
                   Upload and tag study materials for the right students.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/rubrics">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <ClipboardCheck className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Rubrics</p>
@@ -277,11 +287,11 @@ export default async function MentorDashboardPage({
                   Build scoring rubrics to attach to assignments.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/assignments">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <ListChecks className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Assignments</p>
@@ -289,11 +299,11 @@ export default async function MentorDashboardPage({
                   Create file, exam, or roleplay-prep assignments for students.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/written-events">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <FileText className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Written events</p>
@@ -301,11 +311,11 @@ export default async function MentorDashboardPage({
                   Set page limits, required sections, and milestone deadlines.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/lesson-plans">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Lightbulb className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Lesson plans</p>
@@ -313,11 +323,11 @@ export default async function MentorDashboardPage({
                   Rule-based recommendations from the chapter&apos;s weakest areas.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/competition-results">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Trophy className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Competition results</p>
@@ -325,11 +335,11 @@ export default async function MentorDashboardPage({
                   Record placements and scores by student, event, and level.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/exports">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Download className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">CSV exports</p>
@@ -337,11 +347,11 @@ export default async function MentorDashboardPage({
                   Download students, exam data, rubric scores, and more.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/teams">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Users2 className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Teams</p>
@@ -349,11 +359,11 @@ export default async function MentorDashboardPage({
                   Link teammates for Team Decision Making and team written events.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/announcements">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Megaphone className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Announcements</p>
@@ -361,11 +371,11 @@ export default async function MentorDashboardPage({
                   Post updates to everyone, a grade, a cluster, or an event.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/calendar">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <CalendarDays className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">Calendar</p>
@@ -373,11 +383,11 @@ export default async function MentorDashboardPage({
                   Add competition dates for students to see.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
 
           <Link href="/mentor/pm-cde-impact">
-            <RuledCard className="flex items-center gap-3 transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
               <Trophy className="h-5 w-5 text-accent" aria-hidden />
               <div>
                 <p className="font-medium text-foreground">PM CDE Impact Dashboard</p>
@@ -385,10 +395,11 @@ export default async function MentorDashboardPage({
                   Before/after growth, engagement vs. improvement, and outcomes for the report.
                 </p>
               </div>
-            </RuledCard>
+            </Card>
           </Link>
         </div>
       </div>
+      </TabbedCard>
     </BinderPageShell>
   );
 }

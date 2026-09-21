@@ -2,7 +2,7 @@
 
 import { FileText, Link as LinkIcon } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
-import { RuledCard } from "@/components/binder/RuledCard";
+import { Card } from "@/components/ui/Card";
 
 type Resource = {
   id: string;
@@ -18,7 +18,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
   const href = resource.fileUrl ? `/files/${resource.fileUrl}` : resource.externalUrl!;
 
   return (
-    <RuledCard className="transition-transform hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-border)]">
+    <Card className="transition-shadow hover:shadow-md">
       <a
         href={href}
         target="_blank"
@@ -48,6 +48,6 @@ export function ResourceCard({ resource }: { resource: Resource }) {
           )}
         </div>
       </a>
-    </RuledCard>
+    </Card>
   );
 }

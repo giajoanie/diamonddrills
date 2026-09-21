@@ -1,4 +1,4 @@
-import { AuthShell } from "@/components/layout/AuthShell";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { getSignupEventOptions } from "@/lib/dal/events";
 import { SignupForm } from "./SignupForm";
 
@@ -11,11 +11,8 @@ export default async function SignupPage() {
   const clusters = await getSignupEventOptions();
 
   return (
-    <AuthShell
-      title="Create your student account"
-      subtitle="Use your 7-digit School ID as your username."
-    >
+    <BinderPageShell homeHref="/">
       <SignupForm clusters={clusters} />
-    </AuthShell>
+    </BinderPageShell>
   );
 }

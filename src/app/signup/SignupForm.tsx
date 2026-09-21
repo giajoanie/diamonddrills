@@ -5,14 +5,13 @@ import Link from "next/link";
 import { signup, type FormState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Label, Input, Select, FieldError } from "@/components/ui/Field";
+import { TabbedCard } from "@/components/binder/TabbedCard";
 import type { getSignupEventOptions } from "@/lib/dal/events";
 
 type Clusters = Awaited<ReturnType<typeof getSignupEventOptions>>;
 
-const STEP_LABELS = ["Your info", "Grade", "Events"];
 const STEP_FIELDS = [
-  ["schoolId", "firstName", "password", "confirmPassword"],
-  ["grade"],
+  ["schoolId", "firstName", "password", "confirmPassword", "grade"],
   ["roleplayEventId", "writtenEventId"],
 ] as const;
 
@@ -22,6 +21,7 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
     undefined,
   );
   const [step, setStep] = useState(0);
+  const [grade, setGrade] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   // If the server action returns field errors, jump back to the earliest
@@ -49,162 +49,164 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
   }
 
   return (
-    <form ref={formRef} action={action} className="space-y-5">
-      {state?.message && <FieldError messages={[state.message]} />}
-
-      <ol className="flex items-center justify-center gap-2">
-        {STEP_LABELS.map((label, i) => (
-          <li key={label} className="flex items-center gap-2">
-            <span
-              className={`flex h-7 w-7 items-center justify-center rounded-full border-2 font-display text-xs font-bold ${
-                i === step
-                  ? "border-accent-strong bg-accent-strong text-accent-foreground"
-                  : i < step
-                    ? "border-accent-strong bg-accent-soft text-accent-strong"
-                    : "border-border text-foreground-subtle"
-              }`}
-            >
-              {i + 1}
-            </span>
-            <span className="hidden text-xs font-medium text-foreground-muted sm:inline">
-              {label}
-            </span>
-            {i < STEP_LABELS.length - 1 && (
-              <span className="h-0.5 w-6 bg-border" aria-hidden />
-            )}
-          </li>
-        ))}
-      </ol>
-
-      <div className={step === 0 ? "space-y-4" : "hidden"}>
-        <div>
-          <Label htmlFor="schoolId">School ID</Label>
-          <Input
-            id="schoolId"
-            name="schoolId"
-            inputMode="numeric"
-            pattern="\d{7}"
-            maxLength={7}
-            placeholder="1234567"
-            required
-          />
-          <FieldError messages={state?.errors?.schoolId} />
-        </div>
-
-        <div>
-          <Label htmlFor="firstName">First name</Label>
-          <Input id="firstName" name="firstName" required />
-          <FieldError messages={state?.errors?.firstName} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
+    <form ref={formRef} action={action}>
+      <TabbedCard
+        tabs={[
+          { label: "1 · Account", active: step === 0 },
+          { label: "2 · Events", active: step === 1 },
+          { label: "3 · Baseline" },
+        ]}
+      >
+        <div className="space-y-5">
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" minLength={8} required />
-            <FieldError messages={state?.errors?.password} />
+            <h2 className="font-display text-2xl font-bold text-foreground">Sign Up!</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Use your 7-digit School ID as your username.
+            </p>
           </div>
-          <div>
-            <Label htmlFor="confirmPassword">Confirm password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              minLength={8}
-              required
-            />
-            <FieldError messages={state?.errors?.confirmPassword} />
+
+          {state?.message && <FieldError messages={[state.message]} />}
+
+          <div className={step === 0 ? "space-y-4" : "hidden"}>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="schoolId">School ID</Label>
+                <Input
+                  id="schoolId"
+                  name="schoolId"
+                  inputMode="numeric"
+                  pattern="\d{7}"
+                  maxLength={7}
+                  placeholder="1234567"
+                  required
+                />
+                <FieldError messages={state?.errors?.schoolId} />
+              </div>
+              <div>
+                <Label htmlFor="firstName">First name</Label>
+                <Input id="firstName" name="firstName" required />
+                <FieldError messages={state?.errors?.firstName} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" minLength={8} required />
+                <FieldError messages={state?.errors?.password} />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  minLength={8}
+                  required
+                />
+                <FieldError messages={state?.errors?.confirmPassword} />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="grade-9">Grade</Label>
+              <input type="hidden" name="grade" value={grade} />
+              <div className="flex gap-2" role="radiogroup" aria-label="Grade">
+                {[9, 10, 11, 12].map((g) => (
+                  <button
+                    key={g}
+                    id={`grade-${g}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={grade === String(g)}
+                    onClick={() => setGrade(String(g))}
+                    className={`flex h-11 w-14 items-center justify-center rounded-lg border-2 font-display text-base font-bold transition-colors ${
+                      grade === String(g)
+                        ? "border-accent-strong bg-accent-soft text-accent-strong"
+                        : "border-border text-foreground-subtle hover:border-border-strong"
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+              <FieldError messages={state?.errors?.grade} />
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className={step === 1 ? "space-y-4" : "hidden"}>
-        <div>
-          <Label htmlFor="grade">Grade</Label>
-          <Select id="grade" name="grade" defaultValue="" required={step === 1}>
-            <option value="" disabled>
-              Select your grade
-            </option>
-            {[9, 10, 11, 12].map((g) => (
-              <option key={g} value={g}>
-                {g}th grade
-              </option>
-            ))}
-          </Select>
-          <FieldError messages={state?.errors?.grade} />
-        </div>
-      </div>
+          <div className={step === 1 ? "space-y-4" : "hidden"}>
+            <div>
+              <Label htmlFor="roleplayEventId">Roleplay event</Label>
+              <Select id="roleplayEventId" name="roleplayEventId" defaultValue="" required={step === 1}>
+                <option value="" disabled>
+                  Select a roleplay event
+                </option>
+                {clusters.map(
+                  (cluster) =>
+                    cluster.roleplayEvents.length > 0 && (
+                      <optgroup key={cluster.id} label={cluster.name}>
+                        {cluster.roleplayEvents.map((event) => (
+                          <option key={event.id} value={event.id}>
+                            {event.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ),
+                )}
+              </Select>
+              <FieldError messages={state?.errors?.roleplayEventId} />
+            </div>
 
-      <div className={step === 2 ? "space-y-4" : "hidden"}>
-        <div>
-          <Label htmlFor="roleplayEventId">Roleplay event</Label>
-          <Select id="roleplayEventId" name="roleplayEventId" defaultValue="" required={step === 2}>
-            <option value="" disabled>
-              Select a roleplay event
-            </option>
-            {clusters.map(
-              (cluster) =>
-                cluster.roleplayEvents.length > 0 && (
-                  <optgroup key={cluster.id} label={cluster.name}>
-                    {cluster.roleplayEvents.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ),
+            <div>
+              <Label htmlFor="writtenEventId">Written event</Label>
+              <Select id="writtenEventId" name="writtenEventId" defaultValue="" required={step === 1}>
+                <option value="" disabled>
+                  Select a written event
+                </option>
+                {clusters.map(
+                  (cluster) =>
+                    cluster.writtenEvents.length > 0 && (
+                      <optgroup key={cluster.id} label={cluster.name}>
+                        {cluster.writtenEvents.map((event) => (
+                          <option key={event.id} value={event.id}>
+                            {event.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ),
+                )}
+              </Select>
+              <FieldError messages={state?.errors?.writtenEventId} />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2">
+            {step > 0 ? (
+              <Button type="button" variant="secondary" onClick={() => setStep((s) => s - 1)}>
+                Back
+              </Button>
+            ) : (
+              <span />
             )}
-          </Select>
-          <FieldError messages={state?.errors?.roleplayEventId} />
-        </div>
-
-        <div>
-          <Label htmlFor="writtenEventId">Written event</Label>
-          <Select id="writtenEventId" name="writtenEventId" defaultValue="" required={step === 2}>
-            <option value="" disabled>
-              Select a written event
-            </option>
-            {clusters.map(
-              (cluster) =>
-                cluster.writtenEvents.length > 0 && (
-                  <optgroup key={cluster.id} label={cluster.name}>
-                    {cluster.writtenEvents.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ),
+            {step < STEP_FIELDS.length - 1 ? (
+              <Button type="button" onClick={goNext}>
+                Next
+              </Button>
+            ) : (
+              <Button type="submit" disabled={pending}>
+                {pending ? "Creating account…" : "Create Account"}
+              </Button>
             )}
-          </Select>
-          <FieldError messages={state?.errors?.writtenEventId} />
+          </div>
+
+          <p className="text-center text-sm text-foreground-muted">
+            Already have an account?{" "}
+            <Link href="/login" className="text-accent hover:underline">
+              Log in
+            </Link>
+          </p>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 pt-2">
-        {step > 0 ? (
-          <Button type="button" variant="secondary" onClick={() => setStep((s) => s - 1)}>
-            Back
-          </Button>
-        ) : (
-          <span />
-        )}
-        {step < STEP_FIELDS.length - 1 ? (
-          <Button type="button" onClick={goNext}>
-            Next
-          </Button>
-        ) : (
-          <Button type="submit" disabled={pending}>
-            {pending ? "Creating account…" : "Sign up"}
-          </Button>
-        )}
-      </div>
-
-      <p className="text-center text-sm text-foreground-muted">
-        Already have an account?{" "}
-        <Link href="/login" className="text-accent hover:underline">
-          Log in
-        </Link>
-      </p>
+      </TabbedCard>
     </form>
   );
 }
