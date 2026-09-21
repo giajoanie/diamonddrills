@@ -39,6 +39,10 @@ export async function startRoleplaySession(
     },
   });
 
+  await prisma.activityLog.create({
+    data: { userId: student.id, type: "ROLEPLAY_SESSION_START", metadata: { sessionId: session.id, eventId } },
+  });
+
   redirect(`/roleplay/${session.id}`);
 }
 
@@ -84,6 +88,10 @@ export async function completeRoleplaySession(
   await prisma.roleplayPracticeSession.update({
     where: { id: sessionId },
     data: { completedAt: new Date(), selfRatings },
+  });
+
+  await prisma.activityLog.create({
+    data: { userId: student.id, type: "ROLEPLAY_SESSION_COMPLETE", metadata: { sessionId } },
   });
 
   revalidatePath(`/roleplay/${sessionId}`);

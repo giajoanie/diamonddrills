@@ -26,3 +26,29 @@ export const getRoleplaySessionHistory = cache(async (userId: string) => {
     orderBy: { startedAt: "desc" },
   });
 });
+
+// Judge Mode's link is unauthenticated (a mentor or peer judge may not have
+// an account), so this deliberately returns only what a judge needs to
+// watch and score a live presentation — never the student's private prep
+// notes or self-ratings.
+export const getRoleplaySessionForJudge = cache(async (sessionId: string) => {
+  const session = await prisma.roleplayPracticeSession.findUnique({
+    where: { id: sessionId },
+    select: {
+      id: true,
+      startedAt: true,
+      completedAt: true,
+      event: { select: { name: true } },
+      user: { select: { firstName: true } },
+    },
+  });
+  return session;
+});
+
+export const getJudgeScoresForSession = cache(async (sessionId: string) => {
+  return prisma.judgeScore.findMany({
+    where: { roleplaySessionId: sessionId },
+    include: { judge: { select: { firstName: true } } },
+    orderBy: { submittedAt: "asc" },
+  });
+});

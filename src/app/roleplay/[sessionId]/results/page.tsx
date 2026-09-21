@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getRoleplaySessionForRunner } from "@/lib/dal/roleplay";
+import { getRoleplaySessionForRunner, getJudgeScoresForSession } from "@/lib/dal/roleplay";
 import { getAllRubrics } from "@/lib/dal/rubrics";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -22,7 +22,10 @@ export default async function RoleplayResultsPage({
   const selfRatings = (session.selfRatings as Record<string, number> | null) ?? {};
   const criterionIds = Object.keys(selfRatings);
 
-  const rubrics = await getAllRubrics();
+  const [rubrics, judgeScores] = await Promise.all([
+    getAllRubrics(),
+    getJudgeScoresForSession(sessionId),
+  ]);
   const criteriaById = new Map(
     rubrics.flatMap((r) => r.criteria.map((c) => [c.id, c] as const)),
   );
@@ -65,6 +68,41 @@ export default async function RoleplayResultsPage({
           <Card className="mt-4">
             <p className="mb-2 font-medium text-foreground">Notes</p>
             <p className="whitespace-pre-wrap text-sm text-foreground-muted">{session.notes}</p>
+          </Card>
+        )}
+
+        {judgeScores.length > 0 && (
+          <Card className="mt-4">
+            <p className="mb-2 font-medium text-foreground">Judge feedback</p>
+            <div className="space-y-4">
+              {judgeScores.map((js) => {
+                const scores = (js.scores as Record<string, number>) ?? {};
+                const ids = Object.keys(scores);
+                const earned = ids.reduce((sum, id) => sum + scores[id], 0);
+                const possible = ids.reduce((sum, id) => sum + (criteriaById.get(id)?.maxPoints ?? 0), 0);
+                const judgeDisplayName = js.judgeName ?? js.judge?.firstName ?? "A judge";
+                return (
+                  <div key={js.id} className="border-t border-border pt-3 first:border-0 first:pt-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {judgeDisplayName} · {earned} / {possible}
+                    </p>
+                    <ul className="mt-1 space-y-1 text-sm">
+                      {ids.map((id) => (
+                        <li key={id} className="flex items-center justify-between gap-3">
+                          <span className="text-foreground-muted">{criteriaById.get(id)?.name ?? id}</span>
+                          <span className="text-foreground-subtle">
+                            {scores[id]} / {criteriaById.get(id)?.maxPoints ?? "?"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {js.comments && (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">{js.comments}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </Card>
         )}
       </main>
