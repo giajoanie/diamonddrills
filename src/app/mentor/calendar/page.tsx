@@ -3,6 +3,7 @@ import { getAllCalendarEvents } from "@/lib/dal/announcements";
 import { deleteCalendarEvent } from "@/lib/actions/announcements";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CalendarForm } from "./CalendarForm";
@@ -23,7 +24,7 @@ export default async function MentorCalendarPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Competition calendar

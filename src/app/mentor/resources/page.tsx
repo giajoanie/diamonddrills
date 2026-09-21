@@ -4,6 +4,7 @@ import { getClustersForTagging } from "@/lib/dal/clusters";
 import { getInstructionalAreasForBank } from "@/lib/dal/exam-engine";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { UploadResourceForm } from "./UploadResourceForm";
 import { deactivateResource } from "@/lib/actions/resources";
@@ -23,7 +24,7 @@ export default async function MentorResourcesPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Resources

@@ -10,6 +10,7 @@ import { computeInterventionImpact } from "@/lib/analytics/intervention-impact";
 import { describeActivity } from "@/lib/analytics/activity-labels";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { InterventionForm } from "./InterventionForm";
 
@@ -56,7 +57,7 @@ export default async function MentorStudentProfilePage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("students")}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">
               {student.firstName}{" "}

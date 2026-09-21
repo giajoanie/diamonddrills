@@ -11,6 +11,7 @@ import {
 import { publishAllComplete } from "@/lib/actions/exam-import";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { QuestionReviewCard } from "./QuestionReviewCard";
@@ -47,7 +48,7 @@ export default async function ExamBankDetailPage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("exams")}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">
               {examBank.name}

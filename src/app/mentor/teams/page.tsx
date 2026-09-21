@@ -4,6 +4,7 @@ import { getAllStudents } from "@/lib/dal/mentor";
 import { removeTeamMember, disbandTeam } from "@/lib/actions/teams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { TeamForm } from "./TeamForm";
@@ -22,7 +23,7 @@ export default async function MentorTeamsPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">Teams</h1>
             <p className="mt-1 text-foreground-muted">

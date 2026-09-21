@@ -11,5 +11,6 @@ export const TIMED_EXAM_PRESETS: Record<number, TimedPreset> = {
 
 export const DEFAULT_TIMED_PRESET_MINUTES = 90;
 
-/** Baseline Diagnostic: always the full 90-minute / 100-question preset. */
-export const BASELINE_PRESET: TimedPreset = TIMED_EXAM_PRESETS[90];
+/** Baseline Diagnostic preset (shorter than a full timed exam by design —
+ * it's a quick placement check, not a competition simulation). */
+export const BASELINE_PRESET: TimedPreset = { minutes: 20, questions: 22 };

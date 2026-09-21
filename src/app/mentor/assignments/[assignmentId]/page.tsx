@@ -4,6 +4,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getAssignmentWithSubmissionsForMentor } from "@/lib/dal/assignments";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 
 export const metadata = { title: "Assignment submissions" };
@@ -31,7 +32,7 @@ export default async function MentorAssignmentDetailPage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("assignments")}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">
               {assignment.title}

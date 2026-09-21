@@ -9,6 +9,7 @@ import { getAllTeams } from "@/lib/dal/teams";
 import { deleteCompetitionResult } from "@/lib/actions/competition-results";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Label, Select } from "@/components/ui/Field";
@@ -51,7 +52,7 @@ export default async function CompetitionResultsPage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Competition results

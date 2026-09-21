@@ -8,6 +8,7 @@ import {
 import { getClustersForTagging } from "@/lib/dal/clusters";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Label, Select } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
@@ -44,7 +45,7 @@ export default async function LessonPlansPage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Lesson plan recommendations

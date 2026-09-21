@@ -3,6 +3,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getExamBanks } from "@/lib/dal/exams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { UploadExamForm } from "./UploadExamForm";
 
@@ -16,7 +17,7 @@ export default async function MentorExamsPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("exams")}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Exam banks

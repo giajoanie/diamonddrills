@@ -3,6 +3,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getSubmissionForGrading } from "@/lib/dal/assignments";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { FileComments } from "@/components/FileComments";
 import { computeRubricTotal } from "@/lib/assignments/scoring";
@@ -28,7 +29,7 @@ export default async function GradeSubmissionPage({
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-semibold text-foreground">
               {submission.assignment.title}

@@ -2,7 +2,11 @@
 
 import { useActionState, useState } from "react";
 import { startExam, type StartExamState } from "@/lib/actions/exam-engine";
-import { TIMED_EXAM_PRESETS, DEFAULT_TIMED_PRESET_MINUTES } from "@/lib/exam-engine/presets";
+import {
+  TIMED_EXAM_PRESETS,
+  DEFAULT_TIMED_PRESET_MINUTES,
+  BASELINE_PRESET,
+} from "@/lib/exam-engine/presets";
 import { Button } from "@/components/ui/Button";
 import { Label, Input, Select, FieldError } from "@/components/ui/Field";
 
@@ -65,7 +69,8 @@ export function StartExamForm({
               checked={mode === "BASELINE"}
               onChange={() => setMode("BASELINE")}
             />
-            Baseline Diagnostic (100 questions, 90 minutes)
+            Baseline Diagnostic ({BASELINE_PRESET.questions} questions, {BASELINE_PRESET.minutes}{" "}
+            minutes)
           </label>
         )}
         <label className="flex items-center gap-2 text-sm text-foreground">

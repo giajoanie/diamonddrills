@@ -3,6 +3,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getAllStudents } from "@/lib/dal/mentor";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { ResetPasswordButton } from "./ResetPasswordButton";
 import { ToggleActiveButton } from "./ToggleActiveButton";
@@ -17,7 +18,7 @@ export default async function MentorStudentsPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("students")}>
           <div className="mx-auto max-w-5xl">
             <h1 className="text-2xl font-semibold text-foreground">Students</h1>
             <p className="mt-1 text-foreground-muted">

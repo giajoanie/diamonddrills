@@ -2,6 +2,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getAllRubrics } from "@/lib/dal/rubrics";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { deactivateRubric } from "@/lib/actions/rubrics";
@@ -17,7 +18,7 @@ export default async function MentorRubricsPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs()}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">Rubrics</h1>
             <p className="mt-1 text-foreground-muted">

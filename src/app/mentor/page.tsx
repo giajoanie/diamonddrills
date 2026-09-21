@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/Card";
 import { Sticker } from "@/components/binder/Sticker";
 import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
+import { getMentorTabs } from "@/lib/mentorNav";
 
 export const metadata = { title: "Mentor dashboard" };
 export const dynamic = "force-dynamic";
@@ -64,15 +65,7 @@ export default async function MentorDashboardPage({
 
   return (
     <BinderPageShell user={user} homeHref="/mentor">
-      <TabbedCard
-        tabs={[
-          { label: "Overview", active: true },
-          { label: "Roster", href: "/mentor/students" },
-          { label: "Assignments", href: "/mentor/assignments" },
-          { label: "Exam bank", href: "/mentor/exams" },
-          { label: "Reports", href: "/mentor/exports" },
-        ]}
-      >
+      <TabbedCard tabs={getMentorTabs("overview")}>
         <div className="mx-auto max-w-4xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}

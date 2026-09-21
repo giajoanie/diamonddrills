@@ -8,6 +8,7 @@ import { getAllResourcesForMentor } from "@/lib/dal/resources";
 import { getExamBanks } from "@/lib/dal/exams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { deactivateAssignment } from "@/lib/actions/assignments";
@@ -64,7 +65,7 @@ export default async function MentorAssignmentsPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/mentor">
-        <TabbedCard>
+        <TabbedCard tabs={getMentorTabs("assignments")}>
           <div className="mx-auto max-w-4xl">
             <h1 className="text-2xl font-semibold text-foreground">
               Assignments
