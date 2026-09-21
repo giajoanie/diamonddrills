@@ -13,6 +13,7 @@ import {
 } from "@/lib/analytics/kpis";
 import { generateLessonPlanRecommendations } from "@/lib/analytics/lesson-plan";
 import { computeAreaTrend, type AreaTrend } from "@/lib/analytics/trend";
+import { computeEngagementVsImprovement, computeOutcomesByEngagement, type StudentEngagementRecord } from "@/lib/analytics/pm-cde";
 
 export type DashboardFilters = {
   grade?: number;
@@ -420,4 +421,74 @@ export const getPracticeActivityDates = cache(async (userId: string) => {
     select: { createdAt: true },
   });
   return logs.map((l) => l.createdAt);
+});
+
+/**
+ * PM CDE Impact Dashboard (Tier 3): reuses the mentor dashboard's cohort
+ * resolution and before/after averages, adding an engagement-vs-improvement
+ * and engagement-vs-outcomes breakdown — the causal story a Project
+ * Management CDE report needs beyond a single chapter-wide average.
+ */
+export const getPmCdeImpactData = cache(async (filters: DashboardFilters) => {
+  const dashboard = await getMentorDashboardData(filters);
+  const { studentIds } = await resolveCohort(filters);
+
+  if (studentIds.length === 0) {
+    return { ...dashboard, engagementVsImprovement: [], outcomesByEngagement: [] };
+  }
+
+  const dateFrom = filters.dateFrom ?? new Date(0);
+  const dateTo = filters.dateTo ?? new Date();
+
+  const [attempts, activityCounts, competitionResults] = await Promise.all([
+    prisma.examAttempt.findMany({
+      where: { userId: { in: studentIds }, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] } },
+      orderBy: { submittedAt: "asc" },
+      select: { userId: true, isBaseline: true, percentage: true },
+    }),
+    prisma.activityLog.groupBy({
+      by: ["userId"],
+      where: {
+        userId: { in: studentIds },
+        type: { in: [...PRACTICE_ACTIVITY_TYPES] },
+        createdAt: { gte: dateFrom, lte: dateTo },
+      },
+      _count: { _all: true },
+    }),
+    prisma.competitionResult.findMany({
+      where: { userId: { in: studentIds } },
+      select: { userId: true, advanced: true },
+    }),
+  ]);
+
+  const baselineByStudent = new Map<string, number>();
+  const latestByStudent = new Map<string, number>();
+  for (const a of attempts) {
+    if (a.percentage === null) continue;
+    if (a.isBaseline) baselineByStudent.set(a.userId, a.percentage);
+    else latestByStudent.set(a.userId, a.percentage);
+  }
+
+  const activityCountByStudent = new Map(activityCounts.map((c) => [c.userId, c._count._all]));
+
+  const advancedByStudent = new Map<string, boolean>();
+  for (const r of competitionResults) {
+    advancedByStudent.set(r.userId, advancedByStudent.get(r.userId) === true || r.advanced);
+  }
+
+  const records: StudentEngagementRecord[] = studentIds.map((id) => {
+    const baseline = baselineByStudent.get(id);
+    const latest = latestByStudent.get(id);
+    return {
+      practiceActivityCount: activityCountByStudent.get(id) ?? 0,
+      scoreChange: baseline !== undefined && latest !== undefined ? latest - baseline : null,
+      advanced: advancedByStudent.has(id) ? advancedByStudent.get(id)! : null,
+    };
+  });
+
+  return {
+    ...dashboard,
+    engagementVsImprovement: computeEngagementVsImprovement(records),
+    outcomesByEngagement: computeOutcomesByEngagement(records),
+  };
 });

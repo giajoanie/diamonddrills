@@ -371,6 +371,18 @@ export default async function MentorDashboardPage({
               </div>
             </Card>
           </Link>
+
+          <Link href="/mentor/pm-cde-impact">
+            <Card className="flex items-center gap-3 hover:bg-surface-hover">
+              <Trophy className="h-5 w-5 text-accent" aria-hidden />
+              <div>
+                <p className="font-medium text-foreground">PM CDE Impact Dashboard</p>
+                <p className="text-sm text-foreground-muted">
+                  Before/after growth, engagement vs. improvement, and outcomes for the report.
+                </p>
+              </div>
+            </Card>
+          </Link>
         </div>
       </main>
     </>
