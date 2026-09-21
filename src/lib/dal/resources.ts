@@ -23,6 +23,7 @@ type ResourceFilters = {
   type?: ResourceType;
   instructionalAreaId?: string;
   competitionLevel?: CompetitionLevel;
+  query?: string;
 };
 
 /** Mirrors src/lib/resources/visibility.ts's isResourceVisibleToStudent — see that file. */
@@ -47,6 +48,15 @@ export const getVisibleResourcesForStudent = cache(
         ...(filters.competitionLevel ? { competitionLevel: filters.competitionLevel } : {}),
         ...(filters.instructionalAreaId
           ? { resourceAreas: { some: { instructionalAreaId: filters.instructionalAreaId } } }
+          : {}),
+        // Mirrors src/lib/resources/search.ts's matchesSearchQuery — see that file.
+        ...(filters.query?.trim()
+          ? {
+              OR: [
+                { name: { contains: filters.query.trim(), mode: "insensitive" } },
+                { description: { contains: filters.query.trim(), mode: "insensitive" } },
+              ],
+            }
           : {}),
       },
       include: { resourceAreas: { include: { instructionalArea: true } } },

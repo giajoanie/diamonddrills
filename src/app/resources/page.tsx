@@ -4,7 +4,7 @@ import { getAttemptQuestionHistory, getInstructionalAreasForBank } from "@/lib/d
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
-import { Label, Select } from "@/components/ui/Field";
+import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { ResourceCard } from "./ResourceCard";
 import type { CompetitionLevel, ResourceType } from "@/generated/prisma/client";
@@ -27,16 +27,17 @@ const RESOURCE_TYPE_LABELS: Record<string, string> = {
 export default async function StudentResourcesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; area?: string; level?: string }>;
+  searchParams: Promise<{ type?: string; area?: string; level?: string; q?: string }>;
 }) {
   const user = await requireActiveUser("STUDENT");
-  const { type, area, level } = await searchParams;
+  const { type, area, level, q } = await searchParams;
 
   const [resources, instructionalAreas, attempts] = await Promise.all([
     getVisibleResourcesForStudent(user.id, {
       type: type as ResourceType | undefined,
       instructionalAreaId: area || undefined,
       competitionLevel: level as CompetitionLevel | undefined,
+      query: q || undefined,
     }),
     getInstructionalAreasForBank(),
     getAttemptQuestionHistory(user.id),
@@ -66,6 +67,10 @@ export default async function StudentResourcesPage({
         )}
 
         <form className="mt-6 flex flex-wrap items-end gap-3" method="GET">
+          <div>
+            <Label htmlFor="q">Search</Label>
+            <Input id="q" name="q" type="text" defaultValue={q ?? ""} placeholder="Name or description…" />
+          </div>
           <div>
             <Label htmlFor="type">Type</Label>
             <Select id="type" name="type" defaultValue={type ?? ""}>
