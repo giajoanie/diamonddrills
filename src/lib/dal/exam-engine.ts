@@ -40,6 +40,7 @@ export const getAttemptForTaking = cache(async (attemptId: string) => {
   return prisma.examAttempt.findUnique({
     where: { id: attemptId },
     include: {
+      examBank: { select: { name: true } },
       questions: {
         orderBy: { orderIndex: "asc" },
         include: {
@@ -51,6 +52,7 @@ export const getAttemptForTaking = cache(async (attemptId: string) => {
               optionB: true,
               optionC: true,
               optionD: true,
+              instructionalArea: { select: { name: true } },
               // correctOption and explanation are deliberately excluded here
             },
           },

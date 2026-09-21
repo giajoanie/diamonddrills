@@ -21,6 +21,7 @@ type ExamQuestion = {
   questionId: string;
   orderIndex: number;
   stem: string;
+  instructionalArea: string | null;
   options: Record<OptionKey, string>;
   optionOrder: OptionKey[];
   studentAnswer: OptionKey | null;
@@ -30,6 +31,7 @@ type ExamQuestion = {
 export function ExamRunner({
   user,
   attemptId,
+  examName,
   serverStartTimeIso,
   timeLimitSeconds,
   questions: initialQuestions,
@@ -37,6 +39,7 @@ export function ExamRunner({
 }: {
   user: User;
   attemptId: string;
+  examName: string;
   serverStartTimeIso: string;
   timeLimitSeconds: number;
   questions: ExamQuestion[];
@@ -62,8 +65,12 @@ export function ExamRunner({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
-    "idle",
+  const [saving, setSaving] = useState(false);
+  // Seconds elapsed since the last successful autosave, recomputed every
+  // tick from a ref (not read during render) so the label stays live
+  // without calling the impure Date.now() while rendering.
+  const [secondsSinceSave, setSecondsSinceSave] = useState<number | null>(
+    null,
   );
 
   const current = initialQuestions[currentIndex];
@@ -79,6 +86,7 @@ export function ExamRunner({
     const interval = setInterval(() => {
       const next = computeRemainingSeconds(serverStartTime, timeLimitSeconds);
       setRemaining(next);
+      setSecondsSinceSave((s) => (s === null ? null : s + 1));
       if (next <= 0) {
         clearInterval(interval);
         void handleSubmit();
@@ -89,19 +97,21 @@ export function ExamRunner({
 
   function selectAnswer(questionId: string, letter: OptionKey) {
     setAnswers((prev) => ({ ...prev, [questionId]: letter }));
-    setSaveStatus("saving");
-    void saveAnswer(attemptId, questionId, letter).then(() =>
-      setSaveStatus("saved"),
-    );
+    setSaving(true);
+    void saveAnswer(attemptId, questionId, letter).then(() => {
+      setSaving(false);
+      setSecondsSinceSave(0);
+    });
   }
 
   function toggleCurrentFlag() {
     const next = !flags[current.questionId];
     setFlags((prev) => ({ ...prev, [current.questionId]: next }));
-    setSaveStatus("saving");
-    void toggleFlag(attemptId, current.questionId, next).then(() =>
-      setSaveStatus("saved"),
-    );
+    setSaving(true);
+    void toggleFlag(attemptId, current.questionId, next).then(() => {
+      setSaving(false);
+      setSecondsSinceSave(0);
+    });
   }
 
   const answeredCount = Object.values(answers).filter((a) => a !== null).length;
@@ -111,28 +121,27 @@ export function ExamRunner({
   const isLowTime = remaining <= 60;
   const isWarningTime = remaining <= 300;
 
+  const autosaveLabel = saving
+    ? "Saving…"
+    : secondsSinceSave === null
+      ? "Autosave on"
+      : `autosaved ${secondsSinceSave}s ago`;
+
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <FolderTabs
           tabs={[
-            {
-              label: `Question ${currentIndex + 1} of ${initialQuestions.length}`,
-              active: true,
-            },
-            {
-              label:
-                saveStatus === "saving"
-                  ? "Saving…"
-                  : saveStatus === "saved"
-                    ? "Saved"
-                    : "Autosave on",
-            },
+            { label: examName, active: true },
+            { label: autosaveLabel },
           ]}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 pb-1">
+          <span className="hidden text-sm font-medium text-white/85 sm:inline">
+            Answered {answeredCount} · Flagged {flaggedCount}
+          </span>
           <span
-            className={`rounded-full bg-background-elevated px-4 py-1.5 font-mono text-lg font-semibold shadow-lg ${
+            className={`rounded-lg bg-background-elevated px-4 py-2 font-mono text-lg font-bold shadow-lg ${
               isLowTime
                 ? "animate-pulse text-danger"
                 : isWarningTime
@@ -153,7 +162,7 @@ export function ExamRunner({
           >
             <button
               type="submit"
-              className="rounded-full px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/15 hover:text-white"
+              className="rounded-full px-2 py-1 text-sm font-medium text-white/70 hover:bg-white/15 hover:text-white"
             >
               Abandon
             </button>
@@ -161,144 +170,183 @@ export function ExamRunner({
         </div>
       </div>
 
-      <main className="grid w-full flex-1 gap-6 md:grid-cols-[1fr_220px]">
-        <div>
-          {showShortfallNotice && (
-            <div className="mb-4 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
-              Fewer questions were available than requested, so this exam uses
-              all the questions currently in the bank.
-            </div>
-          )}
-          {isWarningTime && (
-            <div className="mb-4 flex items-center gap-2 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
-              <AlertTriangle className="h-4 w-4" aria-hidden />
-              {isLowTime ? "Less than 1 minute left!" : "5 minutes remaining."}
-            </div>
-          )}
+      <div
+        className={`binder-ruled bg-background-elevated p-5 shadow-lg sm:p-7 ${
+          "rounded-b-2xl rounded-tr-2xl"
+        }`}
+      >
+        <main className="grid w-full flex-1 gap-6 md:grid-cols-[1fr_220px]">
+          <div>
+            {showShortfallNotice && (
+              <div className="mb-4 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
+                Fewer questions were available than requested, so this exam
+                uses all the questions currently in the bank.
+              </div>
+            )}
+            {isWarningTime && (
+              <div className="mb-4 flex items-center gap-2 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
+                <AlertTriangle className="h-4 w-4" aria-hidden />
+                {isLowTime ? "Less than 1 minute left!" : "5 minutes remaining."}
+              </div>
+            )}
 
-          {/* "Test booklet" panel */}
-          <div className="binder-ruled rounded-xl border-2 border-border bg-background-elevated p-5 shadow-[3px_3px_0_var(--color-border)]">
-            <div className="flex items-start justify-between gap-4">
-              <p className="font-body text-foreground">{current.stem}</p>
-              <button
-                type="button"
-                onClick={toggleCurrentFlag}
-                aria-pressed={flags[current.questionId]}
-                aria-label="Flag this question for review"
-                className={`shrink-0 rounded-full p-2 ${
-                  flags[current.questionId]
-                    ? "bg-warning-soft text-warning"
-                    : "text-foreground-subtle hover:bg-surface-hover hover:text-foreground-muted"
-                }`}
-              >
-                <Flag
-                  className="h-5 w-5"
-                  fill={flags[current.questionId] ? "currentColor" : "none"}
-                />
-              </button>
-            </div>
+            {/* "Test booklet" panel */}
+            <div className="rounded-xl border border-border bg-background-elevated p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-lg font-bold text-accent-strong">
+                    Q{currentIndex + 1}
+                  </span>
+                  {current.instructionalArea && (
+                    <span className="text-xs font-bold uppercase tracking-wide text-foreground-subtle">
+                      {current.instructionalArea}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleCurrentFlag}
+                  aria-pressed={flags[current.questionId]}
+                  aria-label="Flag this question for review"
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold ${
+                    flags[current.questionId]
+                      ? "border-warning-border bg-warning-soft text-warning"
+                      : "border-border text-foreground-subtle hover:border-border-strong"
+                  }`}
+                >
+                  <Flag
+                    className="h-3.5 w-3.5"
+                    fill={flags[current.questionId] ? "currentColor" : "none"}
+                  />
+                  Flagged
+                </button>
+              </div>
 
-            <div className="mt-4 space-y-2">
-              {(["A", "B", "C", "D"] as const).map((displayLetter, i) => {
-                const originalLetter = current.optionOrder[i];
-                const isSelected =
-                  answers[current.questionId] === originalLetter;
-                return (
-                  <button
-                    key={displayLetter}
-                    type="button"
-                    onClick={() =>
-                      selectAnswer(current.questionId, originalLetter)
-                    }
-                    className={`flex w-full items-start gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-colors ${
-                      isSelected
-                        ? "border-accent-strong bg-accent-soft text-foreground"
-                        : "border-border text-foreground-muted hover:border-border-strong"
-                    }`}
-                  >
-                    <span
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
+              <p className="mt-3 font-body text-foreground">{current.stem}</p>
+
+              <div className="mt-4 space-y-2">
+                {(["A", "B", "C", "D"] as const).map((displayLetter, i) => {
+                  const originalLetter = current.optionOrder[i];
+                  const isSelected =
+                    answers[current.questionId] === originalLetter;
+                  return (
+                    <button
+                      key={displayLetter}
+                      type="button"
+                      onClick={() =>
+                        selectAnswer(current.questionId, originalLetter)
+                      }
+                      className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
                         isSelected
-                          ? "border-accent-strong bg-accent-strong text-accent-foreground"
-                          : "border-border-strong text-foreground-subtle"
+                          ? "border-accent-strong border-l-4 bg-accent-soft text-foreground"
+                          : "border-border text-foreground-muted hover:border-border-strong"
                       }`}
                     >
-                      {displayLetter}
-                    </span>
-                    <span>{current.options[originalLetter]}</span>
-                  </button>
-                );
-              })}
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
+                          isSelected
+                            ? "border-accent-strong bg-accent-strong text-accent-foreground"
+                            : "border-border-strong text-foreground-subtle"
+                        }`}
+                      >
+                        {displayLetter}
+                      </span>
+                      <span>{current.options[originalLetter]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                disabled={currentIndex === 0}
+              >
+                ← Previous
+              </Button>
+              <p className="hidden text-center text-xs text-foreground-subtle sm:block">
+                Time does NOT pause when you leave the browser!! Complete it
+                in one sitting.
+              </p>
+              {currentIndex < initialQuestions.length - 1 ? (
+                <Button onClick={() => setCurrentIndex((i) => i + 1)}>
+                  Next →
+                </Button>
+              ) : (
+                <Button onClick={() => setShowConfirmSubmit(true)}>
+                  Submit exam
+                </Button>
+              )}
             </div>
           </div>
 
-          <div className="mt-4 flex justify-between">
-            <Button
-              variant="secondary"
-              onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
-            >
-              Previous
-            </Button>
-            {currentIndex < initialQuestions.length - 1 ? (
-              <Button onClick={() => setCurrentIndex((i) => i + 1)}>
-                Next
-              </Button>
-            ) : (
-              <Button onClick={() => setShowConfirmSubmit(true)}>
-                Submit exam
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* "Punched answer sheet" navigator */}
-        <nav
-          aria-label="Question navigator"
-          className="order-first md:order-none"
-        >
-          <div className="rounded-xl border-2 border-border bg-background-elevated p-3 shadow-[3px_3px_0_var(--color-border)]">
-            <p className="mb-2 text-sm font-medium text-foreground-muted">
-              {answeredCount}/{initialQuestions.length} answered
-            </p>
-            <div className="grid grid-cols-8 gap-1.5 md:grid-cols-5">
-              {initialQuestions.map((q, i) => {
-                const answered = answers[q.questionId] !== null;
-                const flagged = flags[q.questionId];
-                return (
-                  <button
-                    key={q.questionId}
-                    type="button"
-                    onClick={() => setCurrentIndex(i)}
-                    className={`relative h-9 rounded-full text-xs font-medium ${
-                      i === currentIndex
-                        ? "ring-2 ring-accent-strong ring-offset-1"
-                        : answered
-                          ? "bg-accent-soft text-foreground"
-                          : "bg-surface-hover text-foreground-muted"
-                    }`}
-                  >
-                    {i + 1}
-                    {flagged && (
-                      <Flag className="absolute -right-1 -top-1 h-3 w-3 fill-warning text-warning" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <Button
-            className="mt-4 w-full"
-            onClick={() => setShowConfirmSubmit(true)}
+          {/* "Punched answer sheet" navigator */}
+          <nav
+            aria-label="Question navigator"
+            className="order-first md:order-none"
           >
-            Submit exam
-          </Button>
-        </nav>
-      </main>
+            <div className="rounded-xl border border-border bg-background-elevated p-3 shadow-sm">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-foreground-subtle">
+                Answer sheet
+              </p>
+              <div className="grid grid-cols-8 gap-1.5 md:grid-cols-5">
+                {initialQuestions.map((q, i) => {
+                  const answered = answers[q.questionId] !== null;
+                  const flagged = flags[q.questionId];
+                  const isCurrent = i === currentIndex;
+                  return (
+                    <button
+                      key={q.questionId}
+                      type="button"
+                      onClick={() => setCurrentIndex(i)}
+                      className={`relative h-9 rounded-md text-xs font-bold ${
+                        isCurrent
+                          ? "bg-accent-strong text-accent-foreground"
+                          : flagged
+                            ? "bg-highlight text-highlight-foreground"
+                            : answered
+                              ? "bg-accent text-accent-foreground"
+                              : "border border-border bg-background-elevated text-foreground-muted"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3 text-xs text-foreground-muted">
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-sm bg-accent" /> Answered
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-sm border border-border bg-background-elevated" />{" "}
+                  Unanswered
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-sm bg-highlight" /> Flagged
+                </span>
+              </div>
+
+              <p className="mt-3 text-center text-xs text-foreground-subtle">
+                {unansweredCount} unanswered · {flaggedCount} flagged
+              </p>
+            </div>
+            <Button
+              className="mt-4 w-full"
+              onClick={() => setShowConfirmSubmit(true)}
+            >
+              Submit exam
+            </Button>
+          </nav>
+        </main>
+      </div>
 
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl border-2 border-border bg-background-elevated p-5 shadow-[4px_4px_0_var(--color-accent-strong)]">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-background-elevated p-5 shadow-lg">
             <h2 className="font-display text-lg font-bold text-foreground">
               Submit this exam?
             </h2>

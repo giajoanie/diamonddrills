@@ -40,6 +40,7 @@ export default async function ExamAttemptPage({
     questionId: q.questionId,
     orderIndex: q.orderIndex,
     stem: q.question.stem,
+    instructionalArea: q.question.instructionalArea?.name ?? null,
     options: {
       A: q.question.optionA,
       B: q.question.optionB,
@@ -55,6 +56,7 @@ export default async function ExamAttemptPage({
     <ExamRunner
       user={user}
       attemptId={attemptId}
+      examName={attempt.examBank.name}
       serverStartTimeIso={attempt.serverStartTime.toISOString()}
       timeLimitSeconds={attempt.timeLimitSeconds}
       questions={questions}

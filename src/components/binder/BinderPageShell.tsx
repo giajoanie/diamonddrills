@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import type { User } from "@/generated/prisma/client";
@@ -25,8 +26,14 @@ export function BinderPageShell({
     <div className="shell-diamond-bg min-h-full flex-1">
       <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6">
         <div className="mb-3 flex items-center justify-between gap-3 px-1">
-          <Link href={homeHref} className="text-sm font-bold text-white/90 hover:text-white">
-            Diamond Drills
+          <Link href={homeHref} className="block">
+            <Image
+              src="/brand/mhhs-deca.png"
+              alt="Diamond Drills"
+              width={120}
+              height={28}
+              className="h-7 w-auto"
+            />
           </Link>
           {user && (
             <div className="flex items-center gap-3">
