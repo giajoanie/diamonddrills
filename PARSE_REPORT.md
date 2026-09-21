@@ -7,15 +7,25 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
 |---|---|---|---|---|---|---|---|
-| 2018_business-management-administration_sample_exam.pdf | 2018 Business Management and Administration Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2018_business-management-administration_sample_exam.pdf | 2018 Business Management and Administration Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
 
 ## entrepreneurship
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
 |---|---|---|---|---|---|---|---|
-| 2017_entrepreneurship_sample_exam.pdf | 2017 Entrepreneurship Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
-| 2019_entrepreneurship_sample_exam.pdf | 2019 Entrepreneurship Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
-| 2022_entrepreneurship_state_exam.pdf | 2022 Entrepreneurship State Exam | needs-review | 100 | 100 | 0 | 93 | 7 |
+| 2017_entrepreneurship_sample_exam.pdf | 2017 Entrepreneurship Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2019_entrepreneurship_sample_exam.pdf | 2019 Entrepreneurship Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2022_entrepreneurship_state_exam.pdf | 2022 Entrepreneurship State Exam | published | 100 | 100 | 0 | 0 | 100 |
+
+## hospitality-tourism
+
+| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
+|---|---|---|---|---|---|---|---|
+| 2010_hospitality-tourism_icdc_exam.pdf | 2010 Hospitality and Tourism ICDC Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2011_hospitality-tourism_icdc_exam.pdf | 2011 Hospitality and Tourism ICDC Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2013_hospitality-tourism_icdc_exam.pdf | 2013 Hospitality and Tourism ICDC Exam | published | 100 | 100 | 0 | 100 | 0 |
+| 2015_hospitality-tourism_sample_exam.pdf | 2015 Hospitality and Tourism Sample Exam | needs-review | 100 | 100 | 0 | 96 | 4 |
+| 2017_hospitality-tourism_collegiate_sample_exam.pdf | 2017 Hospitality and Tourism Collegiate Sample Exam | needs-review | 100 | 100 | 0 | 95 | 5 |
 
 ## marketing
 
@@ -28,7 +38,7 @@ A file is auto-published only when every question matched an answer-key entry wi
 | 2013_marketing_icdc_exam.pdf | 2013 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2013_marketing_icdc_exam_v2.pdf | 2013 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2014_marketing_sample_exam.pdf | 2014 Marketing Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
-| 2021_marketing_sample_exam.pdf | 2021 Marketing Sample Exam | needs-review | 100 | 100 | 0 | 0 | 100 |
+| 2021_marketing_sample_exam.pdf | 2021 Marketing Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2022_marketing_state_exam.pdf | 2022 Marketing State Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2026_marketing_icdc_exam.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2026_marketing_icdc_exam_final.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
@@ -36,33 +46,29 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 ## Anomalies
 
-### 2018_business-management-administration_sample_exam.pdf
+### 2010_hospitality-tourism_icdc_exam.pdf
 
-- Unrecognized instructional area code(s), stored as-is: EN, KM, PJ, QM, RM, SM
+- Unrecognized instructional area code(s), stored as-is: DS
 
-### 2017_entrepreneurship_sample_exam.pdf
+### 2011_hospitality-tourism_icdc_exam.pdf
 
-- Unrecognized instructional area code(s), stored as-is: EN, QM, RM, SM
+- Unrecognized instructional area code(s), stored as-is: DS
 
-### 2019_entrepreneurship_sample_exam.pdf
+### 2015_hospitality-tourism_sample_exam.pdf
 
-- Unrecognized instructional area code(s), stored as-is: EN, QM, RM, SM
+- Unrecognized instructional area code(s), stored as-is: DS
 
-### 2022_entrepreneurship_state_exam.pdf
+### 2017_hospitality-tourism_collegiate_sample_exam.pdf
 
-- Unrecognized instructional area code(s), stored as-is: EN, SM, RM, QM
+- Unrecognized instructional area code(s), stored as-is: DS
 
 ### 2011_marketing_icdc_exam.pdf
 
 - No answer key section found — this PDF may be a scanned/image-only document with no extractable text layer, or uses an unrecognized layout. Skipped; needs manual entry.
 
-### 2021_marketing_sample_exam.pdf
-
-- Unrecognized instructional area code(s), stored as-is: EN, SM
-
 ## Summary
 
-- 15 files processed
-- 9 auto-published (clean parse)
-- 6 need manual review or were skipped
-- 393 total questions created
+- 20 files processed
+- 15 auto-published (clean parse)
+- 5 need manual review or were skipped
+- 491 total questions created

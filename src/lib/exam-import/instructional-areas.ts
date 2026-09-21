@@ -14,6 +14,7 @@ export const INSTRUCTIONAL_AREA_CODE_NAMES: Record<string, string> = {
   CM: "Channel Management",
   CO: "Communications",
   CR: "Customer Relations",
+  DS: "Distribution",
   EC: "Economics",
   EI: "Emotional Intelligence",
   EN: "Entrepreneurship",

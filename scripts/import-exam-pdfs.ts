@@ -45,6 +45,12 @@ const LABEL_OVERRIDES: Record<string, { sourceExam: string; sourceYear: number |
     sourceExam: "2022 Entrepreneurship State Exam",
     sourceYear: 2022,
   },
+  // Collegiate DECA, not the high-school division the rest of this app
+  // targets — labeled distinctly so it's not mistaken for HS-level content.
+  "2017_hospitality-tourism_collegiate_sample_exam.pdf": {
+    sourceExam: "2017 Hospitality and Tourism Collegiate Sample Exam",
+    sourceYear: 2017,
+  },
 };
 
 function labelFor(

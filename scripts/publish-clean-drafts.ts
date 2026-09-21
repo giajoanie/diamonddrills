@@ -21,6 +21,13 @@ const TARGETS: { examBankSlug: string; sourceExam: string }[] = [
   { examBankSlug: "entrepreneurship", sourceExam: "2017 Entrepreneurship Sample Exam" },
   { examBankSlug: "entrepreneurship", sourceExam: "2019 Entrepreneurship Sample Exam" },
   { examBankSlug: "entrepreneurship", sourceExam: "2022 Entrepreneurship State Exam" },
+  { examBankSlug: "hospitality-tourism", sourceExam: "2010 Hospitality and Tourism ICDC Exam" },
+  { examBankSlug: "hospitality-tourism", sourceExam: "2011 Hospitality and Tourism ICDC Exam" },
+  { examBankSlug: "hospitality-tourism", sourceExam: "2015 Hospitality and Tourism Sample Exam" },
+  {
+    examBankSlug: "hospitality-tourism",
+    sourceExam: "2017 Hospitality and Tourism Collegiate Sample Exam",
+  },
 ];
 
 async function main() {
