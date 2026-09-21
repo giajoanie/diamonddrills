@@ -12,6 +12,7 @@ import {
   identifyNeedsAttention,
 } from "@/lib/analytics/kpis";
 import { generateLessonPlanRecommendations } from "@/lib/analytics/lesson-plan";
+import { computeAreaTrend, type AreaTrend } from "@/lib/analytics/trend";
 
 export type DashboardFilters = {
   grade?: number;
@@ -301,7 +302,7 @@ export const getLessonPlanRecommendations = cache(async (filters: DashboardFilte
     },
     select: {
       isCorrect: true,
-      examAttempt: { select: { userId: true } },
+      examAttempt: { select: { userId: true, submittedAt: true } },
       question: { select: { instructionalArea: { select: { id: true, name: true } } } },
     },
   });
@@ -352,7 +353,22 @@ export const getLessonPlanRecommendations = cache(async (filters: DashboardFilte
     }));
   }
 
-  return generateLessonPlanRecommendations(weakAreasWithIds, resourceIdsByArea, studentAccuracyByArea, topN);
+  const trendByArea: Record<string, AreaTrend> = {};
+  for (const areaId of areaIds) {
+    const chronological = questionResults
+      .filter((q) => q.question.instructionalArea?.id === areaId && q.examAttempt.submittedAt)
+      .sort((a, b) => a.examAttempt.submittedAt!.getTime() - b.examAttempt.submittedAt!.getTime())
+      .map((q) => q.isCorrect ?? false);
+    trendByArea[areaId] = computeAreaTrend(chronological);
+  }
+
+  return generateLessonPlanRecommendations(
+    weakAreasWithIds,
+    resourceIdsByArea,
+    studentAccuracyByArea,
+    topN,
+    trendByArea,
+  );
 });
 
 export const getUngradedSubmissionsQueue = cache(async () => {

@@ -6,7 +6,10 @@ import {
   getExistingBaselineAttempt,
   getScoreHistory,
   getDueMissedQuestionCount,
+  getAttemptQuestionHistory,
+  getInstructionalAreasForBank,
 } from "@/lib/dal/exam-engine";
+import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
@@ -33,7 +36,7 @@ export default async function DashboardPage() {
     written ? getTeamForStudentEvent(user.id, written.event.id) : null,
   ]);
 
-  const [baselineFlags, scoreHistory, missedCount] = await Promise.all([
+  const [baselineFlags, scoreHistory, missedCount, questionHistory, instructionalAreas] = await Promise.all([
     Promise.all(
       examBanks.map(async (bank) => ({
         bank,
@@ -42,10 +45,18 @@ export default async function DashboardPage() {
     ),
     getScoreHistory(user.id),
     getDueMissedQuestionCount(user.id),
+    getAttemptQuestionHistory(user.id),
+    getInstructionalAreasForBank(),
   ]);
 
   const banksMissingBaseline = baselineFlags.filter((b) => !b.hasBaseline).map((b) => b.bank.name);
   const latestAttempt = scoreHistory[scoreHistory.length - 1];
+
+  const perAttemptBreakdowns = questionHistory.map((a) => computeAreaBreakdown(a.questions));
+  const nameToId = new Map(instructionalAreas.map((a) => [a.name, a.id]));
+  const recommendedPractice = computeWeightedWeakAreas(perAttemptBreakdowns, 3)
+    .map((a) => ({ ...a, areaId: nameToId.get(a.areaName) }))
+    .filter((a): a is typeof a & { areaId: string } => !!a.areaId);
 
   return (
     <>
@@ -112,6 +123,28 @@ export default async function DashboardPage() {
             <Link href="/exam/start">
               <Button variant="secondary">Practice now</Button>
             </Link>
+          </Card>
+        )}
+
+        {recommendedPractice.length > 0 && (
+          <Card className="mt-4">
+            <p className="text-sm font-medium text-foreground">Recommended for you</p>
+            <p className="text-sm text-foreground-muted">Your weakest areas, weighted toward recent attempts.</p>
+            <ul className="mt-2 space-y-1">
+              {recommendedPractice.map((a) => (
+                <li key={a.areaId} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground-muted">
+                    {a.areaName} · {Math.round(a.weightedAccuracy)}%
+                  </span>
+                  <Link
+                    href={`/exam/start?mode=PRACTICE_AREA&area=${a.areaId}`}
+                    className="text-accent hover:underline"
+                  >
+                    Practice this →
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </Card>
         )}
 

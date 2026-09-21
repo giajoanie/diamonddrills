@@ -53,4 +53,22 @@ describe("generateLessonPlanRecommendations", () => {
   it("is empty with no weak areas", () => {
     expect(generateLessonPlanRecommendations([], {}, {}, 3)).toEqual([]);
   });
+
+  it("defaults to a stable trend when none is supplied", () => {
+    const result = generateLessonPlanRecommendations(weakAreas, {}, {}, 1);
+    expect(result[0].trend).toBe("stable");
+    expect(result[0].reason.endsWith("accuracy.")).toBe(true);
+  });
+
+  it("mentions a declining trend in the reason", () => {
+    const result = generateLessonPlanRecommendations(weakAreas, {}, {}, 1, { a1: "declining" });
+    expect(result[0].trend).toBe("declining");
+    expect(result[0].reason).toContain("trending down");
+  });
+
+  it("mentions an improving trend in the reason", () => {
+    const result = generateLessonPlanRecommendations(weakAreas, {}, {}, 1, { a1: "improving" });
+    expect(result[0].trend).toBe("improving");
+    expect(result[0].reason).toContain("improving recently");
+  });
 });
