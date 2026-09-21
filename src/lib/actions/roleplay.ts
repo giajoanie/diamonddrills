@@ -62,6 +62,14 @@ export async function saveRoleplayNotes(formData: FormData): Promise<void> {
   });
 }
 
+// Plain form-action wrapper so a server component (e.g. the exam results
+// page's "start your roleplay now" CTA after Competition Simulation Mode)
+// can hand this straight to <form action={...}> without a client component
+// — startRoleplaySession's two-arg signature is shaped for useActionState.
+export async function startRoleplayFromExamResults(formData: FormData): Promise<void> {
+  await startRoleplaySession(undefined, formData);
+}
+
 export type CompleteRoleplayState = { error?: string } | undefined;
 
 export async function completeRoleplaySession(

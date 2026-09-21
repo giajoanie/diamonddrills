@@ -12,6 +12,52 @@ import type { ExamMode, OptionKey } from "@/generated/prisma/client";
 
 export type StartExamState = { error?: string } | undefined;
 
+// Competition Simulation Mode (Tier 3): a timed exam followed immediately by
+// a timed roleplay, like competition day. Only offered for the student's
+// current roleplay-category events that also have an exam component (a
+// "Series" event, in DECA terms) — event-first rather than the usual
+// bank-first /exam/start flow, since the roleplay leg needs a specific
+// eventId to chain into afterward (see the results page's CTA).
+export async function startCompetitionSimulation(
+  _prevState: StartExamState,
+  formData: FormData,
+): Promise<StartExamState> {
+  const student = await requireRole("STUDENT");
+
+  const eventId = formData.get("eventId");
+  if (typeof eventId !== "string" || !eventId) return { error: "Choose an event." };
+
+  const enrollment = await prisma.eventEnrollment.findFirst({
+    where: { userId: student.id, eventId, isCurrent: true },
+    include: { event: true },
+  });
+  if (!enrollment || enrollment.event.category !== "ROLEPLAY" || !enrollment.event.hasExam) {
+    return { error: "That isn't one of your current events with both an exam and a roleplay." };
+  }
+  const examBankId = enrollment.event.examBankId;
+  if (!examBankId) return { error: "This event doesn't have an exam bank configured yet." };
+
+  const preset = TIMED_EXAM_PRESETS[90]; // full competition format: 100 questions, 90 minutes
+  const pool = await prisma.question.findMany({
+    where: { examBankId, isActive: true },
+    select: { id: true },
+  });
+  if (pool.length === 0) return { error: "No questions are available for this exam yet." };
+
+  const selected = pickRandomSubset(pool, preset.questions);
+  return startAttemptWithQuestionIds(
+    student.id,
+    examBankId,
+    "COMPETITION_SIMULATION",
+    false,
+    preset.minutes * 60,
+    selected.map((q) => q.id),
+    selected.length < preset.questions,
+    undefined,
+    eventId,
+  );
+}
+
 export async function startExam(
   _prevState: StartExamState,
   formData: FormData,
@@ -116,6 +162,7 @@ export async function startAttemptWithQuestionIds(
   questionIds: string[],
   shortfall = false,
   assignmentId?: string,
+  eventId?: string,
 ): Promise<never> {
   const attempt = await prisma.$transaction(async (tx) => {
     const created = await tx.examAttempt.create({
@@ -128,6 +175,7 @@ export async function startAttemptWithQuestionIds(
         questionCount: questionIds.length,
         status: "IN_PROGRESS",
         assignmentId,
+        eventId,
       },
     });
 

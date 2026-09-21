@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAttemptForResults } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
+import { startRoleplayFromExamResults } from "@/lib/actions/roleplay";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -47,6 +48,19 @@ export default async function ExamResultsPage({
       <AppHeader user={user} homeHref="/dashboard" />
       <main className="mx-auto max-w-3xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="text-2xl font-semibold text-foreground">Results</h1>
+
+        {attempt.mode === "COMPETITION_SIMULATION" && attempt.eventId && (
+          <Card className="mt-4 border-accent/50">
+            <p className="font-medium text-foreground">Competition day isn&apos;t over yet</p>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Head straight into your timed roleplay now, just like the real thing.
+            </p>
+            <form action={startRoleplayFromExamResults} className="mt-3">
+              <input type="hidden" name="eventId" value={attempt.eventId} />
+              <Button type="submit">Start your roleplay now</Button>
+            </form>
+          </Card>
+        )}
 
         <Card className="mt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-4">

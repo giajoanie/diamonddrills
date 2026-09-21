@@ -168,6 +168,14 @@ export default async function DashboardPage() {
                 <Link href="/roleplay/start" className="mt-1 block text-sm text-accent hover:underline">
                   Practice roleplay
                 </Link>
+                {roleplay.event.hasExam && (
+                  <Link
+                    href="/exam/simulation/start"
+                    className="mt-1 block text-sm text-accent hover:underline"
+                  >
+                    Competition simulation (exam + roleplay)
+                  </Link>
+                )}
                 <EventSwitcher
                   category="ROLEPLAY"
                   currentEventId={roleplay.event.id}

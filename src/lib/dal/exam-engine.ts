@@ -16,6 +16,14 @@ export const getStudentExamBanks = cache(async (userId: string) => {
   return [...banks.values()];
 });
 
+export const getSimulationEligibleEvents = cache(async (userId: string) => {
+  const enrollments = await prisma.eventEnrollment.findMany({
+    where: { userId, isCurrent: true, event: { category: "ROLEPLAY", hasExam: true, examBankId: { not: null } } },
+    include: { event: true },
+  });
+  return enrollments.map((e) => e.event);
+});
+
 export const getInstructionalAreasForBank = cache(async () => {
   // Instructional areas are global (see DECISIONS.md), so this just lists all of them.
   return prisma.instructionalArea.findMany({ orderBy: { name: "asc" } });
