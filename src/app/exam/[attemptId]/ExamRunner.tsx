@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Flag, AlertTriangle } from "lucide-react";
-import { saveAnswer, toggleFlag, submitExam, abandonExam } from "@/lib/actions/exam-engine";
+import {
+  saveAnswer,
+  toggleFlag,
+  submitExam,
+  abandonExam,
+} from "@/lib/actions/exam-engine";
 import { computeRemainingSeconds } from "@/lib/exam-engine/timer";
 import { formatTime } from "@/lib/format-time";
 import { Button } from "@/components/ui/Button";
@@ -37,20 +42,29 @@ export function ExamRunner({
   questions: ExamQuestion[];
   showShortfallNotice: boolean;
 }) {
-  const serverStartTime = useMemo(() => new Date(serverStartTimeIso), [serverStartTimeIso]);
+  const serverStartTime = useMemo(
+    () => new Date(serverStartTimeIso),
+    [serverStartTimeIso],
+  );
   const [remaining, setRemaining] = useState(() =>
     computeRemainingSeconds(serverStartTime, timeLimitSeconds),
   );
   const [answers, setAnswers] = useState<Record<string, OptionKey | null>>(() =>
-    Object.fromEntries(initialQuestions.map((q) => [q.questionId, q.studentAnswer])),
+    Object.fromEntries(
+      initialQuestions.map((q) => [q.questionId, q.studentAnswer]),
+    ),
   );
   const [flags, setFlags] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(initialQuestions.map((q) => [q.questionId, q.isFlagged])),
+    Object.fromEntries(
+      initialQuestions.map((q) => [q.questionId, q.isFlagged]),
+    ),
   );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle",
+  );
 
   const current = initialQuestions[currentIndex];
 
@@ -76,14 +90,18 @@ export function ExamRunner({
   function selectAnswer(questionId: string, letter: OptionKey) {
     setAnswers((prev) => ({ ...prev, [questionId]: letter }));
     setSaveStatus("saving");
-    void saveAnswer(attemptId, questionId, letter).then(() => setSaveStatus("saved"));
+    void saveAnswer(attemptId, questionId, letter).then(() =>
+      setSaveStatus("saved"),
+    );
   }
 
   function toggleCurrentFlag() {
     const next = !flags[current.questionId];
     setFlags((prev) => ({ ...prev, [current.questionId]: next }));
     setSaveStatus("saving");
-    void toggleFlag(attemptId, current.questionId, next).then(() => setSaveStatus("saved"));
+    void toggleFlag(attemptId, current.questionId, next).then(() =>
+      setSaveStatus("saved"),
+    );
   }
 
   const answeredCount = Object.values(answers).filter((a) => a !== null).length;
@@ -98,24 +116,37 @@ export function ExamRunner({
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <FolderTabs
           tabs={[
-            { label: `Question ${currentIndex + 1} of ${initialQuestions.length}`, active: true },
+            {
+              label: `Question ${currentIndex + 1} of ${initialQuestions.length}`,
+              active: true,
+            },
             {
               label:
-                saveStatus === "saving" ? "Saving…" : saveStatus === "saved" ? "Saved" : "Autosave on",
+                saveStatus === "saving"
+                  ? "Saving…"
+                  : saveStatus === "saved"
+                    ? "Saved"
+                    : "Autosave on",
             },
           ]}
         />
         <div className="flex items-center gap-2">
           <span
             className={`rounded-full bg-background-elevated px-4 py-1.5 font-mono text-lg font-semibold shadow-lg ${
-              isLowTime ? "animate-pulse text-danger" : isWarningTime ? "text-warning" : "text-accent-strong"
+              isLowTime
+                ? "animate-pulse text-danger"
+                : isWarningTime
+                  ? "text-warning"
+                  : "text-accent-strong"
             }`}
           >
             {formatTime(remaining)}
           </span>
           <form
             action={async () => {
-              if (confirm("Abandon this exam? Your progress will not be scored.")) {
+              if (
+                confirm("Abandon this exam? Your progress will not be scored.")
+              ) {
                 await abandonExam(attemptId);
               }
             }}
@@ -134,8 +165,8 @@ export function ExamRunner({
         <div>
           {showShortfallNotice && (
             <div className="mb-4 rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning">
-              Fewer questions were available than requested, so this exam uses all the questions
-              currently in the bank.
+              Fewer questions were available than requested, so this exam uses
+              all the questions currently in the bank.
             </div>
           )}
           {isWarningTime && (
@@ -160,19 +191,25 @@ export function ExamRunner({
                     : "text-foreground-subtle hover:bg-surface-hover hover:text-foreground-muted"
                 }`}
               >
-                <Flag className="h-5 w-5" fill={flags[current.questionId] ? "currentColor" : "none"} />
+                <Flag
+                  className="h-5 w-5"
+                  fill={flags[current.questionId] ? "currentColor" : "none"}
+                />
               </button>
             </div>
 
             <div className="mt-4 space-y-2">
               {(["A", "B", "C", "D"] as const).map((displayLetter, i) => {
                 const originalLetter = current.optionOrder[i];
-                const isSelected = answers[current.questionId] === originalLetter;
+                const isSelected =
+                  answers[current.questionId] === originalLetter;
                 return (
                   <button
                     key={displayLetter}
                     type="button"
-                    onClick={() => selectAnswer(current.questionId, originalLetter)}
+                    onClick={() =>
+                      selectAnswer(current.questionId, originalLetter)
+                    }
                     className={`flex w-full items-start gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-colors ${
                       isSelected
                         ? "border-accent-strong bg-accent-soft text-foreground"
@@ -204,15 +241,22 @@ export function ExamRunner({
               Previous
             </Button>
             {currentIndex < initialQuestions.length - 1 ? (
-              <Button onClick={() => setCurrentIndex((i) => i + 1)}>Next</Button>
+              <Button onClick={() => setCurrentIndex((i) => i + 1)}>
+                Next
+              </Button>
             ) : (
-              <Button onClick={() => setShowConfirmSubmit(true)}>Submit exam</Button>
+              <Button onClick={() => setShowConfirmSubmit(true)}>
+                Submit exam
+              </Button>
             )}
           </div>
         </div>
 
         {/* "Punched answer sheet" navigator */}
-        <nav aria-label="Question navigator" className="order-first md:order-none">
+        <nav
+          aria-label="Question navigator"
+          className="order-first md:order-none"
+        >
           <div className="rounded-xl border-2 border-border bg-background-elevated p-3 shadow-[3px_3px_0_var(--color-border)]">
             <p className="mb-2 text-sm font-medium text-foreground-muted">
               {answeredCount}/{initialQuestions.length} answered
@@ -243,7 +287,10 @@ export function ExamRunner({
               })}
             </div>
           </div>
-          <Button className="mt-4 w-full" onClick={() => setShowConfirmSubmit(true)}>
+          <Button
+            className="mt-4 w-full"
+            onClick={() => setShowConfirmSubmit(true)}
+          >
             Submit exam
           </Button>
         </nav>
@@ -252,13 +299,18 @@ export function ExamRunner({
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-xl border-2 border-border bg-background-elevated p-5 shadow-[4px_4px_0_var(--color-accent-strong)]">
-            <h2 className="font-display text-lg font-bold text-foreground">Submit this exam?</h2>
+            <h2 className="font-display text-lg font-bold text-foreground">
+              Submit this exam?
+            </h2>
             <p className="mt-2 text-sm text-foreground-muted">
-              {unansweredCount} unanswered, {flaggedCount} flagged for review. This can&apos;t be
-              undone.
+              {unansweredCount} unanswered, {flaggedCount} flagged for review.
+              This can&apos;t be undone.
             </p>
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setShowConfirmSubmit(false)}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowConfirmSubmit(false)}
+              >
                 Keep working
               </Button>
               <Button onClick={handleSubmit} disabled={submitting}>

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getSubmissionForGrading } from "@/lib/dal/assignments";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { BinderPageShell } from "@/components/binder/BinderPageShell";
+import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Card } from "@/components/ui/Card";
 import { FileComments } from "@/components/FileComments";
 import { computeRubricTotal } from "@/lib/assignments/scoring";
@@ -26,51 +27,64 @@ export default async function GradeSubmissionPage({
 
   return (
     <>
-      <AppHeader user={user} homeHref="/mentor" />
-      <main className="mx-auto max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-semibold text-foreground">{submission.assignment.title}</h1>
-        <p className="mt-1 text-foreground-muted">
-          {submission.user.firstName} · {submission.user.schoolId}
-          {submission.isLate ? " · Submitted late" : ""}
-        </p>
-
-        <Card className="mt-6">
-          <p className="mb-2 font-medium text-foreground">Submitted files</p>
-          {submission.files.length > 0 ? (
-            <div className="space-y-4">
-              {submission.files.map((f) => (
-                <div key={f.id}>
-                  <a
-                    href={`/files/${f.fileUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm text-accent hover:underline"
-                  >
-                    Version {f.versionNumber} · {f.uploadedAt.toLocaleString()}
-                  </a>
-                  <FileComments submissionFileId={f.id} comments={f.comments} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-foreground-muted">No files submitted yet.</p>
-          )}
-        </Card>
-
-        <Card className="mt-4">
-          {criteria.length > 0 && (
-            <p className="mb-4 text-sm font-medium text-foreground">
-              Total: {total.earned} / {total.possible}
+      <BinderPageShell user={user} homeHref="/mentor">
+        <TabbedCard>
+          <div className="mx-auto max-w-3xl">
+            <h1 className="text-2xl font-semibold text-foreground">
+              {submission.assignment.title}
+            </h1>
+            <p className="mt-1 text-foreground-muted">
+              {submission.user.firstName} · {submission.user.schoolId}
+              {submission.isLate ? " · Submitted late" : ""}
             </p>
-          )}
-          <GradingForm
-            submissionId={submission.id}
-            criteria={criteria}
-            existingScores={submission.rubricScores}
-            existingFeedback={submission.feedback}
-          />
-        </Card>
-      </main>
+
+            <Card className="mt-6">
+              <p className="mb-2 font-medium text-foreground">
+                Submitted files
+              </p>
+              {submission.files.length > 0 ? (
+                <div className="space-y-4">
+                  {submission.files.map((f) => (
+                    <div key={f.id}>
+                      <a
+                        href={`/files/${f.fileUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-sm text-accent hover:underline"
+                      >
+                        Version {f.versionNumber} ·{" "}
+                        {f.uploadedAt.toLocaleString()}
+                      </a>
+                      <FileComments
+                        submissionFileId={f.id}
+                        comments={f.comments}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-foreground-muted">
+                  No files submitted yet.
+                </p>
+              )}
+            </Card>
+
+            <Card className="mt-4">
+              {criteria.length > 0 && (
+                <p className="mb-4 text-sm font-medium text-foreground">
+                  Total: {total.earned} / {total.possible}
+                </p>
+              )}
+              <GradingForm
+                submissionId={submission.id}
+                criteria={criteria}
+                existingScores={submission.rubricScores}
+                existingFeedback={submission.feedback}
+              />
+            </Card>
+          </div>
+        </TabbedCard>
+      </BinderPageShell>
     </>
   );
 }

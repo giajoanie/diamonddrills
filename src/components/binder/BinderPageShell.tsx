@@ -23,38 +23,30 @@ export function BinderPageShell({
 }) {
   return (
     <div className="shell-diamond-bg min-h-full flex-1">
-      <div className="mx-auto flex max-w-6xl gap-3 px-3 py-6 sm:gap-5 sm:px-6">
-        <div className="spine-rule hidden shrink-0 flex-col items-center gap-7 pr-4 pt-16 sm:flex">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <span key={i} className="spine-hole" />
-          ))}
+      <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6">
+        <div className="mb-3 flex items-center justify-between gap-3 px-1">
+          <Link href={homeHref} className="text-sm font-bold text-white/90 hover:text-white">
+            Diamond Drills
+          </Link>
+          {user && (
+            <div className="flex items-center gap-3">
+              <span className="hidden text-sm text-white/80 sm:inline">
+                {user.firstName} · {user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`}
+              </span>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  aria-label="Log out"
+                  className="flex items-center gap-1.5 rounded-full p-2 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+                >
+                  <LogOut className="h-4 w-4" aria-hidden />
+                </button>
+              </form>
+            </div>
+          )}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="mb-3 flex items-center justify-between gap-3 px-1">
-            <Link href={homeHref} className="text-sm font-bold text-white/90 hover:text-white">
-              Diamond Drills
-            </Link>
-            {user && (
-              <div className="flex items-center gap-3">
-                <span className="hidden text-sm text-white/80 sm:inline">
-                  {user.firstName} · {user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`}
-                </span>
-                <form action={logout}>
-                  <button
-                    type="submit"
-                    aria-label="Log out"
-                    className="flex items-center gap-1.5 rounded-full p-2 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-                  >
-                    <LogOut className="h-4 w-4" aria-hidden />
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   );
