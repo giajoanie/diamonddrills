@@ -5,7 +5,14 @@ const nextConfig: NextConfig = {
   // that Turbopack's server bundling breaks (it can't resolve the emitted
   // pdf.worker.mjs chunk). Excluding it from bundling and using native
   // Node `require` instead avoids that.
-  serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
+  //
+  // @node-rs/argon2 is a native (napi-rs) addon that picks its platform
+  // binary via a dynamic require() — Next's server file-tracing can't
+  // always follow that statically, so the compiled serverless function can
+  // ship without the .node binary and crash on the first hashPassword/
+  // verifyPassword call (i.e. every login and signup). Excluding it here
+  // instead makes it a plain runtime `require`, which resolves normally.
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@node-rs/argon2"],
 
   // Baseline security headers (Phase 7 security review) — this app has no
   // reason to be framed by another site, sniffed as a different content
