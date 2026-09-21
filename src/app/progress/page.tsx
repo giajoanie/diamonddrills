@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAttemptQuestionHistory } from "@/lib/dal/exam-engine";
+import { getPracticeActivityDates } from "@/lib/dal/analytics";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { computeLongestCorrectStreak } from "@/lib/exam-engine/streak";
+import { computePracticeStreak } from "@/lib/analytics/streaks";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { ScoreTrendChart } from "@/components/charts/ScoreTrendChart";
@@ -12,7 +14,11 @@ export const dynamic = "force-dynamic";
 
 export default async function ProgressPage() {
   const user = await requireActiveUser("STUDENT");
-  const attempts = await getAttemptQuestionHistory(user.id);
+  const [attempts, practiceDates] = await Promise.all([
+    getAttemptQuestionHistory(user.id),
+    getPracticeActivityDates(user.id),
+  ]);
+  const practiceStreak = computePracticeStreak(practiceDates, new Date());
 
   if (attempts.length === 0) {
     return (
@@ -25,6 +31,16 @@ export default async function ProgressPage() {
               No completed exams yet — take your Baseline Diagnostic to start tracking growth.
             </p>
           </Card>
+          {practiceStreak.current > 0 && (
+            <Card className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+                Current practice streak
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-foreground">
+                {practiceStreak.current} day{practiceStreak.current === 1 ? "" : "s"}
+              </p>
+            </Card>
+          )}
         </main>
       </>
     );
@@ -61,6 +77,22 @@ export default async function ProgressPage() {
               Longest correct streak
             </p>
             <p className="mt-1 text-2xl font-semibold text-foreground">{longestStreak}</p>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+              Current practice streak
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {practiceStreak.current} day{practiceStreak.current === 1 ? "" : "s"}
+            </p>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-subtle">
+              Longest practice streak
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {practiceStreak.longest} day{practiceStreak.longest === 1 ? "" : "s"}
+            </p>
           </Card>
         </div>
 

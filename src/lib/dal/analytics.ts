@@ -405,3 +405,19 @@ export const getActivityTimeline = cache(async (userId: string, limit = 100) => 
     take: limit,
   });
 });
+
+const PRACTICE_ACTIVITY_TYPES = [
+  "EXAM_START",
+  "PRACTICE_SESSION_START",
+  "ROLEPLAY_SESSION_START",
+  "SUBMISSION_CREATED",
+] as const;
+
+/** Dates of "did some practice" activity, for the personal practice-streak record (Tier 3). */
+export const getPracticeActivityDates = cache(async (userId: string) => {
+  const logs = await prisma.activityLog.findMany({
+    where: { userId, type: { in: [...PRACTICE_ACTIVITY_TYPES] } },
+    select: { createdAt: true },
+  });
+  return logs.map((l) => l.createdAt);
+});
