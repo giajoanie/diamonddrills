@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getStudentProfile } from "@/lib/dal/mentor";
-import { getAttemptQuestionHistory } from "@/lib/dal/exam-engine";
+import { getAttemptQuestionHistory, getMasteryEstimates } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
 import { computeInterventionImpact } from "@/lib/analytics/intervention-impact";
 import { describeActivity } from "@/lib/analytics/activity-labels";
@@ -25,7 +25,10 @@ export default async function MentorStudentProfilePage({
 
   const { student, enrollmentHistory, examAttempts, submissions, rubricScores, activityLog, interventions, instructionalAreas } = profile;
 
-  const questionHistory = await getAttemptQuestionHistory(studentId);
+  const [questionHistory, masteryEstimates] = await Promise.all([
+    getAttemptQuestionHistory(studentId),
+    getMasteryEstimates(studentId),
+  ]);
   const areaBreakdown = computeAreaBreakdown(questionHistory.flatMap((a) => a.questions));
 
   const percentagePoints = examAttempts
@@ -92,6 +95,20 @@ export default async function MentorStudentProfilePage({
             </ul>
           </Card>
         </div>
+
+        {masteryEstimates.length > 0 && (
+          <Card className="mt-4">
+            <p className="mb-2 font-medium text-foreground">Predicted mastery by instructional area</p>
+            <ul className="space-y-1 text-sm">
+              {masteryEstimates.map((a) => (
+                <li key={a.areaId} className="flex items-center justify-between gap-3">
+                  <span className="text-foreground-muted">{a.areaName}</span>
+                  <span className="text-foreground-subtle">{Math.round(a.estimatedMastery * 100)}%</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
 
         <Card className="mt-4">
           <p className="mb-2 font-medium text-foreground">Submissions</p>

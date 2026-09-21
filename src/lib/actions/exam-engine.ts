@@ -8,6 +8,7 @@ import { computeScore } from "@/lib/exam-engine/scoring";
 import { computeTimeUsedSeconds, isExpired } from "@/lib/exam-engine/timer";
 import { TIMED_EXAM_PRESETS, BASELINE_PRESET } from "@/lib/exam-engine/presets";
 import { computeNextDueAt, MASTERY_STREAK } from "@/lib/exam-engine/spaced-repetition";
+import { predictMastery } from "@/lib/analytics/mastery";
 import type { ExamMode, OptionKey } from "@/generated/prisma/client";
 
 export type StartExamState = { error?: string } | undefined;
@@ -316,6 +317,41 @@ export async function finalizeAttempt(
   await prisma.activityLog.create({
     data: { userId: attempt.userId, type: "EXAM_COMPLETE", metadata: { attemptId, status: finalStatus } },
   });
+
+  await updateMasteryEstimates(
+    attempt.userId,
+    attempt.examBankId,
+    [...new Set(attempt.questions.map((q) => q.question.instructionalAreaId).filter((id): id is string => !!id))],
+  );
+}
+
+/**
+ * Recomputes the advanced mastery prediction (src/lib/analytics/mastery.ts)
+ * for each instructional area touched by a just-finalized attempt, using
+ * that student's full chronological history in this exam bank — not just
+ * this attempt — then caches it in MasteryEstimate (anticipated by the
+ * Phase 0 schema, unused until now) so mentor/student views can read a
+ * precomputed estimate instead of recomputing it on every page load.
+ */
+async function updateMasteryEstimates(userId: string, examBankId: string, areaIds: string[]): Promise<void> {
+  for (const instructionalAreaId of areaIds) {
+    const results = await prisma.examAttemptQuestion.findMany({
+      where: {
+        question: { instructionalAreaId },
+        examAttempt: { userId, examBankId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] } },
+      },
+      select: { isCorrect: true, examAttempt: { select: { submittedAt: true } } },
+      orderBy: { examAttempt: { submittedAt: "asc" } },
+    });
+
+    const { estimatedMastery } = predictMastery(results.map((r) => r.isCorrect ?? false));
+
+    await prisma.masteryEstimate.upsert({
+      where: { userId_instructionalAreaId: { userId, instructionalAreaId } },
+      create: { userId, examBankId, instructionalAreaId, estimatedMastery },
+      update: { estimatedMastery },
+    });
+  }
 }
 
 export async function submitExam(attemptId: string): Promise<void> {

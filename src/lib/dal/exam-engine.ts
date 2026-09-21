@@ -131,3 +131,18 @@ export const getDueMissedQuestionCount = cache(async (userId: string) => {
     where: { userId, isMastered: false, nextDueAt: { lte: new Date() } },
   });
 });
+
+/** Cached advanced mastery predictions (analytics/mastery.ts), weakest first. */
+export const getMasteryEstimates = cache(async (userId: string) => {
+  const estimates = await prisma.masteryEstimate.findMany({
+    where: { userId },
+    include: { instructionalArea: { select: { name: true } } },
+    orderBy: { estimatedMastery: "asc" },
+  });
+  return estimates.map((e) => ({
+    areaId: e.instructionalAreaId,
+    areaName: e.instructionalArea.name,
+    estimatedMastery: e.estimatedMastery,
+    updatedAt: e.updatedAt,
+  }));
+});

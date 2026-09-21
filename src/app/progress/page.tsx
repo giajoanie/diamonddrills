@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getAttemptQuestionHistory } from "@/lib/dal/exam-engine";
+import { getAttemptQuestionHistory, getMasteryEstimates } from "@/lib/dal/exam-engine";
 import { getPracticeActivityDates } from "@/lib/dal/analytics";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 import { computeLongestCorrectStreak } from "@/lib/exam-engine/streak";
@@ -14,9 +14,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ProgressPage() {
   const user = await requireActiveUser("STUDENT");
-  const [attempts, practiceDates] = await Promise.all([
+  const [attempts, practiceDates, masteryEstimates] = await Promise.all([
     getAttemptQuestionHistory(user.id),
     getPracticeActivityDates(user.id),
+    getMasteryEstimates(user.id),
   ]);
   const practiceStreak = computePracticeStreak(practiceDates, new Date());
 
@@ -114,6 +115,25 @@ export default async function ProgressPage() {
             ))}
           </ul>
         </Card>
+
+        {masteryEstimates.length > 0 && (
+          <Card className="mt-4">
+            <h2 className="mb-2 font-medium text-foreground">Predicted mastery by instructional area</h2>
+            <p className="mb-2 text-xs text-foreground-subtle">
+              A model of how well you&apos;d likely do on a fresh question in each area right now —
+              weighted toward your most recent answers, and cautious until you&apos;ve answered enough
+              questions to be confident.
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              {masteryEstimates.map((a) => (
+                <li key={a.areaId} className="flex justify-between text-foreground-muted">
+                  <span>{a.areaName}</span>
+                  <span>{Math.round(a.estimatedMastery * 100)}%</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
       </main>
     </>
   );
