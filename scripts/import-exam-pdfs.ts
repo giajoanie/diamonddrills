@@ -37,7 +37,14 @@ type FileReport = {
   anomalies: string[];
 };
 
+// Filenames whose real exam level doesn't fit the year-prefix heuristic below
+// (e.g. a State/Province exam, which would otherwise get mislabeled "ICDC").
+const LABEL_OVERRIDES: Record<string, { sourceExam: string; sourceYear: number | null }> = {
+  "2022_marketing_state_exam.pdf": { sourceExam: "2022 Marketing State Exam", sourceYear: 2022 },
+};
+
 function labelFor(filename: string): { sourceExam: string; sourceYear: number | null } {
+  if (LABEL_OVERRIDES[filename]) return LABEL_OVERRIDES[filename];
   const yearMatch = filename.match(/^(\d{4})/);
   const sourceYear = yearMatch ? parseInt(yearMatch[1], 10) : null;
   const isSample = /sample/i.test(filename);
