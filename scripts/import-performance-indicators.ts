@@ -23,7 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { PDFParse } from "pdf-parse";
-import { parsePiPages, type PiPageRange, type ParsedPerformanceIndicator } from "@/lib/exam-import/parse-pi-text";
+import { parsePiPages, type PiPageRange } from "@/lib/exam-import/parse-pi-text";
 
 const ROOT = path.join(process.cwd(), "seed/performance-indicators");
 
@@ -118,37 +118,46 @@ const PFL_TOPIC_SUMMARIES: { instructionalArea: string; description: string }[] 
   },
 ];
 
+// Two round trips total per exam bank (fetch existing keys, then one batch
+// insert) instead of a findFirst+create pair per row — the latter was ~3,000
+// sequential network round trips against a remote DB, painfully slow.
+type InsertableRow = {
+  examBankId: string;
+  tier: string;
+  pathway: string | null;
+  instructionalArea: string;
+  code: string | null;
+  level: string | null;
+  description: string;
+};
+
+function keyOf(row: { tier: string; pathway: string | null; code: string | null; description: string }) {
+  return `${row.tier}|${row.pathway ?? ""}|${row.code ?? ""}|${row.description}`;
+}
+
+async function insertNewRows(examBankId: string, rows: InsertableRow[]): Promise<number> {
+  if (rows.length === 0) return 0;
+  const existing = await prisma.performanceIndicator.findMany({
+    where: { examBankId },
+    select: { tier: true, pathway: true, code: true, description: true },
+  });
+  const existingKeys = new Set(existing.map(keyOf));
+  const toCreate = rows.filter((r) => !existingKeys.has(keyOf(r)));
+  if (toCreate.length === 0) return 0;
+  const result = await prisma.performanceIndicator.createMany({ data: toCreate });
+  return result.count;
+}
+
 async function importSource(source: (typeof SOURCES)[number]): Promise<number> {
   const examBank = await prisma.examBank.findUniqueOrThrow({ where: { slug: source.examBankSlug } });
   const filePath = path.join(ROOT, source.file);
   const pages = await getPages(filePath);
   const parsed = parsePiPages(pages, source.ranges);
-  return upsertRows(
+  console.log(`  parsed ${parsed.length} rows from ${source.file}, checking against existing...`);
+  return insertNewRows(
     examBank.id,
     parsed.map((p) => ({ ...p, examBankId: examBank.id })),
   );
-}
-
-async function upsertRows(
-  examBankId: string,
-  rows: (ParsedPerformanceIndicator & { examBankId: string })[],
-): Promise<number> {
-  let created = 0;
-  for (const row of rows) {
-    const existing = await prisma.performanceIndicator.findFirst({
-      where: {
-        examBankId,
-        tier: row.tier,
-        pathway: row.pathway,
-        code: row.code,
-        description: row.description,
-      },
-    });
-    if (existing) continue;
-    await prisma.performanceIndicator.create({ data: row });
-    created++;
-  }
-  return created;
 }
 
 async function importPfl(): Promise<number> {
@@ -164,27 +173,16 @@ async function importPfl(): Promise<number> {
     level: null,
     description: t.description,
   }));
-  let created = 0;
-  for (const row of rows) {
-    const existing = await prisma.performanceIndicator.findFirst({
-      where: {
-        examBankId: row.examBankId,
-        tier: row.tier,
-        instructionalArea: row.instructionalArea,
-      },
-    });
-    if (existing) continue;
-    await prisma.performanceIndicator.create({ data: row });
-    created++;
-  }
-  return created;
+  return insertNewRows(examBank.id, rows);
 }
 
 async function main() {
   for (const source of SOURCES) {
+    console.log(`Importing ${source.examBankSlug} from ${source.file}...`);
     const created = await importSource(source);
     console.log(`${source.examBankSlug}: ${created} performance indicators created`);
   }
+  console.log("Importing personal-financial-literacy topic summaries...");
   const pflCreated = await importPfl();
   console.log(`personal-financial-literacy: ${pflCreated} topic summaries created`);
 }
