@@ -4,7 +4,7 @@
 import "dotenv/config"; // running via `tsx` directly does not auto-load .env like the Prisma CLI does
 import { prisma } from "@/lib/prisma";
 import { hashPassword, generateTemporaryPassword } from "@/lib/auth/password";
-import { CLUSTER_SEED, EXAM_BANK_SEED, EVENT_SEED } from "@/lib/seed-data";
+import { CLUSTER_SEED, EXAM_BANK_SEED, EVENT_SEED, ROLEPLAY_PATHWAY_SEED } from "@/lib/seed-data";
 
 async function seedClusters() {
   for (const cluster of CLUSTER_SEED) {
@@ -98,10 +98,18 @@ async function seedMentors() {
   console.log("Seeded 2 mentor accounts (password change forced on first login).");
 }
 
+async function seedRoleplayPathways() {
+  for (const { slug, pathway } of ROLEPLAY_PATHWAY_SEED) {
+    await prisma.event.updateMany({ where: { slug }, data: { roleplayPathway: pathway } });
+  }
+  console.log(`Seeded ${ROLEPLAY_PATHWAY_SEED.length} event roleplay pathways.`);
+}
+
 async function main() {
   await seedClusters();
   await seedExamBanks();
   await seedEvents();
+  await seedRoleplayPathways();
   await seedMentors();
 }
 

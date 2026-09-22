@@ -1,9 +1,11 @@
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments } from "@/lib/dal/events";
 import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
+import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Card } from "@/components/ui/Card";
+import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
 import { StartRoleplayForm } from "./StartRoleplayForm";
 
 export const metadata = { title: "Practice roleplay" };
@@ -16,9 +18,17 @@ export default async function StartRoleplayPage() {
     getVisibleResourcesForStudent(user.id, { type: "CASE_STUDY" }),
   ]);
 
-  const roleplayEvents = enrollments
-    .filter((e) => e.event.category === "ROLEPLAY")
-    .map((e) => ({ id: e.event.id, name: e.event.name }));
+  const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
+  const roleplayEvents = roleplayEnrollments.map((e) => ({ id: e.event.id, name: e.event.name }));
+
+  const piPanels = await Promise.all(
+    roleplayEnrollments
+      .filter((e) => e.event.examBankId)
+      .map(async (e) => ({
+        eventName: e.event.name,
+        grouped: await getPerformanceIndicatorsForEvent(e.event.examBankId!, e.event.roleplayPathway),
+      })),
+  );
 
   return (
     <>
@@ -45,6 +55,14 @@ export default async function StartRoleplayPage() {
                 </p>
               )}
             </Card>
+
+            {piPanels.map((panel) => (
+              <PerformanceIndicatorList
+                key={panel.eventName}
+                eventName={panel.eventName}
+                grouped={panel.grouped}
+              />
+            ))}
           </div>
         </TabbedCard>
       </BinderPageShell>

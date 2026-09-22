@@ -129,3 +129,20 @@ export const EVENT_SEED: EventSeed[] = [
   // --- Personal Financial Literacy ---
   { slug: "personal-financial-literacy", name: "Personal Financial Literacy", clusterSlug: "personal-financial-literacy", category: "ROLEPLAY", format: "PERSONAL_FINANCIAL_LITERACY", hasExam: true, examBankSlug: "personal-financial-literacy", teamSizeMin: 1, teamSizeMax: 1 },
 ];
+
+/** Tier 3 performance-indicator pathway per the source PI PDFs' event-mapping
+ * chart (see scripts/import-performance-indicators.ts). Events not listed
+ * here have no named Tier 3 pathway (team decision making, Principles,
+ * exam-only events) and keep Event.roleplayPathway = null. */
+export const ROLEPLAY_PATHWAY_SEED: { slug: string; pathway: string }[] = [
+  { slug: "apparel-and-accessories-marketing-series", pathway: "Merchandising" },
+  { slug: "automotive-services-marketing-series", pathway: "Marketing Management" },
+  { slug: "business-services-marketing-series", pathway: "Marketing Management" },
+  { slug: "food-marketing-series", pathway: "Marketing Management" },
+  { slug: "marketing-communications-series", pathway: "Marketing Communications" },
+  { slug: "retail-merchandising-series", pathway: "Merchandising" },
+  { slug: "sports-and-entertainment-marketing-series", pathway: "Marketing Management" },
+  { slug: "hotel-and-lodging-management-series", pathway: "Lodging" },
+  { slug: "quick-serve-restaurant-management-series", pathway: "Restaurant Management" },
+  { slug: "restaurant-and-food-service-management-series", pathway: "Restaurant Management" },
+];

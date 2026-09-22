@@ -233,12 +233,13 @@ model ExamBank {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  events             Event[]
-  questions          Question[]
-  instructionalAreas InstructionalArea[]
-  examAttempts       ExamAttempt[]
-  missedQuestions    MissedQuestion[]
-  masteryEstimates   MasteryEstimate[]
+  events                Event[]
+  questions             Question[]
+  instructionalAreas    InstructionalArea[]
+  examAttempts          ExamAttempt[]
+  missedQuestions       MissedQuestion[]
+  masteryEstimates      MasteryEstimate[]
+  performanceIndicators PerformanceIndicator[]
 }
 
 model Event {
@@ -252,6 +253,11 @@ model Event {
   hasExam     Boolean
   examBankId  String?
   examBank    ExamBank?     @relation(fields: [examBankId], references: [id])
+  // Tier 3 pathway name (e.g. "Merchandising", "Lodging") for roleplay events
+  // whose performance-indicator prep draws from a named pathway on top of
+  // the Tier 1 core + Tier 2 cluster indicators. Null for events with no
+  // pathway-specific tier (team decision making, Principles, exam-only events).
+  roleplayPathway String?
   teamSizeMin Int           @default(1)
   teamSizeMax Int           @default(1)
   isActive    Boolean       @default(true)
@@ -336,6 +342,27 @@ model InstructionalArea {
   studyPlanItems   StudyPlanItem[]
 
   @@unique([examBankId, slug])
+}
+
+// Reference content for roleplay/exam prep — not graded, not exam questions.
+// Sourced from MBA Research's published PI documents (Tier 1 core, Tier 2
+// cluster, Tier 3 pathway) plus the national PFL standards. A mentor-built
+// Rubric (separate model) is what a roleplay is actually scored against;
+// this is just "what to study."
+model PerformanceIndicator {
+  id                String    @id @default(cuid())
+  examBankId        String
+  examBank          ExamBank  @relation(fields: [examBankId], references: [id])
+  tier              String // "Core" | "Cluster" | "Pathway" | "Standards"
+  pathway           String? // set only when tier = "Pathway", e.g. "Merchandising"
+  instructionalArea String // e.g. "Business Law", or a PFL topic like "I. Earning Income"
+  code              String? // e.g. "BL:163" — null for PFL (no MBA Research code system)
+  level             String? // "PQ" | "CS" | "SP" — null for PFL
+  description       String
+  createdAt         DateTime  @default(now())
+
+  @@unique([examBankId, tier, pathway, code, description])
+  @@index([examBankId, tier])
 }
 
 model Question {
