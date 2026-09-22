@@ -135,6 +135,12 @@ function keyOf(row: { tier: string; pathway: string | null; code: string | null;
   return `${row.tier}|${row.pathway ?? ""}|${row.code ?? ""}|${row.description}`;
 }
 
+// Chunked rather than one createMany per source — a single ~500-row insert
+// was enough to trip a "Connection terminated unexpectedly" against Neon's
+// pooled (PgBouncer transaction-mode) endpoint, which has tighter per-query
+// limits than a direct connection.
+const INSERT_CHUNK_SIZE = 100;
+
 async function insertNewRows(examBankId: string, rows: InsertableRow[]): Promise<number> {
   if (rows.length === 0) return 0;
   const existing = await prisma.performanceIndicator.findMany({
@@ -144,8 +150,14 @@ async function insertNewRows(examBankId: string, rows: InsertableRow[]): Promise
   const existingKeys = new Set(existing.map(keyOf));
   const toCreate = rows.filter((r) => !existingKeys.has(keyOf(r)));
   if (toCreate.length === 0) return 0;
-  const result = await prisma.performanceIndicator.createMany({ data: toCreate });
-  return result.count;
+
+  let created = 0;
+  for (let i = 0; i < toCreate.length; i += INSERT_CHUNK_SIZE) {
+    const chunk = toCreate.slice(i, i + INSERT_CHUNK_SIZE);
+    const result = await prisma.performanceIndicator.createMany({ data: chunk });
+    created += result.count;
+  }
+  return created;
 }
 
 async function importSource(source: (typeof SOURCES)[number]): Promise<number> {
