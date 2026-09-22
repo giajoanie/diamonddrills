@@ -4,6 +4,7 @@ import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
 import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
 import { StartRoleplayForm } from "./StartRoleplayForm";
@@ -35,9 +36,12 @@ export default async function StartRoleplayPage() {
       <BinderPageShell user={user} homeHref="/dashboard">
         <TabbedCard>
           <div className="mx-auto max-w-2xl">
-            <h1 className="text-2xl font-semibold text-foreground">
-              Practice roleplay
-            </h1>
+            <div className="relative inline-block">
+              <Sticker kind="paperclip" />
+              <h1 className="text-2xl font-semibold text-foreground">
+                Practice roleplay
+              </h1>
+            </div>
             <p className="mt-1 text-foreground-muted">
               Timers match competition format. You&apos;ll get a prep period,
               then a presentation period, then a self-rating.

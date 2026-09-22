@@ -13,7 +13,7 @@ export type FolderTab = {
  */
 export function FolderTabs({ tabs }: { tabs: FolderTab[] }) {
   return (
-    <div className="flex gap-1.5 px-2">
+    <div className="flex flex-wrap gap-1.5 px-2">
       {tabs.map((tab) => {
         const className = `rounded-t-xl px-4 py-2.5 text-sm font-bold font-display transition-colors sm:px-5 ${
           tab.active

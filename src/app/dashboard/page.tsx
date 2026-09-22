@@ -16,6 +16,7 @@ import {
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EventSwitcher } from "./EventSwitcher";
@@ -84,23 +85,18 @@ export default async function DashboardPage() {
 
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <TabbedCard>
+      <TabbedCard
+        tabs={[
+          { label: "Dashboard", active: true },
+          ...QUICK_LINKS.map((l) => ({ label: l.label, href: l.href })),
+        ]}
+      >
         <div className="mx-auto max-w-3xl">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="relative inline-block">
+            <Sticker kind="star" />
             <h2 className="font-display text-2xl font-bold text-foreground">
               Welcome, {user.firstName}
             </h2>
-            <nav className="flex flex-wrap gap-2 text-xs">
-              {QUICK_LINKS.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="rounded-full border border-border-strong bg-surface px-3 py-1.5 font-medium text-accent hover:bg-surface-hover"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
           </div>
 
           {banksMissingBaseline.length > 0 && (
