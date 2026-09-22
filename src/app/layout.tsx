@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { League_Spartan, Montserrat, Patrick_Hand } from "next/font/google";
 import localFont from "next/font/local";
+import { SplashScreen } from "@/components/SplashScreen";
 import "./globals.css";
 
 const leagueSpartan = League_Spartan({
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${leagueSpartan.variable} ${montserrat.variable} ${patrickHand.variable} ${milkTea.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
+        <SplashScreen />
         {children}
       </body>
     </html>

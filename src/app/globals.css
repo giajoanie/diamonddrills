@@ -217,27 +217,9 @@ body {
   }
 }
 
-/* Loading spinner (src/app/loading.tsx): two overlapping diamonds — a nod
-   to the real DECA diamond mark — rotating out of phase with each other. */
-@keyframes dd-spin {
-  0% {
-    transform: rotate(45deg) scale(1);
-  }
-  50% {
-    transform: rotate(225deg) scale(0.72);
-  }
-  100% {
-    transform: rotate(405deg) scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .splash-dots,
   .splash-sheen {
     animation: none;
-  }
-  [class*="animate-[dd-spin"] {
-    animation: none;
-    transform: rotate(45deg);
   }
 }

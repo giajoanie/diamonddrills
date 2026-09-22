@@ -16,7 +16,6 @@ import {
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
-import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EventSwitcher } from "./EventSwitcher";
@@ -92,12 +91,9 @@ export default async function DashboardPage() {
         ]}
       >
         <div className="mx-auto max-w-3xl">
-          <div className="relative inline-block">
-            <Sticker kind="star" />
-            <h2 className="font-display text-2xl font-bold text-foreground">
-              Welcome, {user.firstName}
-            </h2>
-          </div>
+          <h2 className="font-display text-2xl font-bold text-foreground">
+            Welcome, {user.firstName}
+          </h2>
 
           {banksMissingBaseline.length > 0 && (
             <Card className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">
