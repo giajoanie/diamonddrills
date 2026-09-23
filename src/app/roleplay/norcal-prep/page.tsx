@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments } from "@/lib/dal/events";
+import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
 import { getNorCalPrepForEvent } from "@/lib/dal/performance-indicators";
 import {
   NORCAL_DISTRICT_AREAS,
@@ -12,13 +13,17 @@ import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Card } from "@/components/ui/Card";
 import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
+import { CaseStudyDrawer } from "@/components/roleplay/CaseStudyDrawer";
 
 export const metadata = { title: "NorCal Specific Prep" };
 export const dynamic = "force-dynamic";
 
 export default async function NorCalPrepPage() {
   const user = await requireActiveUser("STUDENT");
-  const enrollments = await getCurrentEnrollments(user.id);
+  const [enrollments, caseStudies] = await Promise.all([
+    getCurrentEnrollments(user.id),
+    getVisibleResourcesForStudent(user.id, { type: "CASE_STUDY" }),
+  ]);
   const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
 
   const now = new Date();
@@ -58,11 +63,16 @@ export default async function NorCalPrepPage() {
         ]}
       >
         <div className="mx-auto max-w-2xl">
-          <h1 className="text-2xl font-semibold text-foreground">NorCal Specific Prep</h1>
-          <p className="mt-1 text-foreground-muted">
-            Narrowed to the exact instructional area(s) NorCal&apos;s district table assigns to each
-            event&apos;s roleplay scenario(s) this year — not the full general breadth.
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">NorCal Specific Prep</h1>
+              <p className="mt-1 text-foreground-muted">
+                Narrowed to the exact instructional area(s) NorCal&apos;s district table assigns to
+                each event&apos;s roleplay scenario(s) this year — not the full general breadth.
+              </p>
+            </div>
+            <CaseStudyDrawer caseStudies={caseStudies} />
+          </div>
 
           <Card className="mt-6">
             <p className="text-sm font-medium text-foreground">
@@ -91,13 +101,6 @@ export default async function NorCalPrepPage() {
               </p>
             </Card>
           ))}
-
-          <Card className="mt-6 bg-accent-soft">
-            <p className="text-sm text-foreground-muted">
-              Case studies scoped to just these district areas are planned here next, generated for each
-              scenario — not live yet.
-            </p>
-          </Card>
         </div>
       </TabbedCard>
     </BinderPageShell>

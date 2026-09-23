@@ -7,6 +7,7 @@ import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
+import { CaseStudyDrawer } from "@/components/roleplay/CaseStudyDrawer";
 import { StartRoleplayForm } from "./StartRoleplayForm";
 
 export const metadata = { title: "Practice roleplay" };
@@ -41,16 +42,19 @@ export default async function StartRoleplayPage() {
           ]}
         >
           <div className="mx-auto max-w-2xl">
-            <div className="relative inline-block">
-              <Sticker kind="paperclip" />
-              <h1 className="text-2xl font-semibold text-foreground">
-                Practice roleplay
-              </h1>
+            <div className="flex items-start justify-between gap-4">
+              <div className="relative inline-block">
+                <Sticker kind="paperclip" />
+                <h1 className="text-2xl font-semibold text-foreground">
+                  Practice roleplay
+                </h1>
+                <p className="mt-1 text-foreground-muted">
+                  Timers match competition format. You&apos;ll get a prep
+                  period, then a presentation period, then a self-rating.
+                </p>
+              </div>
+              <CaseStudyDrawer caseStudies={caseStudies} />
             </div>
-            <p className="mt-1 text-foreground-muted">
-              Timers match competition format. You&apos;ll get a prep period,
-              then a presentation period, then a self-rating.
-            </p>
 
             <Card className="mt-6">
               {roleplayEvents.length > 0 ? (
