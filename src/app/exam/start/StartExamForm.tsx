@@ -69,8 +69,8 @@ export function StartExamForm({
               checked={mode === "BASELINE"}
               onChange={() => setMode("BASELINE")}
             />
-            Baseline Diagnostic ({BASELINE_PRESET.questions} questions, {BASELINE_PRESET.minutes}{" "}
-            minutes)
+            Baseline Diagnostic — a full-length exam to figure out what you actually need to learn (
+            {BASELINE_PRESET.questions} questions, {BASELINE_PRESET.minutes} minutes)
           </label>
         )}
         <label className="flex items-center gap-2 text-sm text-foreground">

@@ -68,3 +68,31 @@ export const getPerformanceIndicatorsForEvent = cache(
     );
   },
 );
+
+/**
+ * PIs narrowed to the specific instructional area(s) NorCal's district
+ * table names for one event's roleplay scenario(s) — see
+ * src/lib/norcal-district-areas.ts. Searches the event's own exam bank plus
+ * the BA Core bank (same reasoning as getPerformanceIndicatorsForEvent: a
+ * Core-tier area lives only in the BA Core bank). Matches by `contains`
+ * rather than equality so PFL's roman-numeral-prefixed topic names (e.g.
+ * "VI. Managing Risk") still match a plain "Managing Risk" area name.
+ */
+export const getNorCalPrepForEvent = cache(
+  async (examBankId: string, areaName: string): Promise<PerformanceIndicator[]> => {
+    const bacBank = await prisma.examBank.findUnique({
+      where: { slug: "business-administration-core" },
+    });
+    const bankIds = [examBankId, ...(bacBank && bacBank.id !== examBankId ? [bacBank.id] : [])];
+
+    const rows = await prisma.performanceIndicator.findMany({
+      where: {
+        examBankId: { in: bankIds },
+        instructionalArea: { contains: areaName, mode: "insensitive" },
+      },
+    });
+
+    rows.sort((a, b) => a.tier.localeCompare(b.tier) || (a.code ?? "").localeCompare(b.code ?? ""));
+    return rows;
+  },
+);

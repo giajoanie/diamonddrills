@@ -34,7 +34,12 @@ export default async function StartRoleplayPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/dashboard">
-        <TabbedCard>
+        <TabbedCard
+          tabs={[
+            { label: "Practice roleplay", active: true },
+            { label: "NorCal Specific Prep", href: "/roleplay/norcal-prep" },
+          ]}
+        >
           <div className="mx-auto max-w-2xl">
             <div className="relative inline-block">
               <Sticker kind="paperclip" />
