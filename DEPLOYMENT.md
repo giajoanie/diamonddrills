@@ -19,7 +19,8 @@ Copy `.env.example` to `.env` and fill in real values:
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | Yes | Postgres connection string. |
-| `FILE_STORAGE_DIR` | Yes | Directory uploaded files are written to and served from. Must be a path that survives restarts/redeploys (see below). |
+| `FILE_STORAGE_DIR` | Only without Blob | Local-disk directory uploaded files are written to and served from. Must be a path that survives restarts/redeploys — see [File storage](#5-file-storage). Ignored when `BLOB_READ_WRITE_TOKEN` is set. |
+| `BLOB_READ_WRITE_TOKEN` | Only on Vercel | Vercel Blob token for file storage — see [File storage](#5-file-storage). Auto-set by Vercel when a Blob store is connected to the project. |
 | `NODE_ENV` | Yes | `production` in production — this also governs whether the session cookie is marked `secure`. |
 
 **Never commit `.env`.** It's already gitignored; only `.env.example` (with
@@ -101,16 +102,28 @@ database.
 
 ## 5. File storage
 
-Uploaded files (resource attachments, assignment submissions) are written to
-`FILE_STORAGE_DIR` and served through an authenticated route
-(`/files/[...path]`) — never as static public files. On a single persistent
-server, a local directory outside the build output is fine. On an ephemeral
-or multi-instance platform (most PaaS deploys, containers that get recreated
-on every deploy), point `FILE_STORAGE_DIR` at a mounted persistent volume or
-switch storage backends — otherwise uploads silently disappear on the next
-deploy. (Swapping `src/lib/files/storage.ts` for an S3-compatible backend
-would be the natural next step if that's needed; it wasn't required for the
-platform's original single-school, single-instance deployment target.)
+Uploaded files (resource attachments, assignment submissions) are served
+through an authenticated route (`/files/[...path]`) — never as static public
+files. Where they're actually written depends on `BLOB_READ_WRITE_TOKEN`:
+
+- **Set** (Vercel, or anywhere else Vercel Blob is reachable): files go to
+  Vercel Blob with `access: "private"` — there's no public URL a client
+  could hit directly; the serving route fetches the bytes server-side using
+  the token and streams them back only after its own per-request
+  authorization check passes, the same as it always has for local files.
+  On Vercel specifically, this is required, not optional — serverless
+  functions have no persistent disk, so anything written to
+  `FILE_STORAGE_DIR` there can vanish before it's ever read back.
+  1. Vercel dashboard → your project → **Storage** → **Create Database** →
+     **Blob**.
+  2. Connect it to this project. Vercel adds `BLOB_READ_WRITE_TOKEN` to the
+     project's environment variables automatically — nothing to copy by hand.
+  3. Redeploy so the new env var takes effect.
+- **Unset** (local dev, or a single persistent server you control): falls
+  back to `FILE_STORAGE_DIR` on local disk, as before. On an ephemeral or
+  multi-instance platform without Blob available, point it at a mounted
+  persistent volume instead — otherwise uploads silently disappear on the
+  next deploy.
 
 ## 6. Ongoing operations
 
