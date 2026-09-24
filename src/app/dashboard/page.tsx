@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { format } from "date-fns";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments, getSignupEventOptions } from "@/lib/dal/events";
 import {
@@ -9,15 +10,21 @@ import {
   getAttemptQuestionHistory,
   getInstructionalAreasForBank,
 } from "@/lib/dal/exam-engine";
+import { getRecommendedResources } from "@/lib/dal/resources";
 import {
   computeAreaBreakdown,
   computeWeightedWeakAreas,
 } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
+import { logResourceOpen } from "@/lib/actions/resources";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { BinderTabNav } from "@/components/binder/BinderTabNav";
+import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
+import { ScoreTrendChart } from "@/components/charts/ScoreTrendChart";
 import { EventSwitcher } from "./EventSwitcher";
 
 const QUICK_LINKS = [
@@ -28,6 +35,14 @@ const QUICK_LINKS = [
   { label: "Study plan", href: "/study-plan" },
   { label: "Announcements", href: "/announcements" },
   { label: "Calendar", href: "/calendar" },
+];
+
+const SIDE_NAV = [
+  { label: "Drills", href: "/exam/start" },
+  { label: "Roleplay", href: "/roleplay/start" },
+  { label: "Written", href: "/written-event" },
+  { label: "Results", href: "/progress" },
+  { label: "Notes", href: "/resources" },
 ];
 
 export const metadata = { title: "Dashboard" };
@@ -82,8 +97,20 @@ export default async function DashboardPage() {
     .map((a) => ({ ...a, areaId: nameToId.get(a.areaName) }))
     .filter((a): a is typeof a & { areaId: string } => !!a.areaId);
 
+  const recommendedResources = await getRecommendedResources(
+    user.id,
+    recommendedPractice.map((a) => a.areaId),
+  );
+
+  const trendData = scoreHistory.slice(-7).map((a) => ({
+    label: a.submittedAt ? format(a.submittedAt, "MMM d") : "—",
+    percentage: a.percentage ?? 0,
+  }));
+
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
+      <div className="flex items-stretch gap-0">
+        <div className="min-w-0 flex-1">
       <TabbedCard
         tabs={[
           { label: "Dashboard", active: true },
@@ -145,6 +172,13 @@ export default async function DashboardPage() {
             </Card>
           )}
 
+          {trendData.length > 1 && (
+            <Card className="mt-4">
+              <p className="font-display text-sm font-bold text-foreground">Score trend</p>
+              <ScoreTrendChart data={trendData} />
+            </Card>
+          )}
+
           {recommendedPractice.length > 0 && (
             <Card className="mt-4">
               <p className="font-display text-sm font-bold text-foreground">
@@ -153,24 +187,48 @@ export default async function DashboardPage() {
               <p className="text-sm text-foreground-muted">
                 Your weakest areas, weighted toward recent attempts.
               </p>
-              <ul className="mt-2 space-y-1">
+              <div className="mt-3 space-y-3">
                 {recommendedPractice.map((a) => (
-                  <li
-                    key={a.areaId}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
-                    <span className="text-foreground-muted">
-                      {a.areaName} · {Math.round(a.weightedAccuracy)}%
-                    </span>
+                  <div key={a.areaId}>
+                    <AreaScoreBar label={a.areaName} percentage={a.weightedAccuracy} />
                     <Link
                       href={`/exam/start?mode=PRACTICE_AREA&area=${a.areaId}`}
-                      className="text-accent hover:underline"
+                      className="mt-1 inline-block text-xs text-accent hover:underline"
                     >
                       Practice this →
                     </Link>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </Card>
+          )}
+
+          {recommendedResources.length > 0 && (
+            <Card className="mt-4">
+              <p className="font-display text-sm font-bold text-foreground">Clipped for you</p>
+              <div className="mt-2 space-y-2">
+                {recommendedResources.slice(0, 3).map((r) => {
+                  const href = r.fileUrl ? `/files/${r.fileUrl}` : (r.externalUrl ?? "#");
+                  return (
+                    <a
+                      key={r.id}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => void logResourceOpen(r.id)}
+                      className="relative flex items-start gap-3 rounded-md border border-border bg-surface p-3 transition-shadow hover:shadow-md"
+                    >
+                      <Sticker kind="paperclip" />
+                      <div>
+                        <p className="font-display text-sm font-bold text-foreground">{r.name}</p>
+                        <p className="text-xs text-foreground-subtle">
+                          {r.type} {r.description ? `· ${r.description}` : ""}
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
             </Card>
           )}
 
@@ -257,6 +315,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </TabbedCard>
+        </div>
+        <BinderTabNav items={SIDE_NAV} />
+      </div>
     </BinderPageShell>
   );
 }
