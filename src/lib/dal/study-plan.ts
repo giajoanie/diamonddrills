@@ -24,10 +24,22 @@ export const getStudyPlan = cache(async (userId: string) => {
   }));
 });
 
-/** The soonest upcoming competition-level calendar event, treated as the target date to study toward. */
+/**
+ * The soonest upcoming competition-level calendar event, treated as the
+ * target date to study toward. Ordinary calendar entries (a meeting, a
+ * fundraiser) don't count — only ones tagged with a CompetitionLevel, or
+ * a chapter's own internal mock competition. That mock ("minicomp") has
+ * no CompetitionLevel of its own (the enum only covers District/State/
+ * ICDC), so it's matched by the exact title scripts/add-norcal-calendar-
+ * events.ts gives it; this is a stand-in until there's either a proper
+ * "internal" CompetitionLevel or a dedicated flag on CalendarEvent.
+ */
 export const getNextCompetitionDate = cache(async () => {
   const event = await prisma.calendarEvent.findFirst({
-    where: { date: { gte: new Date() }, level: { not: null } },
+    where: {
+      date: { gte: new Date() },
+      OR: [{ level: { not: null } }, { title: "Chapter Mini-Competition" }],
+    },
     orderBy: { date: "asc" },
   });
   return event;
