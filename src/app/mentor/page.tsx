@@ -21,8 +21,10 @@ import {
 import { getClustersForTagging } from "@/lib/dal/clusters";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
+import { BinderTabNav } from "@/components/binder/BinderTabNav";
 import { Card } from "@/components/ui/Card";
 import { Sticker } from "@/components/binder/Sticker";
+import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
 import { Label, Select, Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { getMentorTabs } from "@/lib/mentorNav";
@@ -35,6 +37,20 @@ const REASON_LABELS: Record<string, string> = {
   DECLINING: "Declining",
   BELOW_THRESHOLD: "Below threshold",
 };
+
+const REASON_BADGE_CLASSES: Record<string, string> = {
+  INACTIVE: "bg-warning-soft text-warning",
+  DECLINING: "bg-danger-soft text-danger",
+  BELOW_THRESHOLD: "bg-danger-soft text-danger",
+};
+
+const SIDE_NAV = [
+  { label: "Roster", href: "/mentor/students" },
+  { label: "Drills", href: "/mentor/exams" },
+  { label: "Bank", href: "/mentor/resources" },
+  { label: "Plans", href: "/mentor/lesson-plans" },
+  { label: "Data", href: "/mentor/exports" },
+];
 
 export default async function MentorDashboardPage({
   searchParams,
@@ -65,6 +81,8 @@ export default async function MentorDashboardPage({
 
   return (
     <BinderPageShell user={user} homeHref="/mentor">
+      <div className="flex items-stretch gap-0">
+        <div className="min-w-0 flex-1">
       <TabbedCard tabs={getMentorTabs("overview")}>
         <div className="mx-auto max-w-4xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
@@ -251,21 +269,11 @@ export default async function MentorDashboardPage({
                 Chapter-wide weakest areas
               </p>
               {data.weakestAreas.length > 0 ? (
-                <ul className="mt-2 space-y-1 text-sm">
+                <div className="mt-3 space-y-3">
                   {data.weakestAreas.slice(0, 5).map((a) => (
-                    <li
-                      key={a.areaName}
-                      className="flex items-center justify-between gap-3"
-                    >
-                      <span className="text-foreground-muted">
-                        {a.areaName}
-                      </span>
-                      <span className="text-foreground-subtle">
-                        {Math.round(a.accuracy)}%
-                      </span>
-                    </li>
+                    <AreaScoreBar key={a.areaName} label={a.areaName} percentage={a.accuracy} />
                   ))}
-                </ul>
+                </div>
               ) : (
                 <p className="mt-1 text-sm text-foreground-muted">
                   No exam data yet.
@@ -315,8 +323,15 @@ export default async function MentorDashboardPage({
                           ? `${name.firstName} · ${name.schoolId}`
                           : s.userId}
                       </span>
-                      <span className="text-foreground-subtle">
-                        {s.reasons.map((r) => REASON_LABELS[r]).join(", ")}
+                      <span className="flex gap-1.5">
+                        {s.reasons.map((r) => (
+                          <span
+                            key={r}
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${REASON_BADGE_CLASSES[r] ?? "bg-surface-hover text-foreground-muted"}`}
+                          >
+                            {REASON_LABELS[r]}
+                          </span>
+                        ))}
                       </span>
                     </li>
                   );
@@ -493,6 +508,9 @@ export default async function MentorDashboardPage({
           </div>
         </div>
       </TabbedCard>
+        </div>
+        <BinderTabNav items={SIDE_NAV} />
+      </div>
     </BinderPageShell>
   );
 }
