@@ -21,7 +21,6 @@ import {
 import { getClustersForTagging } from "@/lib/dal/clusters";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
-import { BinderTabNav } from "@/components/binder/BinderTabNav";
 import { Card } from "@/components/ui/Card";
 import { Sticker } from "@/components/binder/Sticker";
 import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
@@ -43,14 +42,6 @@ const REASON_BADGE_CLASSES: Record<string, string> = {
   DECLINING: "bg-danger-soft text-danger",
   BELOW_THRESHOLD: "bg-danger-soft text-danger",
 };
-
-const SIDE_NAV = [
-  { label: "Roster", href: "/mentor/students" },
-  { label: "Drills", href: "/mentor/exams" },
-  { label: "Bank", href: "/mentor/resources" },
-  { label: "Plans", href: "/mentor/lesson-plans" },
-  { label: "Data", href: "/mentor/exports" },
-];
 
 export default async function MentorDashboardPage({
   searchParams,
@@ -81,8 +72,6 @@ export default async function MentorDashboardPage({
 
   return (
     <BinderPageShell user={user} homeHref="/mentor">
-      <div className="flex items-stretch gap-0">
-        <div className="min-w-0 flex-1">
       <TabbedCard tabs={getMentorTabs("overview")}>
         <div className="mx-auto max-w-4xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
@@ -508,9 +497,6 @@ export default async function MentorDashboardPage({
           </div>
         </div>
       </TabbedCard>
-        </div>
-        <BinderTabNav items={SIDE_NAV} />
-      </div>
     </BinderPageShell>
   );
 }

@@ -12,7 +12,6 @@ import { computeRemainingSeconds } from "@/lib/exam-engine/timer";
 import { formatTime } from "@/lib/format-time";
 import { Button } from "@/components/ui/Button";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
-import { FolderTabs } from "@/components/binder/FolderTabs";
 import type { User } from "@/generated/prisma/client";
 
 type OptionKey = "A" | "B" | "C" | "D";
@@ -129,52 +128,51 @@ export function ExamRunner({
 
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
-        <FolderTabs
-          tabs={[
-            { label: examName, active: true },
-            { label: autosaveLabel },
-          ]}
-        />
-        <div className="flex items-center gap-3 pb-1">
-          <span className="hidden text-sm font-medium text-white/85 sm:inline">
-            Answered {answeredCount} · Flagged {flaggedCount}
-          </span>
-          <span
-            className={`rounded-lg bg-background-elevated px-4 py-2 font-mono text-lg font-bold shadow-lg ${
-              isLowTime
-                ? "animate-pulse text-danger"
-                : isWarningTime
-                  ? "text-warning"
-                  : "text-accent-strong"
-            }`}
-          >
-            {formatTime(remaining)}
-          </span>
-          <form
-            action={async () => {
-              if (
-                confirm("Abandon this exam? Your progress will not be scored.")
-              ) {
-                await abandonExam(attemptId);
-              }
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-full px-2 py-1 text-sm font-medium text-white/70 hover:bg-white/15 hover:text-white"
+      <div className="overflow-hidden rounded-2xl shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-accent-strong px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-accent-strong">
+              {examName}
+            </span>
+            <span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white/85">
+              {autosaveLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm font-medium text-white/85 sm:inline">
+              Answered {answeredCount} · Flagged {flaggedCount}
+            </span>
+            <span
+              className={`rounded-lg bg-background-elevated px-4 py-2 font-mono text-lg font-bold shadow-lg ${
+                isLowTime
+                  ? "animate-pulse text-danger"
+                  : isWarningTime
+                    ? "text-warning"
+                    : "text-accent-strong"
+              }`}
             >
-              Abandon
-            </button>
-          </form>
+              {formatTime(remaining)}
+            </span>
+            <form
+              action={async () => {
+                if (
+                  confirm("Abandon this exam? Your progress will not be scored.")
+                ) {
+                  await abandonExam(attemptId);
+                }
+              }}
+            >
+              <button
+                type="submit"
+                className="rounded-full px-2 py-1 text-sm font-medium text-white/70 hover:bg-white/15 hover:text-white"
+              >
+                Abandon
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
 
-      <div
-        className={`binder-ruled bg-background-elevated p-5 shadow-lg sm:p-7 ${
-          "rounded-b-2xl rounded-tr-2xl"
-        }`}
-      >
+        <div className="bg-background-elevated p-5 sm:p-7">
         <main className="grid w-full flex-1 gap-6 md:grid-cols-[1fr_220px]">
           <div>
             {showShortfallNotice && (
@@ -342,6 +340,7 @@ export function ExamRunner({
             </Button>
           </nav>
         </main>
+        </div>
       </div>
 
       {showConfirmSubmit && (

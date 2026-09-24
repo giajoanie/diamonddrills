@@ -40,14 +40,7 @@ export default async function StudyPlanPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/dashboard">
-        <TabbedCard
-          tabs={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Study plan", active: true },
-            { label: "Resources", href: "/resources" },
-            { label: "History", href: "/activity" },
-          ]}
-        >
+        <TabbedCard>
           <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold text-foreground">Study plan</h1>

@@ -19,31 +19,12 @@ import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { logResourceOpen } from "@/lib/actions/resources";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
-import { BinderTabNav } from "@/components/binder/BinderTabNav";
 import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
 import { ScoreTrendChart } from "@/components/charts/ScoreTrendChart";
 import { EventSwitcher } from "./EventSwitcher";
-
-const QUICK_LINKS = [
-  { label: "Assignments", href: "/assignments" },
-  { label: "Resources", href: "/resources" },
-  { label: "Progress", href: "/progress" },
-  { label: "Activity", href: "/activity" },
-  { label: "Study plan", href: "/study-plan" },
-  { label: "Announcements", href: "/announcements" },
-  { label: "Calendar", href: "/calendar" },
-];
-
-const SIDE_NAV = [
-  { label: "Drills", href: "/exam/start" },
-  { label: "Roleplay", href: "/roleplay/start" },
-  { label: "Written", href: "/written-event" },
-  { label: "Results", href: "/progress" },
-  { label: "Notes", href: "/resources" },
-];
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -109,14 +90,7 @@ export default async function DashboardPage() {
 
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <div className="flex items-stretch gap-0">
-        <div className="min-w-0 flex-1">
-      <TabbedCard
-        tabs={[
-          { label: "Dashboard", active: true },
-          ...QUICK_LINKS.map((l) => ({ label: l.label, href: l.href })),
-        ]}
-      >
+      <TabbedCard>
         <div className="mx-auto max-w-3xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}
@@ -315,9 +289,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       </TabbedCard>
-        </div>
-        <BinderTabNav items={SIDE_NAV} />
-      </div>
     </BinderPageShell>
   );
 }

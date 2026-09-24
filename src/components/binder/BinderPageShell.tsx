@@ -1,17 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut } from "lucide-react";
-import { logout } from "@/lib/actions/auth";
+import { Sidebar } from "./Sidebar";
 import type { User } from "@/generated/prisma/client";
 
 /**
- * Shared binder/notebook page chrome: a full-bleed dark "shell" mat
- * (diagonal stripe + dot texture, matching the mockups) with a ring-hole
- * spine down the left edge and a small top row (home link, identity/logout
- * when authenticated). Does not impose a tabs/card structure on its
- * children — pages that want the folder-tab + ruled-paper-card look (see
- * FolderTabs + the `binder-ruled` CSS class) compose that themselves, since
- * some (like the signup wizard) need the active tab driven by client state.
+ * Shared page chrome. When a user is present, renders the persistent left
+ * Sidebar (always the same nav, on every page — unlike the old per-page top
+ * folder-tabs, which some pages passed and others didn't, leaving no way
+ * back except the browser's own back button) plus a light content area.
+ * Pages that don't have a user yet (signup) get a plain light page with
+ * just a home-linked logo up top.
  */
 export function BinderPageShell({
   user,
@@ -22,39 +20,30 @@ export function BinderPageShell({
   homeHref: string;
   children: React.ReactNode;
 }) {
-  return (
-    <div className="shell-diamond-bg min-h-full flex-1">
-      <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6">
-        <div className="mb-3 flex items-center justify-between gap-3 px-1">
-          <Link href={homeHref} className="block">
-            <Image
-              src="/brand/mhhs-deca.png"
-              alt="Diamond Drills"
-              width={120}
-              height={28}
-              className="h-7 w-auto"
-            />
+  if (!user) {
+    return (
+      <div className="min-h-full flex-1 bg-background">
+        <div className="mx-auto max-w-5xl px-3 py-6 sm:px-6">
+          <Link href={homeHref} className="mb-3 block">
+            <Image src="/brand/mhhs-deca.png" alt="Diamond Drills" width={120} height={28} className="h-7 w-auto" />
           </Link>
-          {user && (
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-white/80 sm:inline">
-                {user.firstName} · {user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`}
-              </span>
-              <form action={logout}>
-                <button
-                  type="submit"
-                  aria-label="Log out"
-                  className="flex items-center gap-1.5 rounded-full p-2 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-                >
-                  <LogOut className="h-4 w-4" aria-hidden />
-                </button>
-              </form>
-            </div>
-          )}
+          {children}
         </div>
-
-        {children}
       </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-full flex-1 bg-background">
+      <Sidebar
+        role={user.role}
+        identity={{
+          name: user.firstName,
+          sub: user.role === "MENTOR" ? "Mentor" : `Grade ${user.grade}`,
+          id: user.schoolId,
+        }}
+      />
+      <div className="min-w-0 flex-1 px-4 py-6 sm:px-8">{children}</div>
     </div>
   );
 }

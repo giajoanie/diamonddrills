@@ -54,16 +54,7 @@ export default async function ExamResultsPage({
 
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <TabbedCard
-        tabs={[
-          { label: "Results", active: true },
-          {
-            label: `Review ${missedCount} missed`,
-            href: `/exam/start?examBankId=${attempt.examBankId}&mode=MISSED_REVIEW`,
-          },
-          { label: "History", href: "/progress" },
-        ]}
-      >
+      <TabbedCard>
         <div className="mx-auto max-w-3xl">
           {attempt.mode === "COMPETITION_SIMULATION" && attempt.eventId && (
             <Card className="mt-4 border-accent-strong/60">
@@ -105,7 +96,7 @@ export default async function ExamResultsPage({
                 <Link
                   href={`/exam/start?examBankId=${attempt.examBankId}&mode=MISSED_REVIEW`}
                 >
-                  <Button variant="secondary">Review missed questions</Button>
+                  <Button variant="secondary">Review {missedCount} missed</Button>
                 </Link>
               </div>
             </div>

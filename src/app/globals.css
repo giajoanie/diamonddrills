@@ -116,51 +116,6 @@ body {
   background-size: 10px 10px;
 }
 
-/* Notebook margin: a pink rule + punched ring holes printed on the paper
-   itself (like real loose-leaf paper), not floating in the dark gutter
-   beside it. Applied to the ruled-paper card in TabbedCard. */
-.paper-margin {
-  position: relative;
-}
-@media (min-width: 640px) {
-  .paper-margin::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 44px;
-    width: 2px;
-    background: #f3a99a;
-  }
-}
-.paper-holes {
-  position: absolute;
-  top: 28px;
-  bottom: 28px;
-  left: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-.paper-hole {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 2px solid var(--color-border);
-  background: var(--color-bg);
-}
-
-.binder-ruled {
-  background-image: repeating-linear-gradient(
-    180deg,
-    transparent 0,
-    transparent 32px,
-    rgba(18, 58, 122, 0.12) 32px,
-    rgba(18, 58, 122, 0.12) 33px
-  );
-}
-
 /* Splash screen (mockup 1b). The dot texture is animated with `transform`
    (compositor-only) rather than `background-position` — the mockup's own
    background-position keyframe forces a full repaint every frame, which is
