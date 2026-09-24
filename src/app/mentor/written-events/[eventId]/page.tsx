@@ -9,6 +9,14 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Label, Input } from "@/components/ui/Field";
 import { ChecklistForm } from "./ChecklistForm";
+import { GenerateMilestonePlanForm } from "./GenerateMilestonePlanForm";
+
+/** yyyy-MM-dd of the next upcoming November 1st, for the plan-generator's default. */
+function nextNovemberFirst(from: Date): string {
+  const isPastNov1ThisYear = from.getMonth() > 10 || (from.getMonth() === 10 && from.getDate() > 1);
+  const year = isPastNov1ThisYear ? from.getFullYear() + 1 : from.getFullYear();
+  return `${year}-11-01`;
+}
 
 export const metadata = { title: "Written event checklist" };
 export const dynamic = "force-dynamic";
@@ -107,6 +115,21 @@ export default async function MentorWrittenEventPage({
                   Add milestone
                 </Button>
               </form>
+
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="mb-1 text-sm font-medium text-foreground">
+                  Or auto-build the whole schedule
+                </p>
+                <p className="mb-2 text-xs text-foreground-muted">
+                  Spaces one milestone per required section evenly between now and a target date,
+                  with the last section due exactly on that date. Replaces the milestones above.
+                </p>
+                <GenerateMilestonePlanForm
+                  eventId={eventId}
+                  defaultTargetDate={nextNovemberFirst(new Date())}
+                  hasSections={requiredSections.length > 0}
+                />
+              </div>
             </Card>
           </div>
         </TabbedCard>
