@@ -14,6 +14,7 @@ import { computePracticeStreak } from "@/lib/analytics/streaks";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Card } from "@/components/ui/Card";
+import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
 import { ScoreTrendChart } from "@/components/charts/ScoreTrendChart";
 
 export const metadata = { title: "Progress" };
@@ -135,17 +136,11 @@ export default async function ProgressPage() {
               <h2 className="mb-2 font-medium text-foreground">
                 Weakest instructional areas (weighted toward recent attempts)
               </h2>
-              <ul className="space-y-1.5 text-sm">
+              <div className="space-y-3">
                 {weakestAreas.map((a) => (
-                  <li
-                    key={a.areaName}
-                    className="flex justify-between text-foreground-muted"
-                  >
-                    <span>{a.areaName}</span>
-                    <span>{Math.round(a.weightedAccuracy)}%</span>
-                  </li>
+                  <AreaScoreBar key={a.areaName} label={a.areaName} percentage={a.weightedAccuracy} />
                 ))}
-              </ul>
+              </div>
             </Card>
 
             {masteryEstimates.length > 0 && (
@@ -159,17 +154,11 @@ export default async function ProgressPage() {
                   answers, and cautious until you&apos;ve answered enough
                   questions to be confident.
                 </p>
-                <ul className="space-y-1.5 text-sm">
+                <div className="space-y-3">
                   {masteryEstimates.map((a) => (
-                    <li
-                      key={a.areaId}
-                      className="flex justify-between text-foreground-muted"
-                    >
-                      <span>{a.areaName}</span>
-                      <span>{Math.round(a.estimatedMastery * 100)}%</span>
-                    </li>
+                    <AreaScoreBar key={a.areaId} label={a.areaName} percentage={a.estimatedMastery * 100} />
                   ))}
-                </ul>
+                </div>
               </Card>
             )}
           </div>
