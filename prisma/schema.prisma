@@ -138,6 +138,7 @@ model User {
   passwordHash        String
   mustChangePassword  Boolean   @default(false)
   grade               Int? // 9-12, null for mentors
+  dailyStudyMinutes   Int? // student's self-reported daily study time budget, drives study plan density
   isActive            Boolean   @default(true) // soft delete
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?

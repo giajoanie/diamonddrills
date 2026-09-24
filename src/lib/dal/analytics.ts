@@ -410,6 +410,7 @@ export const getActivityTimeline = cache(async (userId: string, limit = 100) => 
 const PRACTICE_ACTIVITY_TYPES = [
   "EXAM_START",
   "PRACTICE_SESSION_START",
+  "PRACTICE_SESSION_COMPLETE",
   "ROLEPLAY_SESSION_START",
   "SUBMISSION_CREATED",
 ] as const;
