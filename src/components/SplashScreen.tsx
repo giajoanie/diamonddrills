@@ -1,40 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 
-const HOLD_MS = 2500;
-const FADE_MS = 500;
+const WIPE_MS = 500;
 const SESSION_KEY = "dd-splash-shown";
 
 /**
- * A one-time "welcome to your binder" moment on first load per browser
- * session (not on every in-app navigation — Next's own client-side
- * routing is fast enough not to need one, and a mandatory pause on every
- * click would make the app feel slow). Shows for ~3s total, then fades
- * out over the light app content underneath.
+ * A one-time page-load flourish per browser session (not on every in-app
+ * navigation — Next's own client-side routing is fast enough not to need
+ * one). A plain dark panel wipes off to the side over half a second,
+ * revealing the page underneath — no hold, no logo, no text, nothing to
+ * wait on.
  */
 export function SplashScreen() {
-  const [phase, setPhase] = useState<"hidden" | "visible" | "fading">("hidden");
+  const [phase, setPhase] = useState<"hidden" | "covering" | "wiping">("hidden");
   const scheduledRef = useRef(false);
 
   useEffect(() => {
     // Dev-mode StrictMode double-invokes effects (mount → cleanup →
-    // mount). Cancelling these timers on that throwaway first cleanup
-    // while sessionStorage already remembers "shown" from that same first
-    // run would mean the real, kept invocation sees "already shown" and
-    // never reschedules them — nothing would ever display. This ref
-    // (unlike sessionStorage) persists across that double-invoke on the
-    // same instance, so the second call is what proceeds instead of the
-    // first. No cleanup needed either way: this lives in the root layout
-    // and doesn't unmount during normal navigation.
+    // mount). This ref (unlike sessionStorage) persists across that
+    // double-invoke on the same instance, so only the second, kept
+    // invocation schedules the timer. No cleanup needed either way: this
+    // lives in the root layout and doesn't unmount during normal
+    // navigation.
     if (scheduledRef.current) return;
 
     let shown: string | null;
     try {
       shown = sessionStorage.getItem(SESSION_KEY);
     } catch {
-      return; // storage blocked (private browsing etc.) — just skip the splash
+      return; // storage blocked (private browsing etc.) — just skip it
     }
     if (shown) return;
 
@@ -42,32 +37,30 @@ export function SplashScreen() {
     try {
       sessionStorage.setItem(SESSION_KEY, "1");
     } catch {
-      // ignore — worst case the splash shows again on the next navigation
+      // ignore — worst case it plays again on the next navigation
     }
 
-    setTimeout(() => setPhase("visible"), 0);
-    setTimeout(() => setPhase("fading"), HOLD_MS);
-    setTimeout(() => setPhase("hidden"), HOLD_MS + FADE_MS);
+    setTimeout(() => {
+      setPhase("covering");
+      // Double rAF: ensure the "covering" (untransitioned) frame actually
+      // paints before switching to "wiping", or the transition has nothing
+      // to animate from and just snaps straight to the end state.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setPhase("wiping"));
+      });
+    }, 0);
+    setTimeout(() => setPhase("hidden"), WIPE_MS + 50);
   }, []);
 
   if (phase === "hidden") return null;
 
   return (
     <div
-      className={`shell-diamond-bg fixed inset-0 z-50 flex items-center justify-center transition-opacity ease-out motion-reduce:transition-none ${
-        phase === "fading" ? "opacity-0" : "opacity-100"
+      className={`fixed inset-0 z-50 bg-accent-strong transition-transform ease-out motion-reduce:hidden ${
+        phase === "wiping" ? "-translate-x-full" : "translate-x-0"
       }`}
-      style={{ transitionDuration: `${FADE_MS}ms` }}
+      style={{ transitionDuration: `${WIPE_MS}ms` }}
       aria-hidden
-    >
-      <Image
-        src="/brand/dd-wordmark.png"
-        alt=""
-        width={620}
-        height={92}
-        priority
-        className="h-auto w-full max-w-[280px] px-6"
-      />
-    </div>
+    />
   );
 }
