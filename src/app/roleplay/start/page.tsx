@@ -2,12 +2,14 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments } from "@/lib/dal/events";
 import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
 import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
+import { getFlashcardsForCluster } from "@/lib/dal/flashcards";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Sticker } from "@/components/binder/Sticker";
 import { Card } from "@/components/ui/Card";
 import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
 import { CaseStudyDrawer } from "@/components/roleplay/CaseStudyDrawer";
+import { FlashcardDeck } from "@/components/roleplay/FlashcardDeck";
 import { StartRoleplayForm } from "./StartRoleplayForm";
 
 export const metadata = { title: "Practice roleplay" };
@@ -30,6 +32,15 @@ export default async function StartRoleplayPage() {
         eventName: e.event.name,
         grouped: await getPerformanceIndicatorsForEvent(e.event.examBankId!, e.event.roleplayPathway),
       })),
+  );
+
+  const clusterDecks = await Promise.all(
+    [...new Map(roleplayEnrollments.map((e) => [e.event.cluster.id, e.event.cluster])).values()].map(
+      async (cluster) => ({
+        clusterName: cluster.name,
+        cards: await getFlashcardsForCluster(cluster.id),
+      }),
+    ),
   );
 
   return (
@@ -75,6 +86,20 @@ export default async function StartRoleplayPage() {
                 eventName={panel.eventName}
                 grouped={panel.grouped}
               />
+            ))}
+
+            {clusterDecks.map((deck) => (
+              <Card key={deck.clusterName} className="mt-6">
+                <p className="font-display text-sm font-bold text-foreground">
+                  Key terms — {deck.clusterName}
+                </p>
+                <p className="text-sm text-foreground-muted">
+                  Vocabulary a judge expects you to already know cold.
+                </p>
+                <div className="mt-3">
+                  <FlashcardDeck cards={deck.cards} />
+                </div>
+              </Card>
             ))}
           </div>
         </TabbedCard>

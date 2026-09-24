@@ -220,6 +220,18 @@ model Cluster {
   examBank         ExamBank?         @relation("ClusterExamBank")
   resourceClusters ResourceCluster[]
   announcements    Announcement[]
+  flashcards       Flashcard[]
+}
+
+model Flashcard {
+  id         String   @id @default(cuid())
+  clusterId  String
+  cluster    Cluster  @relation(fields: [clusterId], references: [id])
+  term       String
+  definition String
+  createdAt  DateTime @default(now())
+
+  @@index([clusterId])
 }
 
 // Exam banks are distinct from clusters because some events (e.g. "Principles
