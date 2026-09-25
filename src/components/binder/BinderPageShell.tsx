@@ -22,10 +22,10 @@ export function BinderPageShell({
 }) {
   if (!user) {
     return (
-      <div className="min-h-dvh bg-background">
+      <div className="shell-diamond-bg min-h-dvh">
         <div className="mx-auto max-w-5xl px-3 py-6 sm:px-6">
           <Link href={homeHref} className="mb-3 block">
-            <Logo className="h-7 w-auto" />
+            <Logo className="h-7 w-auto brightness-0 invert" />
           </Link>
           {children}
         </div>
