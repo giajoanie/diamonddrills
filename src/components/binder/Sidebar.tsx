@@ -67,7 +67,7 @@ export function Sidebar({
   return (
     <div className="shell-diamond-bg flex h-full w-60 shrink-0 flex-col overflow-y-auto">
       <Link href={role === "MENTOR" ? "/mentor" : "/dashboard"} className="flex items-center gap-2 px-5 pt-6 pb-4">
-        <span className="flex h-6 w-6 shrink-0 rotate-45 items-center justify-center rounded-[6px] bg-white" aria-hidden />
+        <span className="flex h-6 w-6 shrink-0 rotate-45 items-center justify-center rounded-[6px] bg-highlight" aria-hidden />
         <span className="font-display text-base font-bold text-white">Diamond Drills</span>
       </Link>
 
@@ -78,10 +78,10 @@ export function Sidebar({
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
+              className={`rounded-lg border-l-4 px-3 py-2.5 text-sm font-semibold transition-colors ${
                 isActive
-                  ? "bg-background-elevated text-accent-strong"
-                  : "text-white/85 hover:bg-white/15 hover:text-white"
+                  ? "border-highlight bg-background-elevated text-accent-strong"
+                  : "border-transparent text-white/85 hover:bg-white/15 hover:text-white"
               }`}
             >
               {item.label}

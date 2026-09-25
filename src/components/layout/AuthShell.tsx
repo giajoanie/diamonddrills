@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { Sticker } from "@/components/binder/Sticker";
 
 export function AuthShell({
   title,
@@ -15,7 +16,8 @@ export function AuthShell({
       <Link href="/" className="mb-8">
         <Logo className="h-9 w-auto brightness-0 invert" />
       </Link>
-      <div className="w-full max-w-md rounded-2xl border border-border bg-background-elevated p-6 shadow-lg sm:p-8">
+      <div className="relative w-full max-w-md overflow-visible rounded-2xl border border-border bg-background-elevated p-6 shadow-lg sm:p-8">
+        <Sticker kind="tape" />
         <h1 className="font-display text-xl font-bold text-foreground">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-foreground-muted">{subtitle}</p>}
         <div className="mt-6">{children}</div>

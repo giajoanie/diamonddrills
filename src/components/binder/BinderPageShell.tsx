@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/brand/Logo";
 import { Sidebar } from "./Sidebar";
 import type { User } from "@/generated/prisma/client";
 
@@ -22,10 +22,10 @@ export function BinderPageShell({
 }) {
   if (!user) {
     return (
-      <div className="min-h-full flex-1 bg-background">
+      <div className="min-h-dvh bg-background">
         <div className="mx-auto max-w-5xl px-3 py-6 sm:px-6">
           <Link href={homeHref} className="mb-3 block">
-            <Image src="/brand/mhhs-deca.png" alt="Diamond Drills" width={120} height={28} className="h-7 w-auto" />
+            <Logo className="h-7 w-auto" />
           </Link>
           {children}
         </div>
@@ -34,7 +34,7 @@ export function BinderPageShell({
   }
 
   return (
-    <div className="flex min-h-full flex-1 bg-background">
+    <div className="flex min-h-dvh bg-background">
       <Sidebar
         role={user.role}
         identity={{
