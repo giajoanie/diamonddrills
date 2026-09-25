@@ -40,7 +40,7 @@ export default async function StudyPlanPage() {
   return (
     <>
       <BinderPageShell user={user} homeHref="/dashboard">
-        <TabbedCard>
+        <TabbedCard ruled>
           <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold text-foreground">Study plan</h1>
@@ -58,7 +58,7 @@ export default async function StudyPlanPage() {
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-foreground-muted">
+                  <span className="shrink-0 font-hand text-sm text-foreground-muted">
                     {doneCount} of {items.length} done
                   </span>
                   {streak.current > 0 && (
@@ -107,11 +107,11 @@ export default async function StudyPlanPage() {
                   <p className="text-xs font-bold uppercase tracking-wide text-accent-strong">
                     {competition.title}
                   </p>
-                  <p className="mt-1 flex items-baseline gap-1.5 font-display text-4xl font-bold text-foreground">
+                  <p className="mt-1 flex items-baseline gap-1.5 font-hand text-4xl font-bold text-foreground">
                     {Math.max(0, differenceInCalendarDays(competition.date, now))}
                     <span className="text-base font-normal text-foreground-muted">days</span>
                   </p>
-                  <p className="mt-1 text-sm text-foreground-muted">
+                  <p className="mt-1 font-hand text-sm text-foreground-muted">
                     {format(competition.date, "EEE M/d/yyyy")}
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default async function StudyPlanPage() {
                           />
                           <span className="truncate">{a.areaName}</span>
                         </span>
-                        <span className="shrink-0 text-foreground-subtle">
+                        <span className="shrink-0 font-hand text-foreground-subtle">
                           {Math.round(a.weightedAccuracy)}%
                         </span>
                       </li>

@@ -24,6 +24,14 @@
   --color-highlight: #f2c14e;
   --color-highlight-fg: #123a7a;
 
+  /* Ruled-paper / punch-rail decoration (opt-in via TabbedCard's `ruled`
+     prop — see design_handoff_* mockups). Kept separate from the base
+     surface tokens above since only a few screens use this treatment. */
+  --color-paper: #fdfdfb;
+  --color-rail: #f4f6fb;
+  --color-hole: #e7edf9;
+  --color-margin-line: #e9b8b8;
+
   /* Status (pastel bg + saturated fg pairs) */
   --color-success-bg: #e7f7ef;
   --color-success-fg: #1d6b4c;
@@ -114,6 +122,57 @@ body {
 .binder-dots {
   background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1.5px, transparent 1.5px);
   background-size: 10px 10px;
+}
+
+/* Ruled-paper + punch-rail treatment (opt-in via TabbedCard's `ruled` prop)
+   — used only by the screens whose design mockups specify it (dashboard,
+   mentor overview, study plan, signup); every other page keeps the plain
+   card. Ported from an earlier binder-UI iteration's .paper-margin/
+   .paper-holes/.binder-ruled classes, retuned to the newer mockups' colors. */
+.ruled-paper-shell {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-paper);
+}
+.ruled-paper-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: 54px;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 33px,
+    rgba(18, 58, 122, 0.07) 33px 34px
+  );
+  pointer-events: none;
+}
+@media (max-width: 639px) {
+  .ruled-paper-shell::before {
+    left: 0;
+  }
+}
+
+.punch-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 54px;
+  background: linear-gradient(90deg, var(--color-rail), var(--color-paper));
+  border-right: 2px solid var(--color-margin-line);
+  flex-direction: column;
+  align-items: center;
+  padding-top: 26px;
+  gap: 40px;
+}
+
+.punch-hole {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(18, 58, 122, 0.18);
+  background: var(--color-hole);
 }
 
 /* Splash screen (mockup 1b). The dot texture is animated with `transform`

@@ -56,6 +56,7 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
           { label: "2 · Events", active: step === 1 },
           { label: "3 · Baseline" },
         ]}
+        ruled
       >
         <div className="space-y-5">
           <div>
@@ -120,7 +121,7 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
                     role="radio"
                     aria-checked={grade === String(g)}
                     onClick={() => setGrade(String(g))}
-                    className={`flex h-11 w-14 items-center justify-center rounded-lg border-2 font-display text-base font-bold transition-colors ${
+                    className={`flex h-11 w-14 items-center justify-center rounded-lg border-2 font-hand text-lg font-bold transition-colors ${
                       grade === String(g)
                         ? "border-accent-strong bg-accent-soft text-accent-strong"
                         : "border-border text-foreground-subtle hover:border-border-strong"

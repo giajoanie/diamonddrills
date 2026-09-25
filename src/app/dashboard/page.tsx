@@ -96,7 +96,7 @@ export default async function DashboardPage() {
 
   return (
     <BinderPageShell user={user} homeHref="/dashboard">
-      <TabbedCard>
+      <TabbedCard ruled>
         <div className="mx-auto max-w-3xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
                   <p className="text-xs font-bold uppercase tracking-wide text-accent-strong">
                     {competitionDates[0].title}
                   </p>
-                  <p className="mt-1 flex items-baseline gap-1.5 font-display text-3xl font-bold text-foreground">
+                  <p className="mt-1 flex items-baseline gap-1.5 font-hand text-3xl font-bold text-foreground">
                     {Math.max(0, differenceInCalendarDays(competitionDates[0].date, now))}
                     <span className="text-sm font-normal text-foreground-muted">
                       days away

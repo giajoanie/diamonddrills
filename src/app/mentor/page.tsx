@@ -72,7 +72,7 @@ export default async function MentorDashboardPage({
 
   return (
     <BinderPageShell user={user} homeHref="/mentor">
-      <TabbedCard tabs={getMentorTabs("overview")}>
+      <TabbedCard tabs={getMentorTabs("overview")} ruled>
         <div className="mx-auto max-w-4xl">
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}

@@ -55,7 +55,7 @@ export function StudyPlanItemRow({ item, color }: { item: Item; color: string })
         </p>
 
         <div className="flex shrink-0 items-center gap-3">
-          <span className="text-xs text-foreground-subtle">Due {dueLabel}</span>
+          <span className="font-hand text-sm text-foreground-subtle">Due {dueLabel}</span>
           {item.completed ? (
             <form action={toggleStudyPlanItem}>
               <input type="hidden" name="itemId" value={item.id} />
