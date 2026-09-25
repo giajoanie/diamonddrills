@@ -43,7 +43,31 @@ export async function startRoleplaySession(
     data: { userId: student.id, type: "ROLEPLAY_SESSION_START", metadata: { sessionId: session.id, eventId } },
   });
 
+  const partnerId = formData.get("partnerId");
+  if (typeof partnerId === "string" && partnerId && partnerId !== student.id) {
+    // Re-check the partner is a real, current peer in this same event rather
+    // than trusting the posted id — the dropdown only ever offers valid
+    // peers, but the field is still client-controlled.
+    const partnerEnrollment = await prisma.eventEnrollment.findFirst({
+      where: { userId: partnerId, eventId, isCurrent: true, user: { isActive: true, role: "STUDENT" } },
+    });
+    if (partnerEnrollment) {
+      await prisma.practiceInvite.create({
+        data: { roleplaySessionId: session.id, fromUserId: student.id, toUserId: partnerId },
+      });
+    }
+  }
+
   redirect(`/roleplay/${session.id}`);
+}
+
+export async function dismissPracticeInvite(formData: FormData): Promise<void> {
+  const student = await requireRole("STUDENT");
+
+  const inviteId = formData.get("inviteId");
+  if (typeof inviteId !== "string" || !inviteId) return;
+
+  await prisma.practiceInvite.deleteMany({ where: { id: inviteId, toUserId: student.id } });
 }
 
 export async function saveRoleplayNotes(formData: FormData): Promise<void> {

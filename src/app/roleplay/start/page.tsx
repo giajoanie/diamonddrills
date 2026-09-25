@@ -3,6 +3,7 @@ import { getCurrentEnrollments } from "@/lib/dal/events";
 import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
 import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
 import { getFlashcardsForCluster } from "@/lib/dal/flashcards";
+import { getRoleplayPeers } from "@/lib/dal/practice-invites";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Sticker } from "@/components/binder/Sticker";
@@ -15,8 +16,13 @@ import { StartRoleplayForm } from "./StartRoleplayForm";
 export const metadata = { title: "Practice roleplay" };
 export const dynamic = "force-dynamic";
 
-export default async function StartRoleplayPage() {
+export default async function StartRoleplayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invitePartnerId?: string }>;
+}) {
   const user = await requireActiveUser("STUDENT");
+  const { invitePartnerId } = await searchParams;
   const [enrollments, caseStudies] = await Promise.all([
     getCurrentEnrollments(user.id),
     getVisibleResourcesForStudent(user.id, { type: "CASE_STUDY" }),
@@ -24,6 +30,12 @@ export default async function StartRoleplayPage() {
 
   const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
   const roleplayEvents = roleplayEnrollments.map((e) => ({ id: e.event.id, name: e.event.name }));
+
+  const peersByEventId = Object.fromEntries(
+    await Promise.all(
+      roleplayEnrollments.map(async (e) => [e.event.id, await getRoleplayPeers(user.id, e.event.id)] as const),
+    ),
+  );
 
   const piPanels = await Promise.all(
     roleplayEnrollments
@@ -62,6 +74,8 @@ export default async function StartRoleplayPage() {
                 <p className="mt-1 text-foreground-muted">
                   Timers match competition format. You&apos;ll get a prep
                   period, then a presentation period, then a self-rating.
+                  Practice with a partner and they can score you live against
+                  your mentor&apos;s real rubric, too.
                 </p>
               </div>
               <CaseStudyDrawer caseStudies={caseStudies} />
@@ -72,6 +86,8 @@ export default async function StartRoleplayPage() {
                 <StartRoleplayForm
                   events={roleplayEvents}
                   caseStudies={caseStudies}
+                  peersByEventId={peersByEventId}
+                  defaultPartnerId={invitePartnerId ?? ""}
                 />
               ) : (
                 <p className="text-foreground-muted">

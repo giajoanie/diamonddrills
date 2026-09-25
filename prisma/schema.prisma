@@ -167,6 +167,8 @@ model User {
   auditLogsTargeted      AuditLog[]                @relation("AuditTarget")
   roleplaySessions       RoleplayPracticeSession[]
   judgeScoresGiven       JudgeScore[]
+  practiceInvitesSent    PracticeInvite[]          @relation("PracticeInviteSender")
+  practiceInvitesToJudge PracticeInvite[]          @relation("PracticeInviteRecipient")
   submissionFileComments SubmissionFileComment[]
   masteryEstimates       MasteryEstimate[]
   studyPlanItems         StudyPlanItem[]
@@ -788,8 +790,9 @@ model RoleplayPracticeSession {
   startedAt           DateTime  @default(now())
   completedAt         DateTime?
 
-  rubricScores RubricScore[]
-  judgeScores  JudgeScore[]
+  rubricScores    RubricScore[]
+  judgeScores     JudgeScore[]
+  practiceInvites PracticeInvite[]
 
   @@index([userId])
   @@index([eventId])
@@ -809,6 +812,25 @@ model JudgeScore {
   comments          String?
   submittedAt       DateTime                @default(now())
 
+  @@index([roleplaySessionId])
+}
+
+// A student-to-student ask to judge a specific practice session, so pairing
+// up doesn't depend on texting a link outside the app. No separate status
+// field: an invite is "done" once a JudgeScore from toUserId exists for the
+// same roleplaySessionId (checked at query time), so the two can't drift out
+// of sync with each other.
+model PracticeInvite {
+  id                String                  @id @default(cuid())
+  roleplaySessionId String
+  roleplaySession   RoleplayPracticeSession @relation(fields: [roleplaySessionId], references: [id], onDelete: Cascade)
+  fromUserId        String
+  fromUser          User                    @relation("PracticeInviteSender", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId          String
+  toUser            User                    @relation("PracticeInviteRecipient", fields: [toUserId], references: [id], onDelete: Cascade)
+  createdAt         DateTime                @default(now())
+
+  @@index([toUserId])
   @@index([roleplaySessionId])
 }
 

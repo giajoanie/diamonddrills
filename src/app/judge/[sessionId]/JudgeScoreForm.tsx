@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { submitJudgeScore, type SubmitJudgeScoreState } from "@/lib/actions/judge";
 import { Button } from "@/components/ui/Button";
@@ -7,15 +8,18 @@ import { Label, Input, FieldError } from "@/components/ui/Field";
 
 type Criterion = { id: string; name: string; maxPoints: number };
 type Rubric = { id: string; name: string; criteria: Criterion[] };
+type SwapRolesWith = { partnerId: string; partnerName: string };
 
 export function JudgeScoreForm({
   sessionId,
   rubrics,
   judgeDisplayName,
+  swapRolesWith,
 }: {
   sessionId: string;
   rubrics: Rubric[];
   judgeDisplayName: string | null;
+  swapRolesWith: SwapRolesWith | null;
 }) {
   const [selectedRubricId, setSelectedRubricId] = useState(rubrics[0]?.id ?? "");
   const selectedRubric = rubrics.find((r) => r.id === selectedRubricId) ?? null;
@@ -27,9 +31,22 @@ export function JudgeScoreForm({
 
   if (state?.success) {
     return (
-      <p className="text-sm text-foreground-muted">
-        Score submitted. The student will see your feedback on their roleplay results.
-      </p>
+      <div className="space-y-3">
+        <p className="text-sm text-foreground-muted">
+          Score submitted. The student will see your feedback on their roleplay results.
+        </p>
+        {swapRolesWith && (
+          <div>
+            <p className="mb-2 text-sm text-foreground-muted">
+              Now it&apos;s your turn — start your own roleplay and{" "}
+              {swapRolesWith.partnerName} will get invited to judge you back.
+            </p>
+            <Link href={`/roleplay/start?invitePartnerId=${swapRolesWith.partnerId}`}>
+              <Button variant="secondary">Start my roleplay</Button>
+            </Link>
+          </div>
+        )}
+      </div>
     );
   }
 

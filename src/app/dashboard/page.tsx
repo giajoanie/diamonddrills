@@ -16,7 +16,9 @@ import {
   computeWeightedWeakAreas,
 } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
+import { getPendingPracticeInvites } from "@/lib/dal/practice-invites";
 import { logResourceOpen } from "@/lib/actions/resources";
+import { dismissPracticeInvite } from "@/lib/actions/roleplay";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { Sticker } from "@/components/binder/Sticker";
@@ -32,10 +34,11 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   // Per-page check (not layout-only) — see DECISIONS.md on Next 16 partial rendering.
   const user = await requireActiveUser("STUDENT");
-  const [enrollments, clusters, examBanks] = await Promise.all([
+  const [enrollments, clusters, examBanks, pendingInvites] = await Promise.all([
     getCurrentEnrollments(user.id),
     getSignupEventOptions(),
     getStudentExamBanks(user.id),
+    getPendingPracticeInvites(user.id),
   ]);
 
   const roleplay = enrollments.find((e) => e.event.category === "ROLEPLAY");
@@ -95,6 +98,39 @@ export default async function DashboardPage() {
           <h2 className="font-display text-2xl font-bold text-foreground">
             Welcome, {user.firstName}
           </h2>
+
+          {pendingInvites.length > 0 && (
+            <Card className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">
+              <div className="space-y-2">
+                {pendingInvites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex flex-wrap items-center justify-between gap-3"
+                  >
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">{invite.fromUser.firstName}</span>{" "}
+                      wants you to judge their {invite.roleplaySession.event.name}{" "}
+                      roleplay live.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/judge/${invite.roleplaySession.id}`}>
+                        <Button>Judge now</Button>
+                      </Link>
+                      <form action={dismissPracticeInvite}>
+                        <input type="hidden" name="inviteId" value={invite.id} />
+                        <button
+                          type="submit"
+                          className="text-xs text-foreground-subtle hover:text-foreground-muted"
+                        >
+                          Dismiss
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {banksMissingBaseline.length > 0 && (
             <Card className="relative mt-4 overflow-visible border-highlight/60 bg-warning-soft">

@@ -32,6 +32,11 @@ export default async function JudgeSessionPage({
         sessionId={session.id}
         rubrics={rubrics}
         judgeDisplayName={viewer ? viewer.firstName : null}
+        swapRolesWith={
+          viewer && viewer.role === "STUDENT" && viewer.id !== session.user.id
+            ? { partnerId: session.user.id, partnerName: session.user.firstName }
+            : null
+        }
       />
     </AuthShell>
   );
