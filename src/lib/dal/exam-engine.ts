@@ -29,6 +29,22 @@ export const getInstructionalAreasForBank = cache(async () => {
   return prisma.instructionalArea.findMany({ orderBy: { name: "asc" } });
 });
 
+/**
+ * Instructional areas that actually appear on a set of exam banks' active
+ * questions — unlike getInstructionalAreasForBank, this is genuinely scoped
+ * (InstructionalArea.examBankId is unused in real data; every row is
+ * global), used where "never attempted" needs to mean "never attempted
+ * among areas relevant to this student's own cluster(s)," not every area
+ * in the whole app.
+ */
+export const getInstructionalAreasForExamBanks = cache(async (examBankIds: string[]) => {
+  if (examBankIds.length === 0) return [];
+  return prisma.instructionalArea.findMany({
+    where: { questions: { some: { examBankId: { in: examBankIds }, isActive: true } } },
+    orderBy: { name: "asc" },
+  });
+});
+
 export const getExistingBaselineAttempt = cache(async (userId: string, examBankId: string) => {
   return prisma.examAttempt.findFirst({
     where: { userId, examBankId, isBaseline: true },

@@ -328,3 +328,77 @@ body {
     animation: none;
   }
 }
+
+/* My progress (/progress) + Practice roleplay (/roleplay/start) — see
+   design_handoff_progress_roleplay mockup. Scoped to those two screens only;
+   every other screen's Card/AreaScoreBar/ScoreTrendChart stays untouched. */
+.progress-note {
+  position: relative;
+  border: 1px solid rgba(18, 58, 122, 0.14);
+  box-shadow: 3px 4px 0 rgba(18, 58, 122, 0.1);
+}
+.progress-note-tape {
+  position: absolute;
+  top: -10px;
+  width: 64px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(18, 58, 122, 0.12);
+}
+
+.progress-chart {
+  position: relative;
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(63, 114, 212, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 114, 212, 0.09) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border: 1px solid rgba(18, 58, 122, 0.16);
+}
+.progress-chart-plot {
+  position: relative;
+  height: 220px;
+  border-left: 2px solid rgba(18, 58, 122, 0.5);
+  border-bottom: 2px solid rgba(18, 58, 122, 0.5);
+}
+
+.roleplay-pi-card {
+  background: #fff;
+  border: 1px solid rgba(18, 58, 122, 0.16);
+  box-shadow: 2px 3px 0 rgba(18, 58, 122, 0.08);
+  background-image: linear-gradient(
+    transparent 43px,
+    #e9b8b8 43px,
+    #e9b8b8 45px,
+    transparent 45px
+  );
+}
+.roleplay-pi-card-body {
+  background-image: repeating-linear-gradient(
+    transparent 0 31px,
+    rgba(63, 114, 212, 0.14) 31px 32px
+  );
+}
+
+.roleplay-subtabs {
+  border-bottom: 2px solid #b9d2ff;
+}
+.roleplay-subtab.on {
+  margin-bottom: -2px;
+  border-bottom: 3px solid #2a58b8;
+}
+
+.roleplay-clip-note {
+  box-shadow: 3px 3px 0 rgba(18, 58, 122, 0.12);
+}
+.roleplay-clip-note::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 14px;
+  width: 12px;
+  height: 34px;
+  border: 2.5px solid #8a96ad;
+  border-radius: 8px;
+  transform: rotate(-8deg);
+}

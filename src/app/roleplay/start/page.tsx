@@ -1,16 +1,14 @@
+import Link from "next/link";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments } from "@/lib/dal/events";
 import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
 import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
 import { getFlashcardsForCluster } from "@/lib/dal/flashcards";
 import { getRoleplayPeers } from "@/lib/dal/practice-invites";
+import { getRoleplayTimerPreset } from "@/lib/roleplay/timer-presets";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
-import { Sticker } from "@/components/binder/Sticker";
-import { Card } from "@/components/ui/Card";
-import { PerformanceIndicatorList } from "@/components/roleplay/PerformanceIndicatorList";
 import { CaseStudyDrawer } from "@/components/roleplay/CaseStudyDrawer";
-import { FlashcardDeck } from "@/components/roleplay/FlashcardDeck";
 import { StartRoleplayForm } from "./StartRoleplayForm";
 
 export const metadata = { title: "Practice roleplay" };
@@ -29,97 +27,76 @@ export default async function StartRoleplayPage({
   ]);
 
   const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
-  const roleplayEvents = roleplayEnrollments.map((e) => ({ id: e.event.id, name: e.event.name }));
 
-  const peersByEventId = Object.fromEntries(
-    await Promise.all(
-      roleplayEnrollments.map(async (e) => [e.event.id, await getRoleplayPeers(user.id, e.event.id)] as const),
-    ),
-  );
+  const events = await Promise.all(
+    roleplayEnrollments.map(async (e) => {
+      const { event } = e;
+      const preset = getRoleplayTimerPreset(event.format);
+      const [grouped, peers, cards] = await Promise.all([
+        event.examBankId
+          ? getPerformanceIndicatorsForEvent(event.examBankId, event.roleplayPathway)
+          : new Map<string, { description: string }[]>(),
+        getRoleplayPeers(user.id, event.id),
+        getFlashcardsForCluster(event.cluster.id),
+      ]);
 
-  const piPanels = await Promise.all(
-    roleplayEnrollments
-      .filter((e) => e.event.examBankId)
-      .map(async (e) => ({
-        eventName: e.event.name,
-        grouped: await getPerformanceIndicatorsForEvent(e.event.examBankId!, e.event.roleplayPathway),
-      })),
-  );
-
-  const clusterDecks = await Promise.all(
-    [...new Map(roleplayEnrollments.map((e) => [e.event.cluster.id, e.event.cluster])).values()].map(
-      async (cluster) => ({
-        clusterName: cluster.name,
-        cards: await getFlashcardsForCluster(cluster.id),
-      }),
-    ),
+      return {
+        id: event.id,
+        name: event.name,
+        clusterName: event.cluster.name,
+        prepMinutes: preset.prepSeconds / 60,
+        presentMinutes: preset.presentationSeconds / 60,
+        isTeam: event.teamSizeMax > 1,
+        pis: [...grouped.entries()].map(([tierLabel, items]) => ({
+          tierLabel,
+          items: items.map((pi) => pi.description),
+        })),
+        terms: cards,
+        peers,
+      };
+    }),
   );
 
   return (
-    <>
-      <BinderPageShell user={user} homeHref="/dashboard">
-        <TabbedCard
-          tabs={[
-            { label: "Practice roleplay", active: true },
-            { label: "NorCal Specific Prep", href: "/roleplay/norcal-prep" },
-          ]}
-        >
-          <div className="mx-auto max-w-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div className="relative inline-block">
-                <Sticker kind="paperclip" />
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Practice roleplay
-                </h1>
-                <p className="mt-1 text-foreground-muted">
-                  Timers match competition format. You&apos;ll get a prep
-                  period, then a presentation period, then a self-rating.
-                  Practice with a partner and they can score you live against
-                  your mentor&apos;s real rubric, too.
-                </p>
-              </div>
-              <CaseStudyDrawer caseStudies={caseStudies} />
-            </div>
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <TabbedCard ruled>
+        <div className="relative">
+          <CaseStudyDrawer caseStudies={caseStudies} variant="clip" />
 
-            <Card className="mt-6">
-              {roleplayEvents.length > 0 ? (
-                <StartRoleplayForm
-                  events={roleplayEvents}
-                  caseStudies={caseStudies}
-                  peersByEventId={peersByEventId}
-                  defaultPartnerId={invitePartnerId ?? ""}
-                />
-              ) : (
-                <p className="text-foreground-muted">
-                  You don&apos;t have a current roleplay event.
-                </p>
-              )}
-            </Card>
-
-            {piPanels.map((panel) => (
-              <PerformanceIndicatorList
-                key={panel.eventName}
-                eventName={panel.eventName}
-                grouped={panel.grouped}
-              />
-            ))}
-
-            {clusterDecks.map((deck) => (
-              <Card key={deck.clusterName} className="mt-6">
-                <p className="font-display text-sm font-bold text-foreground">
-                  Key terms — {deck.clusterName}
-                </p>
-                <p className="text-sm text-foreground-muted">
-                  Vocabulary a judge expects you to already know cold.
-                </p>
-                <div className="mt-3">
-                  <FlashcardDeck cards={deck.cards} />
-                </div>
-              </Card>
-            ))}
+          <div className="roleplay-subtabs flex gap-1">
+            <span className="roleplay-subtab on font-display px-4 py-2 text-[13px] font-bold text-foreground">
+              Practice roleplay
+            </span>
+            <Link
+              href="/roleplay/norcal-prep"
+              className="roleplay-subtab font-body px-4 py-2 text-[13px] font-semibold text-[rgba(18,58,122,.55)]"
+            >
+              NorCal specific prep
+            </Link>
           </div>
-        </TabbedCard>
-      </BinderPageShell>
-    </>
+
+          <div className="mt-[22px] max-w-[760px]">
+            <h1 className="font-display text-2xl font-extrabold text-foreground">
+              Practice roleplay
+            </h1>
+            <p className="mt-1.5 text-sm leading-relaxed text-[rgba(18,58,122,.72)]">
+              Timers match competition format. You&apos;ll get a prep period, then a presentation
+              period, then a self-rating. Practice with a partner and they can score you live
+              against your mentor&apos;s real rubric, too.
+            </p>
+          </div>
+
+          {events.length > 0 ? (
+            <StartRoleplayForm
+              events={events}
+              caseStudies={caseStudies}
+              defaultPartnerId={invitePartnerId ?? ""}
+            />
+          ) : (
+            <p className="mt-6 text-foreground-muted">You don&apos;t have a current roleplay event.</p>
+          )}
+        </div>
+      </TabbedCard>
+    </BinderPageShell>
   );
 }

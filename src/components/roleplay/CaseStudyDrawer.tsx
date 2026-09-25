@@ -26,7 +26,15 @@ function formatElapsed(ms: number) {
  * self-paced practice aid: the timer here is client-only, optional, and the
  * student fully controls start/pause/reset — nothing auto-submits.
  */
-export function CaseStudyDrawer({ caseStudies }: { caseStudies: CaseStudy[] }) {
+export function CaseStudyDrawer({
+  caseStudies,
+  variant = "button",
+}: {
+  caseStudies: CaseStudy[];
+  /** "clip" is the yellow paper-clipped note used by /roleplay/start's
+   * restyle; every other caller (e.g. norcal-prep) keeps the plain button. */
+  variant?: "button" | "clip";
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -53,9 +61,21 @@ export function CaseStudyDrawer({ caseStudies }: { caseStudies: CaseStudy[] }) {
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setIsOpen(true)}>
-        Case studies{caseStudies.length > 0 ? ` (${caseStudies.length})` : ""}
-      </Button>
+      {variant === "clip" ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="roleplay-clip-note absolute right-0 top-[26px] rounded-r-[10px] px-4 py-3.5 pl-5 text-left"
+          style={{ background: "#fff6dc", transform: "rotate(2deg)" }}
+        >
+          <div className="font-display text-[13px] font-bold text-[#6b4c08]">Case studies</div>
+          <div className="font-hand text-sm text-[#8a6412]">past prompts →</div>
+        </button>
+      ) : (
+        <Button variant="secondary" onClick={() => setIsOpen(true)}>
+          Case studies{caseStudies.length > 0 ? ` (${caseStudies.length})` : ""}
+        </Button>
+      )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
