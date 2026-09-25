@@ -36,15 +36,30 @@ export const getStudyPlan = cache(async (userId: string) => {
  * events.ts gives it; this is a stand-in until there's either a proper
  * "internal" CompetitionLevel or a dedicated flag on CalendarEvent.
  */
+// A function, not a module-level constant, so `new Date()` is evaluated
+// fresh on every call rather than frozen at first import.
+function competitionDateWhere() {
+  return {
+    date: { gte: new Date() },
+    OR: [{ level: { not: null } }, { title: "Chapter Mini-Competition" }],
+  };
+}
+
 export const getNextCompetitionDate = cache(async () => {
   const event = await prisma.calendarEvent.findFirst({
-    where: {
-      date: { gte: new Date() },
-      OR: [{ level: { not: null } }, { title: "Chapter Mini-Competition" }],
-    },
+    where: competitionDateWhere(),
     orderBy: { date: "asc" },
   });
   return event;
+});
+
+/** The next few competition dates (same definition as getNextCompetitionDate), for a dashboard "up next" list. */
+export const getUpcomingCompetitionDates = cache(async (limit = 3) => {
+  return prisma.calendarEvent.findMany({
+    where: competitionDateWhere(),
+    orderBy: { date: "asc" },
+    take: limit,
+  });
 });
 
 /**

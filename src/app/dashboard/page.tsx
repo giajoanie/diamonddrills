@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments, getSignupEventOptions } from "@/lib/dal/events";
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/lib/exam-engine/scoring";
 import { getTeamForStudentEvent } from "@/lib/dal/teams";
 import { getPendingPracticeInvites } from "@/lib/dal/practice-invites";
+import { getUpcomingCompetitionDates } from "@/lib/dal/study-plan";
 import { logResourceOpen } from "@/lib/actions/resources";
 import { dismissPracticeInvite } from "@/lib/actions/roleplay";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
@@ -34,12 +35,14 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   // Per-page check (not layout-only) — see DECISIONS.md on Next 16 partial rendering.
   const user = await requireActiveUser("STUDENT");
-  const [enrollments, clusters, examBanks, pendingInvites] = await Promise.all([
+  const [enrollments, clusters, examBanks, pendingInvites, competitionDates] = await Promise.all([
     getCurrentEnrollments(user.id),
     getSignupEventOptions(),
     getStudentExamBanks(user.id),
     getPendingPracticeInvites(user.id),
+    getUpcomingCompetitionDates(),
   ]);
+  const now = new Date();
 
   const roleplay = enrollments.find((e) => e.event.category === "ROLEPLAY");
   const written = enrollments.find((e) => e.event.category === "WRITTEN");
@@ -129,6 +132,46 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
+            </Card>
+          )}
+
+          {competitionDates.length > 0 && (
+            <Card className="relative mt-4 overflow-visible border-border bg-accent-soft">
+              <Sticker kind="tape" />
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-accent-strong">
+                    {competitionDates[0].title}
+                  </p>
+                  <p className="mt-1 flex items-baseline gap-1.5 font-display text-3xl font-bold text-foreground">
+                    {Math.max(0, differenceInCalendarDays(competitionDates[0].date, now))}
+                    <span className="text-sm font-normal text-foreground-muted">
+                      days away
+                    </span>
+                  </p>
+                  <p className="mt-1 text-sm text-foreground-muted">
+                    {format(competitionDates[0].date, "EEE M/d/yyyy")}
+                  </p>
+                </div>
+                <Link href="/calendar" className="text-sm text-accent hover:underline">
+                  Full calendar →
+                </Link>
+              </div>
+              {competitionDates.length > 1 && (
+                <ul className="mt-3 space-y-1 border-t border-border pt-3">
+                  {competitionDates.slice(1).map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex items-center justify-between gap-3 text-sm"
+                    >
+                      <span className="text-foreground-muted">{c.title}</span>
+                      <span className="text-foreground-subtle">
+                        {format(c.date, "EEE M/d/yyyy")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
           )}
 
