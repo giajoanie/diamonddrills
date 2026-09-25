@@ -152,27 +152,31 @@ body {
   }
 }
 
+/* The holes are a repeating background pattern, not discrete elements, so
+   the rail covers any content height instead of stopping after a fixed
+   count partway down a long page. */
 .punch-rail {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   width: 54px;
-  background: linear-gradient(90deg, var(--color-rail), var(--color-paper));
   border-right: 2px solid var(--color-margin-line);
-  flex-direction: column;
-  align-items: center;
-  padding-top: 26px;
-  gap: 40px;
-}
-
-.punch-hole {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(18, 58, 122, 0.18);
-  background: var(--color-hole);
+  background-image:
+    radial-gradient(
+      circle,
+      var(--color-hole) 6px,
+      rgba(18, 58, 122, 0.18) 6px 6.5px,
+      transparent 6.6px
+    ),
+    linear-gradient(90deg, var(--color-rail), var(--color-paper));
+  background-position:
+    center 26px,
+    0 0;
+  background-repeat: repeat-y, no-repeat;
+  background-size:
+    100% 53px,
+    100% 100%;
 }
 
 /* Splash screen (mockup 1b). The dot texture is animated with `transform`

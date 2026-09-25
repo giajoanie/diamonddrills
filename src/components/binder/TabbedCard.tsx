@@ -32,13 +32,7 @@ export function TabbedCard({
             : "bg-background-elevated p-5 sm:p-7"
         }`}
       >
-        {ruled && (
-          <div className="punch-rail hidden sm:flex" aria-hidden>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <span key={i} className="punch-hole" />
-            ))}
-          </div>
-        )}
+        {ruled && <div className="punch-rail hidden sm:block" aria-hidden />}
         <div className="relative">{children}</div>
       </div>
     </div>

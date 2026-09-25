@@ -65,7 +65,7 @@ export function Sidebar({
   const active = pickActive(items, pathname);
 
   return (
-    <div className="shell-diamond-bg flex h-full w-60 shrink-0 flex-col overflow-y-auto">
+    <div className="shell-diamond-bg flex min-h-dvh w-60 shrink-0 flex-col overflow-y-auto">
       <Link href={role === "MENTOR" ? "/mentor" : "/dashboard"} className="flex items-center gap-2 px-5 pt-6 pb-4">
         <span className="flex h-6 w-6 shrink-0 rotate-45 items-center justify-center rounded-[6px] bg-highlight" aria-hidden />
         <span className="font-display text-base font-bold text-white">Diamond Drills</span>
