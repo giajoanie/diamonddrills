@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileText, Link as LinkIcon, Pause, Play, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, FileText, Link as LinkIcon, Pause, Play, RotateCcw, X } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
+import { getCaseStudyPreview } from "@/lib/case-study-format";
 import { Button } from "@/components/ui/Button";
 
 type CaseStudy = {
@@ -36,6 +37,7 @@ export function CaseStudyDrawer({
   variant?: "button" | "clip";
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [reading, setReading] = useState<CaseStudy | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const tickStartRef = useRef<number | null>(null);
@@ -82,7 +84,10 @@ export function CaseStudyDrawer({
           <button
             type="button"
             aria-label="Close case studies"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false);
+              setReading(null);
+            }}
             className="absolute inset-0 bg-foreground/40"
           />
           <div
@@ -91,94 +96,139 @@ export function CaseStudyDrawer({
             aria-label="Case studies"
             className="relative flex h-full w-full max-w-md flex-col overflow-y-auto bg-surface p-6 shadow-xl"
           >
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold text-foreground">Case studies</h2>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close"
-                className="rounded-full p-1 text-foreground-muted hover:bg-surface-hover hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="mt-1 text-sm text-foreground-muted">
-              Open any of these whenever you want — no forced prep/present timer. Use the stopwatch
-              below only if you want to time yourself, and pause it any time.
-            </p>
-
-            <div className="mt-4 flex items-center gap-3 rounded-md border border-border bg-surface-hover px-4 py-3">
-              <span className="font-display text-2xl tabular-nums text-foreground">
-                {formatElapsed(elapsedMs)}
-              </span>
-              <div className="ml-auto flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsRunning((r) => !r)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-strong hover:bg-accent-soft/80"
-                  aria-label={isRunning ? "Pause timer" : "Start timer"}
-                >
-                  {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsRunning(false);
-                    setElapsedMs(0);
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-hover text-foreground-muted hover:text-foreground"
-                  aria-label="Reset timer"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {caseStudies.length === 0 && (
-                <p className="text-sm text-foreground-muted">
-                  No case studies are available for your event yet — check back once your mentor
-                  uploads some.
-                </p>
-              )}
-              {caseStudies.map((c) => {
-                const href = c.fileUrl ? `/files/${c.fileUrl}` : (c.externalUrl ?? "#");
-                return (
-                  <a
-                    key={c.id}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => void logResourceOpen(c.id)}
-                    className="flex items-start gap-3 rounded-md border border-border bg-surface p-3 transition-shadow hover:shadow-md"
+            {reading ? (
+              <CaseStudyReader caseStudy={reading} onBack={() => setReading(null)} />
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display text-lg font-bold text-foreground">Case studies</h2>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Close"
+                    className="rounded-full p-1 text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                   >
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft">
-                      {c.fileUrl ? (
-                        <FileText className="h-4 w-4 text-accent-strong" aria-hidden />
-                      ) : (
-                        <LinkIcon className="h-4 w-4 text-accent-strong" aria-hidden />
-                      )}
-                    </span>
-                    <div>
-                      <p className="font-display font-bold text-foreground">{c.name}</p>
-                      {c.description && (
-                        <p className="mt-1 text-sm text-foreground-muted">{c.description}</p>
-                      )}
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <p className="mt-1 text-sm text-foreground-muted">
+                  Open any of these whenever you want — no forced prep/present timer. Use the
+                  stopwatch below only if you want to time yourself, and pause it any time.
+                </p>
 
-            <div className="mt-6 rounded-md border border-border bg-accent-soft p-3">
-              <p className="text-sm text-foreground-muted">
-                AI-generated case studies scoped to NorCal&apos;s district instructional areas are
-                planned here next — not live yet.
-              </p>
-            </div>
+                <div className="mt-4 flex items-center gap-3 rounded-md border border-border bg-surface-hover px-4 py-3">
+                  <span className="font-display text-2xl tabular-nums text-foreground">
+                    {formatElapsed(elapsedMs)}
+                  </span>
+                  <div className="ml-auto flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsRunning((r) => !r)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-strong hover:bg-accent-soft/80"
+                      aria-label={isRunning ? "Pause timer" : "Start timer"}
+                    >
+                      {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRunning(false);
+                        setElapsedMs(0);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-hover text-foreground-muted hover:text-foreground"
+                      aria-label="Reset timer"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {caseStudies.length === 0 && (
+                    <p className="text-sm text-foreground-muted">
+                      No case studies are available for your event yet — check back once your
+                      mentor uploads some.
+                    </p>
+                  )}
+                  {caseStudies.map((c) => {
+                    const isTextOnly = !c.fileUrl && !c.externalUrl;
+                    const preview = c.description ? getCaseStudyPreview(c.description) : null;
+
+                    const inner = (
+                      <>
+                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+                          {c.fileUrl ? (
+                            <FileText className="h-4 w-4 text-accent-strong" aria-hidden />
+                          ) : (
+                            <LinkIcon className="h-4 w-4 text-accent-strong" aria-hidden />
+                          )}
+                        </span>
+                        <div>
+                          <p className="font-display font-bold text-foreground">{c.name}</p>
+                          {preview && (
+                            <p className="mt-1 line-clamp-2 text-sm text-foreground-muted">
+                              {preview}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    );
+
+                    if (isTextOnly) {
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            void logResourceOpen(c.id);
+                            setReading(c);
+                          }}
+                          className="flex w-full items-start gap-3 rounded-md border border-border bg-surface p-3 text-left transition-shadow hover:shadow-md"
+                        >
+                          {inner}
+                        </button>
+                      );
+                    }
+
+                    const href = c.fileUrl ? `/files/${c.fileUrl}` : c.externalUrl!;
+                    return (
+                      <a
+                        key={c.id}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => void logResourceOpen(c.id)}
+                        className="flex items-start gap-3 rounded-md border border-border bg-surface p-3 transition-shadow hover:shadow-md"
+                      >
+                        {inner}
+                      </a>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+function CaseStudyReader({ caseStudy, onBack }: { caseStudy: CaseStudy; onBack: () => void }) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-sm font-semibold text-accent-strong hover:underline"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden />
+        All case studies
+      </button>
+      <h2 className="mt-3 font-display text-lg font-bold text-foreground">{caseStudy.name}</h2>
+      <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+        {caseStudy.description}
+      </div>
     </>
   );
 }
