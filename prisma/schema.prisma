@@ -147,33 +147,34 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  sessions               Session[]
-  enrollments            EventEnrollment[]
-  teamMemberships        TeamMember[]
-  examAttempts           ExamAttempt[]
-  missedQuestions        MissedQuestion[]
-  resourcesUploaded      Resource[]                @relation("ResourceUploader")
-  assignmentsCreated     Assignment[]              @relation("AssignmentCreator")
-  submissions            Submission[]              @relation("SubmissionOwner")
-  submissionsGraded      Submission[]              @relation("SubmissionGrader")
-  rubricsCreated         Rubric[]                  @relation("RubricCreator")
-  rubricScoresGiven      RubricScore[]             @relation("RubricScorer")
-  activityLogs           ActivityLog[]
-  competitionResults     CompetitionResult[]       @relation("CompetitionParticipant")
-  competitionsRecorded   CompetitionResult[]       @relation("CompetitionRecorder")
-  interventionsAsStudent InterventionLog[]         @relation("InterventionStudent")
-  interventionsAsMentor  InterventionLog[]         @relation("InterventionMentor")
-  auditLogsActed         AuditLog[]                @relation("AuditActor")
-  auditLogsTargeted      AuditLog[]                @relation("AuditTarget")
-  roleplaySessions       RoleplayPracticeSession[]
-  judgeScoresGiven       JudgeScore[]
-  practiceInvitesSent    PracticeInvite[]          @relation("PracticeInviteSender")
-  practiceInvitesToJudge PracticeInvite[]          @relation("PracticeInviteRecipient")
-  submissionFileComments SubmissionFileComment[]
-  masteryEstimates       MasteryEstimate[]
-  studyPlanItems         StudyPlanItem[]
-  announcementsAuthored  Announcement[]
-  calendarEventsCreated  CalendarEvent[]
+  sessions                  Session[]
+  enrollments               EventEnrollment[]
+  teamMemberships           TeamMember[]
+  examAttempts              ExamAttempt[]
+  missedQuestions           MissedQuestion[]
+  resourcesUploaded         Resource[]                @relation("ResourceUploader")
+  assignmentsCreated        Assignment[]              @relation("AssignmentCreator")
+  submissions               Submission[]              @relation("SubmissionOwner")
+  submissionsGraded         Submission[]              @relation("SubmissionGrader")
+  rubricsCreated            Rubric[]                  @relation("RubricCreator")
+  rubricScoresGiven         RubricScore[]             @relation("RubricScorer")
+  activityLogs              ActivityLog[]
+  competitionResults        CompetitionResult[]       @relation("CompetitionParticipant")
+  competitionsRecorded      CompetitionResult[]       @relation("CompetitionRecorder")
+  interventionsAsStudent    InterventionLog[]         @relation("InterventionStudent")
+  interventionsAsMentor     InterventionLog[]         @relation("InterventionMentor")
+  auditLogsActed            AuditLog[]                @relation("AuditActor")
+  auditLogsTargeted         AuditLog[]                @relation("AuditTarget")
+  roleplaySessions          RoleplayPracticeSession[]
+  judgeScoresGiven          JudgeScore[]
+  practiceInvitesSent       PracticeInvite[]          @relation("PracticeInviteSender")
+  practiceInvitesToJudge    PracticeInvite[]          @relation("PracticeInviteRecipient")
+  submissionFileComments    SubmissionFileComment[]
+  masteryEstimates          MasteryEstimate[]
+  studyPlanItems            StudyPlanItem[]
+  announcementsAuthored     Announcement[]
+  calendarEventsCreated     CalendarEvent[]
+  calendarMilestonesCreated CalendarMilestone[]       @relation("CalendarMilestoneCreator")
 
   @@index([role])
   @@index([isActive])
@@ -258,26 +259,26 @@ model ExamBank {
 }
 
 model Event {
-  id          String        @id @default(cuid())
-  clusterId   String
-  cluster     Cluster       @relation(fields: [clusterId], references: [id])
-  name        String
-  slug        String        @unique
-  category    EventCategory
-  format      EventFormat
-  hasExam     Boolean
-  examBankId  String?
-  examBank    ExamBank?     @relation(fields: [examBankId], references: [id])
+  id              String        @id @default(cuid())
+  clusterId       String
+  cluster         Cluster       @relation(fields: [clusterId], references: [id])
+  name            String
+  slug            String        @unique
+  category        EventCategory
+  format          EventFormat
+  hasExam         Boolean
+  examBankId      String?
+  examBank        ExamBank?     @relation(fields: [examBankId], references: [id])
   // Tier 3 pathway name (e.g. "Merchandising", "Lodging") for roleplay events
   // whose performance-indicator prep draws from a named pathway on top of
   // the Tier 1 core + Tier 2 cluster indicators. Null for events with no
   // pathway-specific tier (team decision making, Principles, exam-only events).
   roleplayPathway String?
-  teamSizeMin Int           @default(1)
-  teamSizeMax Int           @default(1)
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  teamSizeMin     Int           @default(1)
+  teamSizeMax     Int           @default(1)
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   enrollments        EventEnrollment[]
   teams              Team[]
@@ -365,16 +366,16 @@ model InstructionalArea {
 // Rubric (separate model) is what a roleplay is actually scored against;
 // this is just "what to study."
 model PerformanceIndicator {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   examBankId        String
-  examBank          ExamBank  @relation(fields: [examBankId], references: [id])
+  examBank          ExamBank @relation(fields: [examBankId], references: [id])
   tier              String // "Core" | "Cluster" | "Pathway" | "Standards"
   pathway           String? // set only when tier = "Pathway", e.g. "Merchandising"
   instructionalArea String // e.g. "Business Law", or a PFL topic like "I. Earning Income"
   code              String? // e.g. "BL:163" — null for PFL (no MBA Research code system)
   level             String? // "PQ" | "CS" | "SP" — null for PFL
   description       String
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime @default(now())
 
   @@unique([examBankId, tier, pathway, code, description])
   @@index([examBankId, tier])
@@ -885,10 +886,41 @@ model CalendarEvent {
   title       String
   description String?
   date        DateTime
+  endDate     DateTime? // set only for multi-day competitions; null means single-day
   level       CompetitionLevel?
   createdById String
   createdBy   User              @relation(fields: [createdById], references: [id])
   createdAt   DateTime          @default(now())
 
+  @@index([date])
+}
+
+enum MilestoneKind {
+  MILESTONE
+  DEADLINE
+  PRACTICE
+}
+
+// PERSONAL = a student's own private to-do item, visible only to its
+// creator. SHARED = a mentor-posted milestone visible to every student,
+// same broadcast model as Announcement. Kept as one table (rather than
+// separate personal/shared models) since both render on the same calendar
+// and differ only in who can see and delete them.
+enum MilestoneScope {
+  PERSONAL
+  SHARED
+}
+
+model CalendarMilestone {
+  id          String         @id @default(cuid())
+  title       String
+  date        DateTime
+  kind        MilestoneKind
+  scope       MilestoneScope
+  createdById String
+  createdBy   User           @relation("CalendarMilestoneCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+
+  @@index([createdById, scope])
   @@index([date])
 }

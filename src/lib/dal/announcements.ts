@@ -33,3 +33,16 @@ export const getUpcomingCalendarEvents = cache(async () => {
 export const getAllCalendarEvents = cache(async () => {
   return prisma.calendarEvent.findMany({ orderBy: { date: "asc" } });
 });
+
+/**
+ * Every milestone a given user can see on their calendar: mentor-posted
+ * SHARED ones (visible to everyone, like Announcements) plus that user's
+ * own PERSONAL ones. Not filtered to "upcoming" — the flip calendar needs
+ * past milestones too when browsing back to an earlier month.
+ */
+export const getCalendarMilestonesForViewer = cache(async (userId: string) => {
+  return prisma.calendarMilestone.findMany({
+    where: { OR: [{ scope: "SHARED" }, { scope: "PERSONAL", createdById: userId }] },
+    orderBy: { date: "asc" },
+  });
+});

@@ -179,6 +179,93 @@ body {
     100% 100%;
 }
 
+/* Flip calendar (/calendar). A "pad of pages" look: two offset blank sheets
+   behind the real one, a spiral-binding row of rings across its top edge,
+   and a page-flip transition when the month changes. */
+.calendar-sheet-stack {
+  position: relative;
+}
+.calendar-sheet-stack::before,
+.calendar-sheet-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-paper);
+  border: 1px solid rgba(18, 58, 122, 0.12);
+  border-radius: 14px;
+}
+.calendar-sheet-stack::before {
+  transform: rotate(1deg) translate(4px, 6px);
+  z-index: 0;
+}
+.calendar-sheet-stack::after {
+  transform: rotate(-1deg) translate(-4px, 10px);
+  z-index: -1;
+}
+
+.calendar-sheet {
+  position: relative;
+  z-index: 1;
+  background: var(--color-paper);
+  border: 1px solid rgba(18, 58, 122, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(18, 58, 122, 0.12);
+  padding: 30px 22px 22px;
+  transform-origin: top center;
+  transition:
+    transform 190ms ease-in,
+    opacity 190ms ease-in;
+}
+.calendar-sheet.is-flipping-out-next {
+  transform: rotateX(88deg);
+  opacity: 0.2;
+}
+.calendar-sheet.is-flipping-out-prev {
+  transform: rotateX(-88deg);
+  opacity: 0.2;
+}
+/* Applied with transitions suppressed for one frame, then removed, so the
+   sheet animates back from this tilt to flat instead of popping. */
+.calendar-sheet.is-flipping-in-from-next {
+  transform: rotateX(-44deg);
+  transition: none;
+}
+.calendar-sheet.is-flipping-in-from-prev {
+  transform: rotateX(44deg);
+  transition: none;
+}
+
+.calendar-spiral {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-evenly;
+  padding: 0 22px;
+  pointer-events: none;
+}
+.calendar-spiral-ring {
+  width: 9px;
+  height: 24px;
+  border: 2.5px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-bg);
+}
+
+.calendar-day-ring {
+  border: 2.5px solid #c0392b;
+  border-radius: 50%;
+  transform: rotate(-6deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-sheet {
+    transition: none;
+  }
+}
+
 /* Splash screen (mockup 1b). The dot texture is animated with `transform`
    (compositor-only) rather than `background-position` — the mockup's own
    background-position keyframe forces a full repaint every frame, which is

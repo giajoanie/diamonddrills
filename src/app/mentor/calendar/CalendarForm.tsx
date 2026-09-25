@@ -26,14 +26,19 @@ export function CalendarForm() {
           <Input id="date" name="date" type="datetime-local" required />
         </div>
         <div>
-          <Label htmlFor="level">Level (optional)</Label>
-          <Select id="level" name="level" defaultValue="">
-            <option value="">Not level-specific</option>
-            <option value="DISTRICT">District</option>
-            <option value="STATE">State</option>
-            <option value="ICDC">ICDC</option>
-          </Select>
+          <Label htmlFor="endDate">End date (optional, for multi-day competitions)</Label>
+          <Input id="endDate" name="endDate" type="datetime-local" />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="level">Level (optional)</Label>
+        <Select id="level" name="level" defaultValue="">
+          <option value="">Not level-specific</option>
+          <option value="DISTRICT">District</option>
+          <option value="STATE">State</option>
+          <option value="ICDC">ICDC</option>
+        </Select>
       </div>
 
       <div>

@@ -1,12 +1,14 @@
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getAllCalendarEvents } from "@/lib/dal/announcements";
+import { getAllCalendarEvents, getCalendarMilestonesForViewer } from "@/lib/dal/announcements";
 import { deleteCalendarEvent } from "@/lib/actions/announcements";
+import { deleteMilestone } from "@/lib/actions/calendar-milestones";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
 import { getMentorTabs } from "@/lib/mentorNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CalendarForm } from "./CalendarForm";
+import { MilestoneForm } from "./MilestoneForm";
 
 export const metadata = { title: "Competition calendar" };
 export const dynamic = "force-dynamic";
@@ -19,7 +21,10 @@ const LEVEL_LABELS: Record<string, string> = {
 
 export default async function MentorCalendarPage() {
   const user = await requireActiveUser("MENTOR");
-  const events = await getAllCalendarEvents();
+  const [events, milestones] = await Promise.all([
+    getAllCalendarEvents(),
+    getCalendarMilestonesForViewer(user.id),
+  ]);
 
   return (
     <>
@@ -51,6 +56,7 @@ export default async function MentorCalendarPage() {
                     </p>
                     <p className="text-sm text-foreground-muted">
                       {e.date.toLocaleString()}
+                      {e.endDate && ` – ${e.endDate.toLocaleString()}`}
                     </p>
                     {e.description && (
                       <p className="text-sm text-foreground-subtle">
@@ -70,6 +76,47 @@ export default async function MentorCalendarPage() {
                 <Card>
                   <p className="text-foreground-muted">
                     No calendar events yet.
+                  </p>
+                </Card>
+              )}
+            </div>
+
+            <h2 className="mt-10 text-lg font-semibold text-foreground">
+              Shared milestones
+            </h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Visible to every student on their calendar — students also add
+              their own private ones that you won&apos;t see here.
+            </p>
+
+            <Card className="mt-4">
+              <MilestoneForm />
+            </Card>
+
+            <div className="mt-6 space-y-3">
+              {milestones.map((m) => (
+                <Card
+                  key={m.id}
+                  className="flex flex-wrap items-start justify-between gap-3"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">{m.title}</p>
+                    <p className="text-sm text-foreground-muted">
+                      {m.date.toLocaleDateString()} · {m.kind}
+                    </p>
+                  </div>
+                  <form action={deleteMilestone}>
+                    <input type="hidden" name="milestoneId" value={m.id} />
+                    <Button type="submit" variant="ghost">
+                      Delete
+                    </Button>
+                  </form>
+                </Card>
+              ))}
+              {milestones.length === 0 && (
+                <Card>
+                  <p className="text-foreground-muted">
+                    No shared milestones yet.
                   </p>
                 </Card>
               )}

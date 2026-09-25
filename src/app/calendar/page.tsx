@@ -1,63 +1,29 @@
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getUpcomingCalendarEvents } from "@/lib/dal/announcements";
+import { getAllCalendarEvents, getCalendarMilestonesForViewer } from "@/lib/dal/announcements";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
-import { Card } from "@/components/ui/Card";
+import { CalendarView } from "./CalendarView";
 
 export const metadata = { title: "Competition calendar" };
 export const dynamic = "force-dynamic";
 
-const LEVEL_LABELS: Record<string, string> = {
-  DISTRICT: "District",
-  STATE: "State",
-  ICDC: "ICDC",
-};
-
 export default async function StudentCalendarPage() {
   const user = await requireActiveUser("STUDENT");
-  const events = await getUpcomingCalendarEvents();
+  const [competitions, milestones] = await Promise.all([
+    getAllCalendarEvents(),
+    getCalendarMilestonesForViewer(user.id),
+  ]);
 
   return (
-    <>
-      <BinderPageShell user={user} homeHref="/dashboard">
-        <TabbedCard>
-          <div className="mx-auto max-w-3xl">
-            <h1 className="text-2xl font-semibold text-foreground">
-              Competition calendar
-            </h1>
-
-            <div className="mt-6 space-y-3">
-              {events.map((e) => (
-                <Card key={e.id}>
-                  <p className="font-medium text-foreground">
-                    {e.title}{" "}
-                    {e.level && (
-                      <span className="font-normal text-foreground-subtle">
-                        · {LEVEL_LABELS[e.level]}
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-1 text-sm text-foreground-muted">
-                    {e.date.toLocaleString()}
-                  </p>
-                  {e.description && (
-                    <p className="mt-1 text-sm text-foreground-subtle">
-                      {e.description}
-                    </p>
-                  )}
-                </Card>
-              ))}
-              {events.length === 0 && (
-                <Card>
-                  <p className="text-foreground-muted">
-                    No upcoming events yet.
-                  </p>
-                </Card>
-              )}
-            </div>
-          </div>
-        </TabbedCard>
-      </BinderPageShell>
-    </>
+    <BinderPageShell user={user} homeHref="/dashboard">
+      <TabbedCard ruled>
+        <CalendarView
+          competitions={competitions}
+          milestones={milestones}
+          currentUserId={user.id}
+          now={new Date()}
+        />
+      </TabbedCard>
+    </BinderPageShell>
   );
 }

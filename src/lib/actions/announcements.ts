@@ -73,6 +73,7 @@ export async function createCalendarEvent(
 
   const title = formData.get("title");
   const date = formData.get("date");
+  const endDate = formData.get("endDate");
   const description = formData.get("description");
   const level = formData.get("level");
 
@@ -81,11 +82,19 @@ export async function createCalendarEvent(
   const dateValue = new Date(date);
   if (Number.isNaN(dateValue.getTime())) return { error: "That date isn't valid." };
 
+  let endDateValue: Date | null = null;
+  if (typeof endDate === "string" && endDate) {
+    endDateValue = new Date(endDate);
+    if (Number.isNaN(endDateValue.getTime())) return { error: "That end date isn't valid." };
+    if (endDateValue < dateValue) return { error: "The end date can't be before the start date." };
+  }
+
   await prisma.calendarEvent.create({
     data: {
       title: title.trim(),
       description: typeof description === "string" && description.trim() ? description.trim() : null,
       date: dateValue,
+      endDate: endDateValue,
       level: typeof level === "string" && level ? (level as "DISTRICT" | "STATE" | "ICDC") : null,
       createdById: mentor.id,
     },
