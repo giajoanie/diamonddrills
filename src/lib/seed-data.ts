@@ -146,4 +146,6 @@ export const ROLEPLAY_PATHWAY_SEED: { slug: string; pathway: string }[] = [
   { slug: "hotel-and-lodging-management-series", pathway: "Lodging" },
   { slug: "quick-serve-restaurant-management-series", pathway: "Restaurant Management" },
   { slug: "restaurant-and-food-service-management-series", pathway: "Restaurant Management" },
+  { slug: "accounting-applications-series", pathway: "Accounting" },
+  { slug: "business-finance-series", pathway: "Corporate Finance" },
 ];

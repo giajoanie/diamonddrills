@@ -17,6 +17,15 @@ A file is auto-published only when every question matched an answer-key entry wi
 | 2019_entrepreneurship_sample_exam.pdf | 2019 Entrepreneurship Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2022_entrepreneurship_state_exam.pdf | 2022 Entrepreneurship State Exam | published | 100 | 100 | 0 | 0 | 100 |
 
+## finance
+
+| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
+|---|---|---|---|---|---|---|---|
+| 2017_finance_sample_exam.pdf | 2017 Finance Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2018_finance_sample_exam.pdf | 2018 Finance Sample Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
+| 2019_finance_sample_exam.pdf | 2019 Finance Sample Exam | needs-review | 100 | 100 | 0 | 95 | 5 |
+| 2022_finance_sample_exam.pdf | 2022 Finance Sample Exam | needs-review | 100 | 100 | 0 | 95 | 5 |
+
 ## hospitality-tourism
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
@@ -47,10 +56,26 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
 |---|---|---|---|---|---|---|---|
-| 2026_personal-financial-literacy_sample_exam.pdf | 2026 Personal Financial Literacy Sample Exam | published | 100 | 100 | 0 | 100 | 0 |
+| 2026_personal-financial-literacy_sample_exam.pdf | 2026 Personal Financial Literacy Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
 
 
 ## Anomalies
+
+### 2017_finance_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: FM
+
+### 2018_finance_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: FM
+
+### 2019_finance_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: FM
+
+### 2022_finance_sample_exam.pdf
+
+- Unrecognized instructional area code(s), stored as-is: FM
 
 ### 2011_marketing_icdc_exam.pdf
 
@@ -58,7 +83,7 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 ## Summary
 
-- 21 files processed
+- 25 files processed
 - 20 auto-published (clean parse)
-- 1 need manual review or were skipped
-- 100 total questions created
+- 5 need manual review or were skipped
+- 390 total questions created

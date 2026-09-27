@@ -19,6 +19,7 @@ import { ENTREPRENEURSHIP_CASE_STUDY_SEED } from "./case-study-seed-data-entrepr
 import { HOSPITALITY_CASE_STUDY_SEED } from "./case-study-seed-data-hospitality";
 import { HOSPITALITY_CASE_STUDY_SEED_2 } from "./case-study-seed-data-hospitality-2";
 import { PFL_CASE_STUDY_SEED } from "./case-study-seed-data-pfl";
+import { FINANCE_CASE_STUDY_SEED } from "./case-study-seed-data-finance";
 
 export type CaseStudyPI = { code: string; description: string };
 
@@ -403,4 +404,5 @@ export const CASE_STUDY_SEED: EventCaseStudySeed[] = [
   ...HOSPITALITY_CASE_STUDY_SEED,
   ...HOSPITALITY_CASE_STUDY_SEED_2,
   ...PFL_CASE_STUDY_SEED,
+  ...FINANCE_CASE_STUDY_SEED,
 ];

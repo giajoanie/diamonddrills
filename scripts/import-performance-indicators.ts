@@ -108,6 +108,23 @@ const SOURCES: {
     file: "entrepreneurship/2026-27_entrepreneurship_performance_indicators.pdf",
     ranges: [{ startPage: 11, endPage: 16, tier: "Cluster", pathway: null }],
   },
+  // Table of contents + page-mapping table (pages 2-3) give exact ranges:
+  // Tier 1 (pages 4-20, redundant with the BA Core bank, skipped), Tier 2
+  // "Finance Career Cluster" (21-23), then five Tier 3 pathways — only
+  // Accounting (Accounting Applications Series) and Corporate Finance
+  // (Business Finance Series) are relevant, since Financial Consulting and
+  // Financial Services Team Decision Making are Core+Cluster only (no
+  // pathway column in the source's own event/page-range table) and
+  // Principles of Finance is Core only.
+  {
+    examBankSlug: "finance",
+    file: "finance/2026-27_finance_performance_indicators.pdf",
+    ranges: [
+      { startPage: 21, endPage: 23, tier: "Cluster", pathway: null },
+      { startPage: 24, endPage: 29, tier: "Pathway", pathway: "Accounting" },
+      { startPage: 34, endPage: 38, tier: "Pathway", pathway: "Corporate Finance" },
+    ],
+  },
 ];
 
 // Hand-verified against seed/performance-indicators/personal-financial-literacy/
