@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MentorRubricsPage() {
   const user = await requireActiveUser("MENTOR");
-  const rubrics = await getAllRubrics();
+  const rubrics = await getAllRubrics(user.program);
 
   return (
     <>

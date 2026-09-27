@@ -1,15 +1,16 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import type { Program } from "@/generated/prisma/client";
 
 /** Other active students currently enrolled in the same roleplay event, for the "practice with a partner" picker. */
-export const getRoleplayPeers = cache(async (userId: string, eventId: string) => {
+export const getRoleplayPeers = cache(async (userId: string, eventId: string, program: Program) => {
   const enrollments = await prisma.eventEnrollment.findMany({
     where: {
       eventId,
       isCurrent: true,
       userId: { not: userId },
-      user: { isActive: true, role: "STUDENT" },
+      user: { isActive: true, role: "STUDENT", program },
     },
     include: { user: { select: { id: true, firstName: true } } },
     orderBy: { user: { firstName: "asc" } },

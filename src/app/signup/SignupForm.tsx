@@ -11,9 +11,14 @@ import type { getSignupEventOptions } from "@/lib/dal/events";
 type Clusters = Awaited<ReturnType<typeof getSignupEventOptions>>;
 
 const STEP_FIELDS = [
-  ["schoolId", "firstName", "password", "confirmPassword", "grade"],
+  ["schoolId", "firstName", "password", "confirmPassword", "program", "grade"],
   ["roleplayEventId", "writtenEventId"],
 ] as const;
+
+const GRADE_OPTIONS: Record<"HIGH_SCHOOL" | "EBL", number[]> = {
+  HIGH_SCHOOL: [9, 10, 11, 12],
+  EBL: [6, 7, 8],
+};
 
 export function SignupForm({ clusters }: { clusters: Clusters }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -21,8 +26,10 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
     undefined,
   );
   const [step, setStep] = useState(0);
+  const [program, setProgram] = useState<"HIGH_SCHOOL" | "EBL">("HIGH_SCHOOL");
   const [grade, setGrade] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const isHighSchool = program === "HIGH_SCHOOL";
 
   // If the server action returns field errors, jump back to the earliest
   // step that contains one so the student can see and fix it. Adjusting
@@ -110,10 +117,43 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
             </div>
 
             <div>
+              <Label htmlFor="program-HIGH_SCHOOL">Program</Label>
+              <input type="hidden" name="program" value={program} />
+              <div className="flex gap-2" role="radiogroup" aria-label="Program">
+                {(
+                  [
+                    { value: "HIGH_SCHOOL" as const, label: "High School" },
+                    { value: "EBL" as const, label: "EBL (Middle School)" },
+                  ]
+                ).map((p) => (
+                  <button
+                    key={p.value}
+                    id={`program-${p.value}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={program === p.value}
+                    onClick={() => {
+                      setProgram(p.value);
+                      setGrade("");
+                    }}
+                    className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-colors ${
+                      program === p.value
+                        ? "border-accent-strong bg-accent-soft text-accent-strong"
+                        : "border-border text-foreground-subtle hover:border-border-strong"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <FieldError messages={state?.errors?.program} />
+            </div>
+
+            <div>
               <Label htmlFor="grade-9">Grade</Label>
               <input type="hidden" name="grade" value={grade} />
               <div className="flex gap-2" role="radiogroup" aria-label="Grade">
-                {[9, 10, 11, 12].map((g) => (
+                {GRADE_OPTIONS[program].map((g) => (
                   <button
                     key={g}
                     id={`grade-${g}`}
@@ -158,27 +198,29 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
               <FieldError messages={state?.errors?.roleplayEventId} />
             </div>
 
-            <div>
-              <Label htmlFor="writtenEventId">Written event</Label>
-              <Select id="writtenEventId" name="writtenEventId" defaultValue="" required={step === 1}>
-                <option value="" disabled>
-                  Select a written event
-                </option>
-                {clusters.map(
-                  (cluster) =>
-                    cluster.writtenEvents.length > 0 && (
-                      <optgroup key={cluster.id} label={cluster.name}>
-                        {cluster.writtenEvents.map((event) => (
-                          <option key={event.id} value={event.id}>
-                            {event.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ),
-                )}
-              </Select>
-              <FieldError messages={state?.errors?.writtenEventId} />
-            </div>
+            {isHighSchool && (
+              <div>
+                <Label htmlFor="writtenEventId">Written event</Label>
+                <Select id="writtenEventId" name="writtenEventId" defaultValue="" required={step === 1}>
+                  <option value="" disabled>
+                    Select a written event
+                  </option>
+                  {clusters.map(
+                    (cluster) =>
+                      cluster.writtenEvents.length > 0 && (
+                        <optgroup key={cluster.id} label={cluster.name}>
+                          {cluster.writtenEvents.map((event) => (
+                            <option key={event.id} value={event.id}>
+                              {event.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ),
+                  )}
+                </Select>
+                <FieldError messages={state?.errors?.writtenEventId} />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">

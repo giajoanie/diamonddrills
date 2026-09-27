@@ -10,8 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function StudentCalendarPage() {
   const user = await requireActiveUser("STUDENT");
   const [competitions, milestones] = await Promise.all([
-    getAllCalendarEvents(),
-    getCalendarMilestonesForViewer(user.id),
+    getAllCalendarEvents(user.program),
+    getCalendarMilestonesForViewer(user.id, user.program),
   ]);
 
   return (

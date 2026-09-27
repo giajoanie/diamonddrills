@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { getStudentVisibilityContext } from "@/lib/dal/resources";
+import type { Program } from "@/generated/prisma/client";
 
 /** Mirrors src/lib/assignments/visibility.ts's isAssignmentVisibleToStudent — see that file. */
 function targetWhereForStudent(ctx: {
@@ -27,6 +28,7 @@ export const getVisibleAssignmentsForStudent = cache(async (userId: string) => {
   return prisma.assignment.findMany({
     where: {
       isActive: true,
+      creator: { program: ctx.program },
       OR: [
         { targets: targetWhereForStudent(ctx) },
         { targets: { some: { targetType: "INDIVIDUAL", userId } } },
@@ -49,6 +51,7 @@ export const getAssignmentForStudent = cache(async (assignmentId: string, userId
     where: {
       id: assignmentId,
       isActive: true,
+      creator: { program: ctx.program },
       OR: [
         { targets: targetWhereForStudent(ctx) },
         { targets: { some: { targetType: "INDIVIDUAL", userId } } },
@@ -77,8 +80,9 @@ export const getAssignmentForStudent = cache(async (assignmentId: string, userId
   });
 });
 
-export const getAllAssignmentsForMentor = cache(async () => {
+export const getAllAssignmentsForMentor = cache(async (program: Program) => {
   return prisma.assignment.findMany({
+    where: { creator: { program } },
     orderBy: { dueAt: "asc" },
     include: {
       rubric: { select: { name: true } },
@@ -89,9 +93,9 @@ export const getAllAssignmentsForMentor = cache(async () => {
   });
 });
 
-export const getAssignmentById = cache(async (assignmentId: string) => {
-  return prisma.assignment.findUnique({
-    where: { id: assignmentId },
+export const getAssignmentById = cache(async (assignmentId: string, program: Program) => {
+  return prisma.assignment.findFirst({
+    where: { id: assignmentId, creator: { program } },
     include: {
       rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } },
       resources: { include: { resource: true } },
@@ -100,9 +104,9 @@ export const getAssignmentById = cache(async (assignmentId: string) => {
   });
 });
 
-export const getAssignmentWithSubmissionsForMentor = cache(async (assignmentId: string) => {
-  return prisma.assignment.findUnique({
-    where: { id: assignmentId },
+export const getAssignmentWithSubmissionsForMentor = cache(async (assignmentId: string, program: Program) => {
+  return prisma.assignment.findFirst({
+    where: { id: assignmentId, creator: { program } },
     include: {
       rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } },
       submissions: {
@@ -118,9 +122,9 @@ export const getAssignmentWithSubmissionsForMentor = cache(async (assignmentId: 
   });
 });
 
-export const getSubmissionForGrading = cache(async (submissionId: string) => {
-  return prisma.submission.findUnique({
-    where: { id: submissionId },
+export const getSubmissionForGrading = cache(async (submissionId: string, program: Program) => {
+  return prisma.submission.findFirst({
+    where: { id: submissionId, user: { program } },
     include: {
       assignment: { include: { rubric: { include: { criteria: { orderBy: { orderIndex: "asc" } } } } } },
       user: { select: { id: true, firstName: true, schoolId: true } },

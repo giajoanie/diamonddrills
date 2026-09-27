@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import type { Program } from "@/generated/prisma/client";
 import { getAttemptQuestionHistory, getInstructionalAreasForBank } from "@/lib/dal/exam-engine";
 import { computeAreaBreakdown, computeWeightedWeakAreas } from "@/lib/exam-engine/scoring";
 
@@ -38,25 +39,26 @@ export const getStudyPlan = cache(async (userId: string) => {
  */
 // A function, not a module-level constant, so `new Date()` is evaluated
 // fresh on every call rather than frozen at first import.
-function competitionDateWhere() {
+function competitionDateWhere(program: Program) {
   return {
     date: { gte: new Date() },
+    createdBy: { program },
     OR: [{ level: { not: null } }, { title: "Chapter Mini-Competition" }],
   };
 }
 
-export const getNextCompetitionDate = cache(async () => {
+export const getNextCompetitionDate = cache(async (program: Program) => {
   const event = await prisma.calendarEvent.findFirst({
-    where: competitionDateWhere(),
+    where: competitionDateWhere(program),
     orderBy: { date: "asc" },
   });
   return event;
 });
 
 /** The next few competition dates (same definition as getNextCompetitionDate), for a dashboard "up next" list. */
-export const getUpcomingCompetitionDates = cache(async (limit = 3) => {
+export const getUpcomingCompetitionDates = cache(async (program: Program, limit = 3) => {
   return prisma.calendarEvent.findMany({
-    where: competitionDateWhere(),
+    where: competitionDateWhere(program),
     orderBy: { date: "asc" },
     take: limit,
   });

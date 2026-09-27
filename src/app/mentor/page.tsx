@@ -12,6 +12,7 @@ import {
   Users2,
   Megaphone,
   CalendarDays,
+  UserCog,
 } from "lucide-react";
 import { requireActiveUser } from "@/lib/auth/guards";
 import {
@@ -58,7 +59,7 @@ export default async function MentorDashboardPage({
   const { grade, clusterId, eventId, dateFrom, dateTo } = await searchParams;
 
   const clusters = await getClustersForTagging();
-  const data = await getMentorDashboardData({
+  const data = await getMentorDashboardData(user.program, {
     grade: grade ? parseInt(grade, 10) : undefined,
     clusterId: clusterId || undefined,
     eventId: eventId || undefined,
@@ -68,6 +69,7 @@ export default async function MentorDashboardPage({
 
   const attentionNames = await getStudentNamesByIds(
     data.needsAttention.map((s) => s.userId),
+    user.program,
   );
 
   return (
@@ -490,6 +492,20 @@ export default async function MentorDashboardPage({
                   <p className="text-sm text-foreground-muted">
                     Before/after growth, engagement vs. improvement, and
                     outcomes for the report.
+                  </p>
+                </div>
+              </Card>
+            </Link>
+
+            <Link href="/mentor/mentors">
+              <Card className="flex items-center gap-3 transition-shadow hover:shadow-md">
+                <UserCog className="h-5 w-5 text-accent" aria-hidden />
+                <div>
+                  <p className="font-medium text-foreground">
+                    Mentor accounts
+                  </p>
+                  <p className="text-sm text-foreground-muted">
+                    Add HS or EBL mentor logins and manage active status.
                   </p>
                 </div>
               </Card>

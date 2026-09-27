@@ -87,10 +87,13 @@ export async function createAssignment(
 }
 
 export async function deactivateAssignment(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const assignmentId = formData.get("assignmentId");
   if (typeof assignmentId !== "string") return;
 
-  await prisma.assignment.update({ where: { id: assignmentId }, data: { isActive: false } });
+  await prisma.assignment.updateMany({
+    where: { id: assignmentId, creator: { program: mentor.program } },
+    data: { isActive: false },
+  });
   revalidatePath("/mentor/assignments");
 }

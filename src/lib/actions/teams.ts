@@ -10,7 +10,7 @@ export async function createTeam(
   _prevState: CreateTeamState,
   formData: FormData,
 ): Promise<CreateTeamState> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
 
   const eventId = formData.get("eventId");
   const name = formData.get("name");
@@ -23,6 +23,14 @@ export async function createTeam(
   if (!event || event.teamSizeMax <= 1) return { error: "That event isn't a team event." };
   if (memberIds.length > event.teamSizeMax) {
     return { error: `${event.name} allows at most ${event.teamSizeMax} teammates.` };
+  }
+
+  const validMembers = await prisma.user.findMany({
+    where: { id: { in: memberIds }, role: "STUDENT", program: mentor.program },
+    select: { id: true },
+  });
+  if (validMembers.length !== memberIds.length) {
+    return { error: "One or more of these students could not be found." };
   }
 
   // A student can only be on one active team per event.
@@ -45,21 +53,24 @@ export async function createTeam(
 }
 
 export async function removeTeamMember(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const teamMemberId = formData.get("teamMemberId");
   if (typeof teamMemberId !== "string") return;
 
-  await prisma.teamMember.update({ where: { id: teamMemberId }, data: { leftAt: new Date() } });
+  await prisma.teamMember.updateMany({
+    where: { id: teamMemberId, user: { program: mentor.program } },
+    data: { leftAt: new Date() },
+  });
   revalidatePath("/mentor/teams");
 }
 
 export async function disbandTeam(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const teamId = formData.get("teamId");
   if (typeof teamId !== "string") return;
 
   await prisma.teamMember.updateMany({
-    where: { teamId, leftAt: null },
+    where: { teamId, leftAt: null, user: { program: mentor.program } },
     data: { leftAt: new Date() },
   });
   revalidatePath("/mentor/teams");

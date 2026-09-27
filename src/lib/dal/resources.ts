@@ -1,11 +1,11 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import type { CompetitionLevel, ResourceType } from "@/generated/prisma/client";
+import type { CompetitionLevel, Program, ResourceType } from "@/generated/prisma/client";
 
 export const getStudentVisibilityContext = cache(async (userId: string) => {
   const [user, enrollments] = await Promise.all([
-    prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { grade: true } }),
+    prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { grade: true, program: true } }),
     prisma.eventEnrollment.findMany({
       where: { userId, isCurrent: true },
       select: { eventId: true, event: { select: { clusterId: true } } },
@@ -14,6 +14,7 @@ export const getStudentVisibilityContext = cache(async (userId: string) => {
 
   return {
     grade: user.grade,
+    program: user.program,
     currentEventIds: enrollments.map((e) => e.eventId),
     currentClusterIds: [...new Set(enrollments.map((e) => e.event.clusterId))],
   };
@@ -34,6 +35,7 @@ export const getVisibleResourcesForStudent = cache(
     return prisma.resource.findMany({
       where: {
         isActive: true,
+        uploader: { program: ctx.program },
         AND: [
           { OR: [{ grade: null }, { grade: ctx.grade }] },
           {
@@ -74,6 +76,7 @@ export const getRecommendedResources = cache(
     return prisma.resource.findMany({
       where: {
         isActive: true,
+        uploader: { program: ctx.program },
         resourceAreas: { some: { instructionalAreaId: { in: weakAreaIds } } },
         AND: [
           { OR: [{ grade: null }, { grade: ctx.grade }] },
@@ -94,13 +97,13 @@ export const getRecommendedResources = cache(
 
 export const canUserAccessResourceFile = cache(async (userId: string, resourceId: string) => {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  if (user.role === "MENTOR") return true;
-
   const resource = await prisma.resource.findUnique({
     where: { id: resourceId },
-    include: { resourceClusters: true, resourceEvents: true },
+    include: { resourceClusters: true, resourceEvents: true, uploader: { select: { program: true } } },
   });
   if (!resource || !resource.isActive) return false;
+  if (resource.uploader.program !== user.program) return false;
+  if (user.role === "MENTOR") return true;
 
   const ctx = await getStudentVisibilityContext(userId);
   if (resource.grade !== null && resource.grade !== ctx.grade) return false;
@@ -110,8 +113,9 @@ export const canUserAccessResourceFile = cache(async (userId: string, resourceId
   return false;
 });
 
-export const getAllResourcesForMentor = cache(async () => {
+export const getAllResourcesForMentor = cache(async (program: Program) => {
   return prisma.resource.findMany({
+    where: { uploader: { program } },
     orderBy: { createdAt: "desc" },
     include: {
       resourceEvents: { include: { event: true } },
@@ -128,6 +132,7 @@ export const getResourceForArea = cache(async (userId: string, instructionalArea
   return prisma.resource.findFirst({
     where: {
       isActive: true,
+      uploader: { program: ctx.program },
       resourceAreas: { some: { instructionalAreaId } },
       AND: [
         { OR: [{ grade: null }, { grade: ctx.grade }] },

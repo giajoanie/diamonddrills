@@ -19,10 +19,14 @@ export async function addFileComment(
 
   const file = await prisma.submissionFile.findUnique({
     where: { id: submissionFileId },
-    include: { submission: true },
+    include: { submission: { include: { user: { select: { id: true, program: true } } } } },
   });
   if (!file) return { error: "That file no longer exists." };
-  if (user.role !== "MENTOR" && file.submission.userId !== user.id) {
+  const canComment =
+    user.role === "MENTOR"
+      ? file.submission.user.program === user.program
+      : file.submission.userId === user.id;
+  if (!canComment) {
     return { error: "You can't comment on this file." };
   }
 

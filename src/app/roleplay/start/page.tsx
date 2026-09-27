@@ -36,7 +36,7 @@ export default async function StartRoleplayPage({
         event.examBankId
           ? getPerformanceIndicatorsForEvent(event.examBankId, event.roleplayPathway)
           : new Map<string, { description: string }[]>(),
-        getRoleplayPeers(user.id, event.id),
+        getRoleplayPeers(user.id, event.id, user.program),
         getFlashcardsForCluster(event.cluster.id),
       ]);
 

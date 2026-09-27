@@ -52,11 +52,11 @@ export default async function MentorAssignmentsPage() {
   const user = await requireActiveUser("MENTOR");
   const [assignments, students, clusters, rubrics, allResources, examBanks] =
     await Promise.all([
-      getAllAssignmentsForMentor(),
-      getAllStudents(),
+      getAllAssignmentsForMentor(user.program),
+      getAllStudents(user.program),
       getClustersForTagging(),
-      getActiveRubrics(),
-      getAllResourcesForMentor(),
+      getActiveRubrics(user.program),
+      getAllResourcesForMentor(user.program),
       getExamBanks(),
     ]);
 

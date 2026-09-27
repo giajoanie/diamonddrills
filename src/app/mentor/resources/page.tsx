@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function MentorResourcesPage() {
   const user = await requireActiveUser("MENTOR");
   const [resources, clusters, instructionalAreas] = await Promise.all([
-    getAllResourcesForMentor(),
+    getAllResourcesForMentor(user.program),
     getClustersForTagging(),
     getInstructionalAreasForBank(),
   ]);

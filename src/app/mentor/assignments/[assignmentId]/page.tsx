@@ -26,7 +26,7 @@ export default async function MentorAssignmentDetailPage({
   const user = await requireActiveUser("MENTOR");
   const { assignmentId } = await params;
 
-  const assignment = await getAssignmentWithSubmissionsForMentor(assignmentId);
+  const assignment = await getAssignmentWithSubmissionsForMentor(assignmentId, user.program);
   if (!assignment) notFound();
 
   return (

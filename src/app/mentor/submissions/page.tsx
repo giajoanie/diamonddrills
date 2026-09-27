@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function UngradedSubmissionsPage() {
   const user = await requireActiveUser("MENTOR");
-  const submissions = await getUngradedSubmissionsQueue();
+  const submissions = await getUngradedSubmissionsQueue(user.program);
 
   return (
     <>

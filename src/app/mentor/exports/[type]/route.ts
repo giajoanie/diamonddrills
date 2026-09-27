@@ -46,7 +46,7 @@ function isExportType(value: string): value is ExportType {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ type: string }> }) {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
 
   const { type } = await params;
   if (!isExportType(type)) {
@@ -64,8 +64,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ type
   const config = EXPORTS[type];
   const rows =
     type === "students"
-      ? await getStudentsExportRows()
-      : await config.fetch({ dateFrom, dateTo });
+      ? await getStudentsExportRows(mentor.program)
+      : await config.fetch(mentor.program, { dateFrom, dateTo });
 
   let finalRows: Record<string, string | number | null | undefined>[] = rows;
   let columns: readonly string[] = config.columns;

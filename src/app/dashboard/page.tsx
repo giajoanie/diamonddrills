@@ -40,7 +40,7 @@ export default async function DashboardPage() {
     getSignupEventOptions(),
     getStudentExamBanks(user.id),
     getPendingPracticeInvites(user.id),
-    getUpcomingCompetitionDates(),
+    getUpcomingCompetitionDates(user.program),
   ]);
   const now = new Date();
 

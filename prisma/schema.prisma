@@ -20,6 +20,15 @@ enum Role {
   MENTOR
 }
 
+// The chapter runs two distinct programs off one app: high school DECA and
+// EBL (Emerging Business Leaders, middle school). Every user — student or
+// mentor — belongs to exactly one; mentors and students never cross between
+// them (see requireMentorScope in src/lib/auth/guards.ts).
+enum Program {
+  HIGH_SCHOOL
+  EBL
+}
+
 enum EventCategory {
   ROLEPLAY
   WRITTEN
@@ -134,10 +143,11 @@ model User {
   id                  String    @id @default(cuid())
   schoolId            String    @unique // 7-digit username for students; mentors also use a schoolId
   role                Role
+  program             Program   @default(HIGH_SCHOOL) // HS vs EBL cohort; mentors and students never cross
   firstName           String
   passwordHash        String
   mustChangePassword  Boolean   @default(false)
-  grade               Int? // 9-12, null for mentors
+  grade               Int? // 9-12 for HIGH_SCHOOL, 6-8 for EBL; null for mentors
   dailyStudyMinutes   Int? // student's self-reported daily study time budget, drives study plan density
   examScoreGoal       Int       @default(70) // student-set target % shown as the goal line on My progress
   isActive            Boolean   @default(true) // soft delete
@@ -179,6 +189,7 @@ model User {
 
   @@index([role])
   @@index([isActive])
+  @@index([role, program])
 }
 
 model Session {

@@ -26,7 +26,7 @@ export async function regenerateStudyPlan(
     return { error: "Enter how many minutes a day you want to study." };
   }
 
-  const competition = await getNextCompetitionDate();
+  const competition = await getNextCompetitionDate(student.program);
   if (!competition) {
     return { error: "No upcoming competition date is on the calendar yet — ask a mentor to add one." };
   }

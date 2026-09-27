@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import type { Program } from "@/generated/prisma/client";
 import { isAssignmentVisibleToStudent } from "@/lib/assignments/visibility";
 import { computeAreaBreakdown } from "@/lib/exam-engine/scoring";
 import {
@@ -28,11 +29,12 @@ const INACTIVE_DAYS = 14;
 const DECLINING_THRESHOLD = 5;
 const LOW_SCORE_THRESHOLD = 60;
 
-/** Shared cohort resolution for every filterable mentor analytics view. */
-async function resolveCohort(filters: DashboardFilters) {
+/** Shared cohort resolution for every filterable mentor analytics view — scoped to the requesting mentor's own program. */
+async function resolveCohort(program: Program, filters: DashboardFilters) {
   const students = await prisma.user.findMany({
     where: {
       role: "STUDENT",
+      program,
       ...(filters.grade ? { grade: filters.grade } : {}),
       ...(filters.clusterId || filters.eventId
         ? {
@@ -69,12 +71,12 @@ async function resolveCohort(filters: DashboardFilters) {
   return { students, studentIds, contextByStudent };
 }
 
-export const getMentorDashboardData = cache(async (filters: DashboardFilters) => {
+export const getMentorDashboardData = cache(async (program: Program, filters: DashboardFilters) => {
   const now = new Date();
   const dateFrom = filters.dateFrom ?? new Date(0);
   const dateTo = filters.dateTo ?? now;
 
-  const { students, studentIds, contextByStudent } = await resolveCohort(filters);
+  const { students, studentIds, contextByStudent } = await resolveCohort(program, filters);
   const activeStudentCount = students.filter((s) => s.isActive).length;
 
   if (studentIds.length === 0) {
@@ -181,7 +183,7 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
 
   // Assignment completion/on-time rate, resolved against each assignment's actual target audience.
   const assignments = await prisma.assignment.findMany({
-    where: { isActive: true, dueAt: { gte: dateFrom, lte: dateTo } },
+    where: { isActive: true, dueAt: { gte: dateFrom, lte: dateTo }, creator: { program } },
     include: {
       targets: true,
       submissions: { where: { userId: { in: studentIds } }, select: { userId: true, isLate: true } },
@@ -293,8 +295,8 @@ export const getMentorDashboardData = cache(async (filters: DashboardFilters) =>
   };
 });
 
-export const getLessonPlanRecommendations = cache(async (filters: DashboardFilters, topN = 3) => {
-  const { studentIds } = await resolveCohort(filters);
+export const getLessonPlanRecommendations = cache(async (program: Program, filters: DashboardFilters, topN = 3) => {
+  const { studentIds } = await resolveCohort(program, filters);
   if (studentIds.length === 0) return [];
 
   const questionResults = await prisma.examAttemptQuestion.findMany({
@@ -337,7 +339,7 @@ export const getLessonPlanRecommendations = cache(async (filters: DashboardFilte
   const areaIds = weakAreasWithIds.slice(0, topN).map((a) => a.areaId);
 
   const taggedResources = await prisma.resourceInstructionalArea.findMany({
-    where: { instructionalAreaId: { in: areaIds }, resource: { isActive: true } },
+    where: { instructionalAreaId: { in: areaIds }, resource: { isActive: true, uploader: { program } } },
     select: { instructionalAreaId: true, resourceId: true },
   });
   const resourceIdsByArea: Record<string, string[]> = {};
@@ -372,9 +374,9 @@ export const getLessonPlanRecommendations = cache(async (filters: DashboardFilte
   );
 });
 
-export const getUngradedSubmissionsQueue = cache(async () => {
+export const getUngradedSubmissionsQueue = cache(async (program: Program) => {
   return prisma.submission.findMany({
-    where: { status: { in: ["SUBMITTED", "LATE"] } },
+    where: { status: { in: ["SUBMITTED", "LATE"] }, user: { program } },
     include: {
       user: { select: { firstName: true, schoolId: true } },
       assignment: { select: { title: true } },
@@ -383,9 +385,9 @@ export const getUngradedSubmissionsQueue = cache(async () => {
   });
 });
 
-export const getStudentNamesByIds = cache(async (userIds: string[]) => {
+export const getStudentNamesByIds = cache(async (userIds: string[], program: Program) => {
   const students = await prisma.user.findMany({
-    where: { id: { in: userIds } },
+    where: { id: { in: userIds }, role: "STUDENT", program },
     select: { id: true, firstName: true, schoolId: true },
   });
   return new Map(students.map((s) => [s.id, s]));
@@ -399,9 +401,9 @@ export const getResourceNamesByIds = cache(async (resourceIds: string[]) => {
   return new Map(resources.map((r) => [r.id, r.name]));
 });
 
-export const getActivityTimeline = cache(async (userId: string, limit = 100) => {
+export const getActivityTimeline = cache(async (userId: string, program: Program, limit = 100) => {
   return prisma.activityLog.findMany({
-    where: { userId },
+    where: { userId, user: { program } },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
@@ -430,9 +432,9 @@ export const getPracticeActivityDates = cache(async (userId: string) => {
  * and engagement-vs-outcomes breakdown — the causal story a Project
  * Management CDE report needs beyond a single chapter-wide average.
  */
-export const getPmCdeImpactData = cache(async (filters: DashboardFilters) => {
-  const dashboard = await getMentorDashboardData(filters);
-  const { studentIds } = await resolveCohort(filters);
+export const getPmCdeImpactData = cache(async (program: Program, filters: DashboardFilters) => {
+  const dashboard = await getMentorDashboardData(program, filters);
+  const { studentIds } = await resolveCohort(program, filters);
 
   if (studentIds.length === 0) {
     return { ...dashboard, engagementVsImprovement: [], outcomesByEngagement: [] };

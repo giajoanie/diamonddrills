@@ -22,7 +22,7 @@ const AUDIENCE_LABELS: Record<string, string> = {
 export default async function MentorAnnouncementsPage() {
   const user = await requireActiveUser("MENTOR");
   const [announcements, clusters] = await Promise.all([
-    getAllAnnouncementsForMentor(),
+    getAllAnnouncementsForMentor(user.program),
     getClustersForTagging(),
   ]);
 

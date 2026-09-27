@@ -49,7 +49,12 @@ export async function startRoleplaySession(
     // than trusting the posted id — the dropdown only ever offers valid
     // peers, but the field is still client-controlled.
     const partnerEnrollment = await prisma.eventEnrollment.findFirst({
-      where: { userId: partnerId, eventId, isCurrent: true, user: { isActive: true, role: "STUDENT" } },
+      where: {
+        userId: partnerId,
+        eventId,
+        isCurrent: true,
+        user: { isActive: true, role: "STUDENT", program: student.program },
+      },
     });
     if (partnerEnrollment) {
       await prisma.practiceInvite.create({

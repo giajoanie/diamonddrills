@@ -96,11 +96,14 @@ export async function createResource(
 }
 
 export async function deactivateResource(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const resourceId = formData.get("resourceId");
   if (typeof resourceId !== "string") return;
 
-  await prisma.resource.update({ where: { id: resourceId }, data: { isActive: false } });
+  await prisma.resource.updateMany({
+    where: { id: resourceId, uploader: { program: mentor.program } },
+    data: { isActive: false },
+  });
   revalidatePath("/mentor/resources");
   revalidatePath("/resources");
 }

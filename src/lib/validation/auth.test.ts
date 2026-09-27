@@ -26,6 +26,7 @@ describe("SignupSchema", () => {
     firstName: "Alex",
     password: "password123",
     confirmPassword: "password123",
+    program: "HIGH_SCHOOL",
     grade: "10",
     roleplayEventId: "evt_roleplay",
     writtenEventId: "evt_written",
@@ -67,6 +68,36 @@ describe("SignupSchema", () => {
 
   it("rejects a missing event selection", () => {
     const result = SignupSchema.safeParse({ ...valid, roleplayEventId: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects HIGH_SCHOOL without a written event", () => {
+    const result = SignupSchema.safeParse({ ...valid, writtenEventId: undefined });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts EBL without a written event, in grades 6-8", () => {
+    const result = SignupSchema.safeParse({
+      ...valid,
+      program: "EBL",
+      grade: "7",
+      writtenEventId: undefined,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts EBL when writtenEventId is null (formData.get() on an absent field, not undefined)", () => {
+    const result = SignupSchema.safeParse({
+      ...valid,
+      program: "EBL",
+      grade: "7",
+      writtenEventId: null,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each(["5", "9"])("rejects out-of-range EBL grade %s", (grade) => {
+    const result = SignupSchema.safeParse({ ...valid, program: "EBL", grade });
     expect(result.success).toBe(false);
   });
 });

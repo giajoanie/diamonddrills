@@ -55,10 +55,13 @@ export async function createRubric(
 }
 
 export async function deactivateRubric(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const rubricId = formData.get("rubricId");
   if (typeof rubricId !== "string") return;
 
-  await prisma.rubric.update({ where: { id: rubricId }, data: { isActive: false } });
+  await prisma.rubric.updateMany({
+    where: { id: rubricId, creator: { program: mentor.program } },
+    data: { isActive: false },
+  });
   revalidatePath("/mentor/rubrics");
 }

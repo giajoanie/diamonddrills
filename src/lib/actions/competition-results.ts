@@ -51,8 +51,8 @@ export async function recordCompetitionResult(
 
   if (mode === "team") {
     if (typeof teamId !== "string" || !teamId) return { error: "Choose a team." };
-    const team = await prisma.team.findUnique({
-      where: { id: teamId },
+    const team = await prisma.team.findFirst({
+      where: { id: teamId, members: { some: { leftAt: null, user: { program: mentor.program } } } },
       include: { members: { where: { leftAt: null } } },
     });
     if (!team || team.members.length === 0) return { error: "That team has no active members." };
@@ -63,6 +63,10 @@ export async function recordCompetitionResult(
   } else {
     if (typeof userId !== "string" || !userId) return { error: "Choose a student." };
     if (typeof eventId !== "string" || !eventId) return { error: "Choose an event." };
+    const student = await prisma.user.findFirst({
+      where: { id: userId, role: "STUDENT", program: mentor.program },
+    });
+    if (!student) return { error: "Student not found." };
     await prisma.competitionResult.create({ data: { ...shared, userId, eventId } });
   }
 
@@ -70,10 +74,12 @@ export async function recordCompetitionResult(
 }
 
 export async function deleteCompetitionResult(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const resultId = formData.get("resultId");
   if (typeof resultId !== "string") return;
 
-  await prisma.competitionResult.delete({ where: { id: resultId } });
+  await prisma.competitionResult.deleteMany({
+    where: { id: resultId, user: { program: mentor.program } },
+  });
   revalidatePath("/mentor/competition-results");
 }

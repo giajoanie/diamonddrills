@@ -25,7 +25,7 @@ export default async function MentorStudentProfilePage({
   const user = await requireActiveUser("MENTOR");
   const { studentId } = await params;
 
-  const profile = await getStudentProfile(studentId);
+  const profile = await getStudentProfile(studentId, user.program);
   if (!profile) notFound();
 
   const {

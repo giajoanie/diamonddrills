@@ -22,8 +22,8 @@ const LEVEL_LABELS: Record<string, string> = {
 export default async function MentorCalendarPage() {
   const user = await requireActiveUser("MENTOR");
   const [events, milestones] = await Promise.all([
-    getAllCalendarEvents(),
-    getCalendarMilestonesForViewer(user.id),
+    getAllCalendarEvents(user.program),
+    getCalendarMilestonesForViewer(user.id, user.program),
   ]);
 
   return (

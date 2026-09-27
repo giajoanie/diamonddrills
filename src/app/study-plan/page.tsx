@@ -22,7 +22,7 @@ export default async function StudyPlanPage() {
   const user = await requireActiveUser("STUDENT");
   const [items, competition, weakAreas, practiceDates] = await Promise.all([
     getStudyPlan(user.id),
-    getNextCompetitionDate(),
+    getNextCompetitionDate(user.program),
     getWeakAreaAccuracy(user.id),
     getPracticeActivityDates(user.id),
   ]);

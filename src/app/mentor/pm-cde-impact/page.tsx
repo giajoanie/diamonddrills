@@ -50,7 +50,7 @@ export default async function PmCdeImpactPage({
   const { grade, clusterId, eventId, dateFrom, dateTo } = await searchParams;
 
   const clusters = await getClustersForTagging();
-  const data = await getPmCdeImpactData({
+  const data = await getPmCdeImpactData(user.program, {
     grade: grade ? parseInt(grade, 10) : undefined,
     clusterId: clusterId || undefined,
     eventId: eventId || undefined,

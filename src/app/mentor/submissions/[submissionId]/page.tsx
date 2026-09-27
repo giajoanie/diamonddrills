@@ -20,7 +20,7 @@ export default async function GradeSubmissionPage({
   const user = await requireActiveUser("MENTOR");
   const { submissionId } = await params;
 
-  const submission = await getSubmissionForGrading(submissionId);
+  const submission = await getSubmissionForGrading(submissionId, user.program);
   if (!submission) notFound();
 
   const criteria = submission.assignment.rubric?.criteria ?? [];

@@ -15,9 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function MentorTeamsPage() {
   const user = await requireActiveUser("MENTOR");
   const [teams, events, students] = await Promise.all([
-    getAllTeams(),
+    getAllTeams(user.program),
     getTeamEligibleEvents(),
-    getAllStudents(),
+    getAllStudents(user.program),
   ]);
 
   return (

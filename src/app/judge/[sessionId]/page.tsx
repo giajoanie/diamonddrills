@@ -21,7 +21,10 @@ export default async function JudgeSessionPage({
   const session = await getRoleplaySessionForJudge(sessionId);
   if (!session) notFound();
 
-  const [rubrics, viewer] = await Promise.all([getActiveRubrics(), getSessionUser()]);
+  const [rubrics, viewer] = await Promise.all([
+    getActiveRubrics(session.user.program),
+    getSessionUser(),
+  ]);
 
   return (
     <AuthShell

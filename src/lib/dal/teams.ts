@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import type { Program } from "@/generated/prisma/client";
 
 /** Events where a team makes sense (teamSizeMax > 1: TDM and team written events). */
 export const getTeamEligibleEvents = cache(async () => {
@@ -11,8 +12,10 @@ export const getTeamEligibleEvents = cache(async () => {
   });
 });
 
-export const getAllTeams = cache(async () => {
+/** Scoped to teams with at least one member in the requesting mentor's program — HS and EBL rosters stay separate. */
+export const getAllTeams = cache(async (program: Program) => {
   return prisma.team.findMany({
+    where: { members: { some: { leftAt: null, user: { program } } } },
     orderBy: { createdAt: "desc" },
     include: {
       event: { select: { name: true, teamSizeMax: true } },

@@ -29,7 +29,7 @@ export default async function LessonPlansPage({
   const { grade, clusterId, eventId } = await searchParams;
 
   const clusters = await getClustersForTagging();
-  const recommendations = await getLessonPlanRecommendations({
+  const recommendations = await getLessonPlanRecommendations(user.program, {
     grade: grade ? parseInt(grade, 10) : undefined,
     clusterId: clusterId || undefined,
     eventId: eventId || undefined,
@@ -39,7 +39,7 @@ export default async function LessonPlansPage({
   const allStudentIds = recommendations.flatMap((r) => r.beneficiaryStudentIds);
   const [resourceNames, studentNames] = await Promise.all([
     getResourceNamesByIds(allResourceIds),
-    getStudentNamesByIds(allStudentIds),
+    getStudentNamesByIds(allStudentIds, user.program),
   ]);
 
   return (

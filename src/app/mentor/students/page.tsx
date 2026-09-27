@@ -13,7 +13,7 @@ export const metadata = { title: "Students" };
 
 export default async function MentorStudentsPage() {
   const user = await requireActiveUser("MENTOR");
-  const students = await getAllStudents();
+  const students = await getAllStudents(user.program);
 
   return (
     <>

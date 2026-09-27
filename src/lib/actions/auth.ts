@@ -37,6 +37,7 @@ export async function signup(
     firstName: formData.get("firstName"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
+    program: formData.get("program"),
     grade: formData.get("grade"),
     roleplayEventId: formData.get("roleplayEventId"),
     writtenEventId: formData.get("writtenEventId"),
@@ -46,18 +47,23 @@ export async function signup(
     return { errors: flattenFieldErrors(validated.error) };
   }
 
-  const { schoolId, firstName, password, grade, roleplayEventId, writtenEventId } =
+  const { schoolId, firstName, password, program, grade, roleplayEventId, writtenEventId } =
     validated.data;
+  const isHighSchool = program === "HIGH_SCHOOL";
 
   const [roleplayEvent, writtenEvent] = await Promise.all([
     prisma.event.findUnique({ where: { id: roleplayEventId } }),
-    prisma.event.findUnique({ where: { id: writtenEventId } }),
+    isHighSchool && writtenEventId
+      ? prisma.event.findUnique({ where: { id: writtenEventId } })
+      : Promise.resolve(null),
   ]);
 
   if (!roleplayEvent || roleplayEvent.category !== "ROLEPLAY" || !roleplayEvent.isActive) {
     return { message: "Choose a valid roleplay event." };
   }
-  if (!writtenEvent || writtenEvent.category !== "WRITTEN" || !writtenEvent.isActive) {
+  // EBL (Emerging Business Leaders, middle school) is roleplay-only — a
+  // written event is never created for it, even if one was somehow posted.
+  if (isHighSchool && (!writtenEvent || writtenEvent.category !== "WRITTEN" || !writtenEvent.isActive)) {
     return { message: "Choose a valid written event." };
   }
 
@@ -74,6 +80,7 @@ export async function signup(
         schoolId,
         firstName,
         passwordHash,
+        program,
         grade,
         role: "STUDENT",
       },
@@ -82,7 +89,7 @@ export async function signup(
     await tx.eventEnrollment.createMany({
       data: [
         { userId: created.id, eventId: roleplayEvent.id },
-        { userId: created.id, eventId: writtenEvent.id },
+        ...(writtenEvent ? [{ userId: created.id, eventId: writtenEvent.id }] : []),
       ],
     });
 

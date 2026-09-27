@@ -39,7 +39,7 @@ export const getRoleplaySessionForJudge = cache(async (sessionId: string) => {
       startedAt: true,
       completedAt: true,
       event: { select: { id: true, name: true } },
-      user: { select: { id: true, firstName: true } },
+      user: { select: { id: true, firstName: true, program: true } },
     },
   });
   return session;

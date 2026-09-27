@@ -27,6 +27,9 @@ export async function changeEvent(
   ) {
     return { error: "Invalid request." };
   }
+  if (category === "WRITTEN" && user.program === "EBL") {
+    return { error: "EBL doesn't have written events." };
+  }
 
   const newEvent = await prisma.event.findUnique({ where: { id: newEventId } });
   if (!newEvent || !newEvent.isActive || newEvent.category !== category) {

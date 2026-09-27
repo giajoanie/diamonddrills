@@ -16,8 +16,8 @@ export async function gradeSubmission(
   const feedback = formData.get("feedback");
   if (typeof submissionId !== "string" || !submissionId) return { error: "Missing submission." };
 
-  const submission = await prisma.submission.findUnique({
-    where: { id: submissionId },
+  const submission = await prisma.submission.findFirst({
+    where: { id: submissionId, user: { program: mentor.program } },
     include: { assignment: { include: { rubric: { include: { criteria: true } } } } },
   });
   if (!submission) return { error: "That submission no longer exists." };
@@ -71,6 +71,12 @@ export async function requestResubmission(formData: FormData): Promise<void> {
   const submissionId = formData.get("submissionId");
   const feedback = formData.get("feedback");
   if (typeof submissionId !== "string" || !submissionId) return;
+
+  const existing = await prisma.submission.findFirst({
+    where: { id: submissionId, user: { program: mentor.program } },
+    select: { id: true },
+  });
+  if (!existing) return;
 
   const submission = await prisma.submission.update({
     where: { id: submissionId },

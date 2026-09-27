@@ -35,17 +35,17 @@ export default async function CompetitionResultsPage({
 
   const [results, students, clusters, teams, cohortsByYear] = await Promise.all(
     [
-      getAllCompetitionResults({
+      getAllCompetitionResults(user.program, {
         level:
           level && level in LEVEL_LABELS
             ? (level as CompetitionLevel)
             : undefined,
         year: year ? parseInt(year, 10) : undefined,
       }),
-      getAllStudents(),
+      getAllStudents(user.program),
       getClustersForTagging(),
-      getAllTeams(),
-      getCompetitionCohortsByYear(),
+      getAllTeams(user.program),
+      getCompetitionCohortsByYear(user.program),
     ],
   );
 

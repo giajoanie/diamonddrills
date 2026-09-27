@@ -54,11 +54,13 @@ export async function createAnnouncement(
 }
 
 export async function deleteAnnouncement(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const announcementId = formData.get("announcementId");
   if (typeof announcementId !== "string") return;
 
-  await prisma.announcement.delete({ where: { id: announcementId } });
+  await prisma.announcement.deleteMany({
+    where: { id: announcementId, author: { program: mentor.program } },
+  });
   revalidatePath("/mentor/announcements");
   revalidatePath("/announcements");
 }
@@ -105,11 +107,13 @@ export async function createCalendarEvent(
 }
 
 export async function deleteCalendarEvent(formData: FormData): Promise<void> {
-  await requireRole("MENTOR");
+  const mentor = await requireRole("MENTOR");
   const eventId = formData.get("calendarEventId");
   if (typeof eventId !== "string") return;
 
-  await prisma.calendarEvent.delete({ where: { id: eventId } });
+  await prisma.calendarEvent.deleteMany({
+    where: { id: eventId, createdBy: { program: mentor.program } },
+  });
   revalidatePath("/mentor/calendar");
   revalidatePath("/calendar");
 }

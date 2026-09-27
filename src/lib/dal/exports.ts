@@ -1,11 +1,12 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import type { Program } from "@/generated/prisma/client";
 
 export type ExportDateRange = { dateFrom: Date; dateTo: Date };
 
-export async function getStudentsExportRows() {
+export async function getStudentsExportRows(program: Program) {
   const students = await prisma.user.findMany({
-    where: { role: "STUDENT" },
+    where: { role: "STUDENT", program },
     select: { id: true, schoolId: true, firstName: true, grade: true, isActive: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });
@@ -19,9 +20,9 @@ export async function getStudentsExportRows() {
   }));
 }
 
-export async function getExamAttemptsExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getExamAttemptsExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const attempts = await prisma.examAttempt.findMany({
-    where: { submittedAt: { gte: dateFrom, lte: dateTo } },
+    where: { submittedAt: { gte: dateFrom, lte: dateTo }, user: { program } },
     include: { user: { select: { id: true, schoolId: true } }, examBank: { select: { name: true } } },
     orderBy: { submittedAt: "asc" },
   });
@@ -39,9 +40,9 @@ export async function getExamAttemptsExportRows({ dateFrom, dateTo }: ExportDate
   }));
 }
 
-export async function getQuestionResponsesExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getQuestionResponsesExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const responses = await prisma.examAttemptQuestion.findMany({
-    where: { examAttempt: { submittedAt: { gte: dateFrom, lte: dateTo } } },
+    where: { examAttempt: { submittedAt: { gte: dateFrom, lte: dateTo }, user: { program } } },
     include: {
       examAttempt: { select: { id: true, user: { select: { id: true, schoolId: true } } } },
       question: { select: { instructionalArea: { select: { name: true } } } },
@@ -60,9 +61,9 @@ export async function getQuestionResponsesExportRows({ dateFrom, dateTo }: Expor
   }));
 }
 
-export async function getInstructionalAreaResultsExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getInstructionalAreaResultsExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const responses = await prisma.examAttemptQuestion.findMany({
-    where: { examAttempt: { submittedAt: { gte: dateFrom, lte: dateTo } } },
+    where: { examAttempt: { submittedAt: { gte: dateFrom, lte: dateTo }, user: { program } } },
     select: {
       isCorrect: true,
       examAttempt: { select: { user: { select: { id: true, schoolId: true } } } },
@@ -95,9 +96,9 @@ export async function getInstructionalAreaResultsExportRows({ dateFrom, dateTo }
   }));
 }
 
-export async function getRubricScoresExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getRubricScoresExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const scores = await prisma.rubricScore.findMany({
-    where: { scoredAt: { gte: dateFrom, lte: dateTo }, submissionId: { not: null } },
+    where: { scoredAt: { gte: dateFrom, lte: dateTo }, submissionId: { not: null }, submission: { user: { program } } },
     include: {
       criterion: { select: { name: true, maxPoints: true } },
       submission: {
@@ -124,9 +125,9 @@ export async function getRubricScoresExportRows({ dateFrom, dateTo }: ExportDate
     }));
 }
 
-export async function getActivityLogsExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getActivityLogsExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const logs = await prisma.activityLog.findMany({
-    where: { createdAt: { gte: dateFrom, lte: dateTo } },
+    where: { createdAt: { gte: dateFrom, lte: dateTo }, user: { program } },
     include: { user: { select: { id: true, schoolId: true } } },
     orderBy: { createdAt: "asc" },
   });
@@ -139,9 +140,9 @@ export async function getActivityLogsExportRows({ dateFrom, dateTo }: ExportDate
   }));
 }
 
-export async function getCompetitionResultsExportRows({ dateFrom, dateTo }: ExportDateRange) {
+export async function getCompetitionResultsExportRows(program: Program, { dateFrom, dateTo }: ExportDateRange) {
   const results = await prisma.competitionResult.findMany({
-    where: { createdAt: { gte: dateFrom, lte: dateTo } },
+    where: { createdAt: { gte: dateFrom, lte: dateTo }, user: { program } },
     include: { user: { select: { id: true, schoolId: true } }, event: { select: { name: true } } },
     orderBy: { createdAt: "asc" },
   });

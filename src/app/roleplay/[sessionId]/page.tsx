@@ -24,7 +24,7 @@ export default async function RoleplaySessionPage({
   if (!session || session.userId !== user.id) notFound();
   if (session.completedAt) redirect(`/roleplay/${sessionId}/results`);
 
-  const rubrics = await getActiveRubrics();
+  const rubrics = await getActiveRubrics(user.program);
 
   const headerList = await headers();
   const host = headerList.get("host");

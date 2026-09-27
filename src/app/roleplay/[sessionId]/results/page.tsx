@@ -29,7 +29,7 @@ export default async function RoleplayResultsPage({
   const criterionIds = Object.keys(selfRatings);
 
   const [rubrics, judgeScores] = await Promise.all([
-    getAllRubrics(),
+    getAllRubrics(user.program),
     getJudgeScoresForSession(sessionId),
   ]);
   const criteriaById = new Map(

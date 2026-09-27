@@ -22,8 +22,10 @@ export async function resetStudentPassword(
     return { error: "Missing student." };
   }
 
-  const student = await prisma.user.findUnique({ where: { id: studentId } });
-  if (!student || student.role !== "STUDENT") {
+  const student = await prisma.user.findFirst({
+    where: { id: studentId, role: "STUDENT", program: mentor.program },
+  });
+  if (!student) {
     return { error: "Student not found." };
   }
 
@@ -58,8 +60,10 @@ export async function setStudentActive(formData: FormData): Promise<void> {
   const isActive = formData.get("isActive") === "true";
   if (typeof studentId !== "string") return;
 
-  const student = await prisma.user.findUnique({ where: { id: studentId } });
-  if (!student || student.role !== "STUDENT") return;
+  const student = await prisma.user.findFirst({
+    where: { id: studentId, role: "STUDENT", program: mentor.program },
+  });
+  if (!student) return;
 
   await prisma.$transaction([
     prisma.user.update({ where: { id: studentId }, data: { isActive } }),
@@ -85,8 +89,10 @@ export async function resetStudentBaseline(formData: FormData): Promise<void> {
   const studentId = formData.get("studentId");
   if (typeof studentId !== "string") return;
 
-  const student = await prisma.user.findUnique({ where: { id: studentId } });
-  if (!student || student.role !== "STUDENT") return;
+  const student = await prisma.user.findFirst({
+    where: { id: studentId, role: "STUDENT", program: mentor.program },
+  });
+  if (!student) return;
 
   // ExamAttemptQuestion rows cascade-delete with their attempt; MissedQuestion
   // history from that baseline is intentionally left in place.
@@ -116,6 +122,11 @@ export async function logIntervention(
   const instructionalAreaId = formData.get("instructionalAreaId");
   if (typeof studentId !== "string" || !studentId) return { error: "Missing student." };
   if (typeof note !== "string" || !note.trim()) return { error: "Write a note first." };
+
+  const student = await prisma.user.findFirst({
+    where: { id: studentId, role: "STUDENT", program: mentor.program },
+  });
+  if (!student) return { error: "Student not found." };
 
   await prisma.interventionLog.create({
     data: {
