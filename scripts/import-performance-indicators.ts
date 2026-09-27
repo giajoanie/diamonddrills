@@ -79,6 +79,35 @@ const SOURCES: {
       { startPage: 50, endPage: 58, tier: "Pathway", pathway: "Travel and Tourism" },
     ],
   },
+  // Table of contents + page-mapping table (pages 2-3) give exact ranges:
+  // Tier 1 (pages 4-20, redundant with the BA Core bank, skipped), Tier 2
+  // "Business Management Cluster Core" (21-24), then five Tier 3 pathways —
+  // only Human Resources Management is relevant here since it's the only
+  // one this app's roleplay events (Business Law and Ethics TDM, HR
+  // Management Series, Principles of BMA) actually draw on.
+  {
+    examBankSlug: "business-management-administration",
+    file: "business-management-administration/2026-27_bma_performance_indicators.pdf",
+    ranges: [
+      { startPage: 21, endPage: 24, tier: "Cluster", pathway: null },
+      { startPage: 40, endPage: 45, tier: "Pathway", pathway: "Human Resources Management" },
+    ],
+  },
+  // Unlike Marketing/Hospitality, this document has no table of contents and
+  // no distinct "Entrepreneurship Cluster" tier section of its own — MBA
+  // Research's Entrepreneurship events are evaluated on Tier 1 Core (pages
+  // 2-10, already covered by the BA Core bank) plus a hand-picked set of
+  // instructional areas borrowed from other clusters' own Core tier:
+  // "Business Management and Administration Core" (11-12), "Finance Core"
+  // (13), and "Marketing Core" (14-16). Confirmed complete/correct with the
+  // mentor rather than assumed. Stored as this event's own Cluster tier
+  // since, functionally, it's the cluster-specific content Entrepreneurship
+  // events actually get tested and judged on.
+  {
+    examBankSlug: "entrepreneurship",
+    file: "entrepreneurship/2026-27_entrepreneurship_performance_indicators.pdf",
+    ranges: [{ startPage: 11, endPage: 16, tier: "Cluster", pathway: null }],
+  },
 ];
 
 // Hand-verified against seed/performance-indicators/personal-financial-literacy/

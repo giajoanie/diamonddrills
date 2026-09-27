@@ -15,10 +15,11 @@ export function cleanExamLines(rawText: string): string[] {
     if (/^copyright\s*©/i.test(line)) continue;
     // Running header/footer, e.g. "2026 HS ICDC MARKETING CLUSTER EXAM 2",
     // "2012 HS ICDC MARKETING CLUSTER EXAM—KEY 11", "ST-MKTG-10A MARKETING
-    // CLUSTER EXAM – KEY 10", "SAMPLE MARKETING CLUSTER EXAM—KEY". Kept
+    // CLUSTER EXAM – KEY 10", "SAMPLE MARKETING CLUSTER EXAM—KEY",
+    // "Test 1326 PERSONAL FINANCIAL LITERACY EXAM—KEY 1". Kept
     // short-length-gated so a legitimately long question stem that happens
     // to start with a year-like number is never mistaken for a header.
-    if (/^(\d{4}|ST-|SAMPLE)\S*.*\bEXAM\b/i.test(line) && line.length < 90) continue;
+    if (/^(\d{4}|ST-|SAMPLE|Test)\S*.*\bEXAM\b/i.test(line) && line.length < 90) continue;
     cleaned.push(line);
   }
 

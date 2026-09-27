@@ -71,6 +71,34 @@ Voluntary. Both the debtor and creditor enter the relationship willingly.
 SOURCE: BL:071
 `;
 
+// A real 2026 Personal Financial Literacy exam PDF used a running header
+// ("Test 1326 PERSONAL FINANCIAL LITERACY EXAM ... 1") that didn't start
+// with a year, "ST-", or "SAMPLE" — the header-stripping regex missed it,
+// so it got appended straight onto the last option of whichever question
+// fell at that page boundary (here, option D of question 1).
+const TEST_NUMBER_HEADER_EXAM = `
+Test 1326 PERSONAL FINANCIAL LITERACY EXAM 1
+1. What is good advice to follow to avoid excessive debt?
+A. Engage in impulse buying to avoid unmanageable debt.
+B. Use cosigners on loans so that they can be held responsible for excessive debt.
+C. Notify creditors immediately when you know your payments will be late.
+D. Think long term and be realistic about income and expenses.
+
+Test 1326 PERSONAL FINANCIAL LITERACY EXAM—KEY 1
+1. D
+Think long term and be realistic about income and expenses.
+SOURCE: V. Managing Credit
+`;
+
+describe("parseExamText — running header without a year/ST-/SAMPLE prefix", () => {
+  it("does not leak the header text into the preceding option", () => {
+    const result = parseExamText(TEST_NUMBER_HEADER_EXAM);
+    expect(result.questions).toHaveLength(1);
+    expect(result.questions[0].optionD).toBe("Think long term and be realistic about income and expenses.");
+    expect(result.questions[0].correctOption).toBe("D");
+  });
+});
+
 describe("parseExamText — single-column layout", () => {
   const result = parseExamText(SINGLE_COLUMN_EXAM);
 

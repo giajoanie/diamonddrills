@@ -21,11 +21,11 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 | File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
 |---|---|---|---|---|---|---|---|
-| 2010_hospitality-tourism_icdc_exam.pdf | 2010 Hospitality and Tourism ICDC Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
-| 2011_hospitality-tourism_icdc_exam.pdf | 2011 Hospitality and Tourism ICDC Exam | needs-review | 100 | 100 | 0 | 100 | 0 |
-| 2013_hospitality-tourism_icdc_exam.pdf | 2013 Hospitality and Tourism ICDC Exam | published | 100 | 100 | 0 | 100 | 0 |
-| 2015_hospitality-tourism_sample_exam.pdf | 2015 Hospitality and Tourism Sample Exam | needs-review | 100 | 100 | 0 | 96 | 4 |
-| 2017_hospitality-tourism_collegiate_sample_exam.pdf | 2017 Hospitality and Tourism Collegiate Sample Exam | needs-review | 100 | 100 | 0 | 95 | 5 |
+| 2010_hospitality-tourism_icdc_exam.pdf | 2010 Hospitality and Tourism ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2011_hospitality-tourism_icdc_exam.pdf | 2011 Hospitality and Tourism ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2013_hospitality-tourism_icdc_exam.pdf | 2013 Hospitality and Tourism ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2015_hospitality-tourism_sample_exam.pdf | 2015 Hospitality and Tourism Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
+| 2017_hospitality-tourism_collegiate_sample_exam.pdf | 2017 Hospitality and Tourism Collegiate Sample Exam | published | 100 | 100 | 0 | 0 | 100 |
 
 ## marketing
 
@@ -43,24 +43,14 @@ A file is auto-published only when every question matched an answer-key entry wi
 | 2026_marketing_icdc_exam.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 | 2026_marketing_icdc_exam_final.pdf | 2026 Marketing ICDC Exam | published | 100 | 100 | 0 | 0 | 100 |
 
+## personal-financial-literacy
+
+| File | Source exam | Status | Questions found | Matched | Missing key | Created | Duplicates skipped |
+|---|---|---|---|---|---|---|---|
+| 2026_personal-financial-literacy_sample_exam.pdf | 2026 Personal Financial Literacy Sample Exam | published | 100 | 100 | 0 | 100 | 0 |
+
 
 ## Anomalies
-
-### 2010_hospitality-tourism_icdc_exam.pdf
-
-- Unrecognized instructional area code(s), stored as-is: DS
-
-### 2011_hospitality-tourism_icdc_exam.pdf
-
-- Unrecognized instructional area code(s), stored as-is: DS
-
-### 2015_hospitality-tourism_sample_exam.pdf
-
-- Unrecognized instructional area code(s), stored as-is: DS
-
-### 2017_hospitality-tourism_collegiate_sample_exam.pdf
-
-- Unrecognized instructional area code(s), stored as-is: DS
 
 ### 2011_marketing_icdc_exam.pdf
 
@@ -68,7 +58,7 @@ A file is auto-published only when every question matched an answer-key entry wi
 
 ## Summary
 
-- 20 files processed
-- 15 auto-published (clean parse)
-- 5 need manual review or were skipped
-- 491 total questions created
+- 21 files processed
+- 20 auto-published (clean parse)
+- 1 need manual review or were skipped
+- 100 total questions created
