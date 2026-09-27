@@ -9,10 +9,16 @@
  * scenario and its PIs are thematically consistent, the same way DECA's own
  * event sets work.
  *
- * Scope: this is a sample batch for ONE event (Apparel and Accessories
- * Marketing Series) to sign off on format/quality before scaling to the
- * other 29 active roleplay events.
+ * Scope: originally a sample batch for one event (Apparel and Accessories
+ * Marketing Series); now combined below with the other 29 active roleplay
+ * events' case studies, each authored in its own cluster file for size.
  */
+import { MARKETING_CASE_STUDY_SEED } from "./case-study-seed-data-marketing";
+import { BMA_CASE_STUDY_SEED } from "./case-study-seed-data-bma";
+import { ENTREPRENEURSHIP_CASE_STUDY_SEED } from "./case-study-seed-data-entrepreneurship";
+import { HOSPITALITY_CASE_STUDY_SEED } from "./case-study-seed-data-hospitality";
+import { HOSPITALITY_CASE_STUDY_SEED_2 } from "./case-study-seed-data-hospitality-2";
+import { PFL_CASE_STUDY_SEED } from "./case-study-seed-data-pfl";
 
 export type CaseStudyPI = { code: string; description: string };
 
@@ -378,15 +384,23 @@ const AAM_CASES: CaseStudySeed[] = [
   },
 ];
 
+const AAM_EVENT: EventCaseStudySeed = {
+  eventSlug: "apparel-and-accessories-marketing-series",
+  eventName: "Apparel and Accessories Marketing Series",
+  careerCluster: "Marketing",
+  careerPathway: "Merchandising",
+  format: "SERIES",
+  prepMinutes: 10,
+  presentMinutes: 10,
+  cases: AAM_CASES,
+};
+
 export const CASE_STUDY_SEED: EventCaseStudySeed[] = [
-  {
-    eventSlug: "apparel-and-accessories-marketing-series",
-    eventName: "Apparel and Accessories Marketing Series",
-    careerCluster: "Marketing",
-    careerPathway: "Merchandising",
-    format: "SERIES",
-    prepMinutes: 10,
-    presentMinutes: 10,
-    cases: AAM_CASES,
-  },
+  AAM_EVENT,
+  ...MARKETING_CASE_STUDY_SEED,
+  ...BMA_CASE_STUDY_SEED,
+  ...ENTREPRENEURSHIP_CASE_STUDY_SEED,
+  ...HOSPITALITY_CASE_STUDY_SEED,
+  ...HOSPITALITY_CASE_STUDY_SEED_2,
+  ...PFL_CASE_STUDY_SEED,
 ];

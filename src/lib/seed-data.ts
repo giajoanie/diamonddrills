@@ -142,6 +142,7 @@ export const ROLEPLAY_PATHWAY_SEED: { slug: string; pathway: string }[] = [
   { slug: "marketing-communications-series", pathway: "Marketing Communications" },
   { slug: "retail-merchandising-series", pathway: "Merchandising" },
   { slug: "sports-and-entertainment-marketing-series", pathway: "Marketing Management" },
+  { slug: "human-resources-management-series", pathway: "Human Resources Management" },
   { slug: "hotel-and-lodging-management-series", pathway: "Lodging" },
   { slug: "quick-serve-restaurant-management-series", pathway: "Restaurant Management" },
   { slug: "restaurant-and-food-service-management-series", pathway: "Restaurant Management" },
