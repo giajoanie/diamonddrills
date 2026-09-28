@@ -28,6 +28,11 @@ export const SignupSchema = z
     // just hiding it), so formData.get() returns null, not undefined —
     // .optional() alone doesn't accept null.
     writtenEventId: z.string().nullable().optional(),
+    // A second, optional written pick scoped to Project Management-format
+    // events (Business Solutions Project, Career Development Project,
+    // etc.) — a student can take one of these alongside their other
+    // written event, not instead of it.
+    projectManagementEventId: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {

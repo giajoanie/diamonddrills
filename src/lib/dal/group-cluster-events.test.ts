@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { groupClusterEvents } from "./group-cluster-events";
 import type { Event } from "@/generated/prisma/client";
 
-function fakeEvent(id: string, category: "ROLEPLAY" | "WRITTEN"): Event {
-  return { id, category } as unknown as Event;
+function fakeEvent(id: string, category: "ROLEPLAY" | "WRITTEN", format?: string): Event {
+  return { id, category, format } as unknown as Event;
 }
 
 describe("groupClusterEvents", () => {
@@ -45,5 +45,22 @@ describe("groupClusterEvents", () => {
 
     expect(result[0].roleplayEvents).toHaveLength(1);
     expect(result[0].writtenEvents).toHaveLength(0);
+  });
+
+  it("splits Project Management-format written events into their own bucket", () => {
+    const result = groupClusterEvents([
+      {
+        id: "c1",
+        name: "Business Management and Administration",
+        events: [
+          fakeEvent("e1", "WRITTEN", "OPERATIONS_RESEARCH"),
+          fakeEvent("e2", "WRITTEN", "PROJECT_MANAGEMENT"),
+          fakeEvent("e3", "WRITTEN", "PROJECT_MANAGEMENT"),
+        ],
+      },
+    ]);
+
+    expect(result[0].writtenEvents.map((e) => e.id)).toEqual(["e1"]);
+    expect(result[0].projectManagementEvents.map((e) => e.id)).toEqual(["e2", "e3"]);
   });
 });

@@ -12,7 +12,7 @@ type Clusters = Awaited<ReturnType<typeof getSignupEventOptions>>;
 
 const STEP_FIELDS = [
   ["schoolId", "firstName", "password", "confirmPassword", "program", "grade"],
-  ["roleplayEventId", "writtenEventId"],
+  ["roleplayEventId", "writtenEventId", "projectManagementEventId"],
 ] as const;
 
 const GRADE_OPTIONS: Record<"HIGH_SCHOOL" | "EBL", number[]> = {
@@ -219,6 +219,30 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
                   )}
                 </Select>
                 <FieldError messages={state?.errors?.writtenEventId} />
+              </div>
+            )}
+
+            {isHighSchool && (
+              <div>
+                <Label htmlFor="projectManagementEventId">
+                  Project management event (optional)
+                </Label>
+                <Select id="projectManagementEventId" name="projectManagementEventId" defaultValue="">
+                  <option value="">None</option>
+                  {clusters.map(
+                    (cluster) =>
+                      cluster.projectManagementEvents.length > 0 && (
+                        <optgroup key={cluster.id} label={cluster.name}>
+                          {cluster.projectManagementEvents.map((event) => (
+                            <option key={event.id} value={event.id}>
+                              {event.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ),
+                  )}
+                </Select>
+                <FieldError messages={state?.errors?.projectManagementEventId} />
               </div>
             )}
           </div>

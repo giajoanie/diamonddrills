@@ -22,7 +22,7 @@ export default async function JudgeSessionPage({
   if (!session) notFound();
 
   const [rubrics, viewer] = await Promise.all([
-    getActiveRubrics(session.user.program),
+    getActiveRubrics(session.user.program, session.event.id),
     getSessionUser(),
   ]);
 

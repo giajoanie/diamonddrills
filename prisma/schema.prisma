@@ -302,6 +302,7 @@ model Event {
   competitionResults CompetitionResult[]
   roleplaySessions   RoleplayPracticeSession[]
   announcements      Announcement[]
+  rubrics            Rubric[]
 
   @@index([clusterId])
   @@index([category])
@@ -661,6 +662,12 @@ model Rubric {
   description String?
   creatorId   String
   creator     User     @relation("RubricCreator", fields: [creatorId], references: [id])
+  // Set only for a roleplay judge-evaluation rubric generated to match one
+  // specific event's own performance-indicator count (see
+  // scripts/seed-official-rubrics.ts) — null for an assignment-grading
+  // rubric a mentor builds freeform, which isn't tied to any one event.
+  eventId     String?
+  event       Event?   @relation(fields: [eventId], references: [id])
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -669,6 +676,7 @@ model Rubric {
   assignments Assignment[]
 
   @@index([creatorId])
+  @@index([eventId])
 }
 
 model RubricCriterion {

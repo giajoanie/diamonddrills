@@ -41,20 +41,32 @@ export async function signup(
     grade: formData.get("grade"),
     roleplayEventId: formData.get("roleplayEventId"),
     writtenEventId: formData.get("writtenEventId"),
+    projectManagementEventId: formData.get("projectManagementEventId"),
   });
 
   if (!validated.success) {
     return { errors: flattenFieldErrors(validated.error) };
   }
 
-  const { schoolId, firstName, password, program, grade, roleplayEventId, writtenEventId } =
-    validated.data;
+  const {
+    schoolId,
+    firstName,
+    password,
+    program,
+    grade,
+    roleplayEventId,
+    writtenEventId,
+    projectManagementEventId,
+  } = validated.data;
   const isHighSchool = program === "HIGH_SCHOOL";
 
-  const [roleplayEvent, writtenEvent] = await Promise.all([
+  const [roleplayEvent, writtenEvent, projectManagementEvent] = await Promise.all([
     prisma.event.findUnique({ where: { id: roleplayEventId } }),
     isHighSchool && writtenEventId
       ? prisma.event.findUnique({ where: { id: writtenEventId } })
+      : Promise.resolve(null),
+    isHighSchool && projectManagementEventId
+      ? prisma.event.findUnique({ where: { id: projectManagementEventId } })
       : Promise.resolve(null),
   ]);
 
@@ -65,6 +77,18 @@ export async function signup(
   // written event is never created for it, even if one was somehow posted.
   if (isHighSchool && (!writtenEvent || writtenEvent.category !== "WRITTEN" || !writtenEvent.isActive)) {
     return { message: "Choose a valid written event." };
+  }
+  // Project management event is an optional third pick — only validated
+  // when the student actually chose one.
+  if (
+    isHighSchool &&
+    projectManagementEventId &&
+    (!projectManagementEvent ||
+      projectManagementEvent.category !== "WRITTEN" ||
+      projectManagementEvent.format !== "PROJECT_MANAGEMENT" ||
+      !projectManagementEvent.isActive)
+  ) {
+    return { message: "Choose a valid project management event." };
   }
 
   const existing = await prisma.user.findUnique({ where: { schoolId } });
@@ -90,6 +114,7 @@ export async function signup(
       data: [
         { userId: created.id, eventId: roleplayEvent.id },
         ...(writtenEvent ? [{ userId: created.id, eventId: writtenEvent.id }] : []),
+        ...(projectManagementEvent ? [{ userId: created.id, eventId: projectManagementEvent.id }] : []),
       ],
     });
 

@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { requireActiveUser } from "@/lib/auth/guards";
-import { getRoleplaySessionForRunner } from "@/lib/dal/roleplay";
+import { getRoleplaySessionForRunner, getJudgeScoresForSession } from "@/lib/dal/roleplay";
 import { getActiveRubrics } from "@/lib/dal/rubrics";
 import { BinderPageShell } from "@/components/binder/BinderPageShell";
 import { TabbedCard } from "@/components/binder/TabbedCard";
@@ -24,7 +24,10 @@ export default async function RoleplaySessionPage({
   if (!session || session.userId !== user.id) notFound();
   if (session.completedAt) redirect(`/roleplay/${sessionId}/results`);
 
-  const rubrics = await getActiveRubrics(user.program);
+  const [rubrics, judgeScores] = await Promise.all([
+    getActiveRubrics(user.program, session.event.id),
+    getJudgeScoresForSession(sessionId),
+  ]);
 
   const headerList = await headers();
   const host = headerList.get("host");
@@ -66,6 +69,7 @@ export default async function RoleplaySessionPage({
                 initialNotes={session.notes ?? ""}
                 caseStudy={session.caseStudyResource}
                 rubrics={rubrics}
+                judgeScores={judgeScores}
               />
             </div>
           </div>

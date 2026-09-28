@@ -13,7 +13,21 @@ export function groupClusterEvents(clusters: ClusterWithEvents[]) {
       id: cluster.id,
       name: cluster.name,
       roleplayEvents: cluster.events.filter((e) => e.category === "ROLEPLAY"),
-      writtenEvents: cluster.events.filter((e) => e.category === "WRITTEN"),
+      // Project Management-format written events (Business Solutions
+      // Project, Career Development Project, etc.) get their own signup
+      // dropdown so a student can pick one of those *and* a separate
+      // written event, rather than the two competing for a single slot.
+      writtenEvents: cluster.events.filter(
+        (e) => e.category === "WRITTEN" && e.format !== "PROJECT_MANAGEMENT",
+      ),
+      projectManagementEvents: cluster.events.filter(
+        (e) => e.category === "WRITTEN" && e.format === "PROJECT_MANAGEMENT",
+      ),
     }))
-    .filter((c) => c.roleplayEvents.length > 0 || c.writtenEvents.length > 0);
+    .filter(
+      (c) =>
+        c.roleplayEvents.length > 0 ||
+        c.writtenEvents.length > 0 ||
+        c.projectManagementEvents.length > 0,
+    );
 }

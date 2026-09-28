@@ -8,6 +8,14 @@ import { Label, Input, FieldError } from "@/components/ui/Field";
 
 type Criterion = { id: string; name: string; maxPoints: number };
 type Rubric = { id: string; name: string; criteria: Criterion[] };
+type JudgeScore = {
+  id: string;
+  judgeId: string | null;
+  judgeName: string | null;
+  judge: { firstName: string } | null;
+  scores: unknown;
+  comments: string | null;
+};
 
 export function RoleplayRunner({
   sessionId,
@@ -17,6 +25,7 @@ export function RoleplayRunner({
   initialNotes,
   caseStudy,
   rubrics,
+  judgeScores,
 }: {
   sessionId: string;
   startedAtIso: string;
@@ -25,6 +34,7 @@ export function RoleplayRunner({
   initialNotes: string;
   caseStudy: { name: string; fileUrl: string | null; externalUrl: string | null } | null;
   rubrics: Rubric[];
+  judgeScores: JudgeScore[];
 }) {
   const startedAt = useMemo(() => new Date(startedAtIso), [startedAtIso]);
   const [now, setNow] = useState(() => Date.now());
@@ -61,6 +71,13 @@ export function RoleplayRunner({
 
   const [selectedRubricId, setSelectedRubricId] = useState(rubrics[0]?.id ?? "");
   const selectedRubric = rubrics.find((r) => r.id === selectedRubricId) ?? null;
+  const criteriaById = useMemo(() => {
+    const map = new Map<string, Criterion>();
+    for (const rubric of rubrics) {
+      for (const criterion of rubric.criteria) map.set(criterion.id, criterion);
+    }
+    return map;
+  }, [rubrics]);
 
   const [completeState, completeAction, completing] = useActionState<CompleteRoleplayState, FormData>(
     completeRoleplaySession,
@@ -101,13 +118,57 @@ export function RoleplayRunner({
         />
       </div>
 
+      {phase === "DONE" && judgeScores.length > 0 && (
+        <div className="rounded-lg border border-border bg-background-elevated p-5">
+          <p className="mb-3 font-medium text-foreground">
+            {judgeScores.length === 1 ? "What your judge scored" : "What your judges scored"}
+          </p>
+          <div className="space-y-4">
+            {judgeScores.map((js) => {
+              const scores = (js.scores as Record<string, number>) ?? {};
+              const ids = Object.keys(scores);
+              const earned = ids.reduce((sum, id) => sum + scores[id], 0);
+              const possible = ids.reduce((sum, id) => sum + (criteriaById.get(id)?.maxPoints ?? 0), 0);
+              const judgeDisplayName = js.judgeName ?? js.judge?.firstName ?? "A judge";
+              return (
+                <div key={js.id} className="border-t border-border pt-3 first:border-0 first:pt-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {judgeDisplayName} · {earned} / {possible}
+                  </p>
+                  <ul className="mt-1 space-y-1 text-sm">
+                    {ids.map((id) => (
+                      <li key={id} className="flex items-center justify-between gap-3">
+                        <span className="text-foreground-muted">{criteriaById.get(id)?.name ?? id}</span>
+                        <span className="text-foreground-subtle">
+                          {scores[id]} / {criteriaById.get(id)?.maxPoints ?? "?"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {js.comments && (
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">{js.comments}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {phase === "DONE" && (
         <div className="rounded-lg border border-border bg-background-elevated p-5">
           <p className="mb-3 font-medium text-foreground">Self-rating</p>
           {rubrics.length === 0 ? (
-            <p className="text-sm text-foreground-muted">
-              No rubrics have been created yet — ask a mentor to build one to self-rate against.
-            </p>
+            <form action={completeAction} className="space-y-3">
+              {completeState?.error && <FieldError messages={[completeState.error]} />}
+              <input type="hidden" name="sessionId" value={sessionId} />
+              <p className="text-sm text-foreground-muted">
+                No rubrics have been created yet — ask a mentor to build one to self-rate against.
+              </p>
+              <Button type="submit" disabled={completing}>
+                {completing ? "Finishing…" : "Finish without self-rating"}
+              </Button>
+            </form>
           ) : (
             <form action={completeAction} className="space-y-3">
               {completeState?.error && <FieldError messages={[completeState.error]} />}
@@ -146,9 +207,11 @@ export function RoleplayRunner({
                 </div>
               ))}
 
-              <Button type="submit" disabled={completing}>
-                {completing ? "Saving…" : "Save self-rating"}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" disabled={completing}>
+                  {completing ? "Saving…" : "Save self-rating"}
+                </Button>
+              </div>
             </form>
           )}
         </div>
