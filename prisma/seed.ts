@@ -5,6 +5,7 @@ import "dotenv/config"; // running via `tsx` directly does not auto-load .env li
 import { prisma } from "@/lib/prisma";
 import { hashPassword, generateTemporaryPassword } from "@/lib/auth/password";
 import { CLUSTER_SEED, EXAM_BANK_SEED, EVENT_SEED, ROLEPLAY_PATHWAY_SEED } from "@/lib/seed-data";
+import type { Program } from "@/generated/prisma/client";
 
 async function seedClusters() {
   for (const cluster of CLUSTER_SEED) {
@@ -77,8 +78,16 @@ async function seedEvents() {
 // access even before a mentor's first login (mustChangePassword only forces
 // a change *after* that first login). Generate a random one per account
 // instead and print it once here — never persisted anywhere but the hash.
+// One mentor per Program — resource visibility (including the bulk-seeded
+// case studies) is scoped by uploader.program, so an EBL cohort with no
+// EBL mentor account has no uploader to own EBL-visible resources at all.
+const MENTOR_SEED: { schoolId: string; program: Program }[] = [
+  { schoolId: "1071632", program: "HIGH_SCHOOL" },
+  { schoolId: "1078913", program: "EBL" },
+];
+
 async function seedMentors() {
-  for (const schoolId of ["1071632", "1078913"]) {
+  for (const { schoolId, program } of MENTOR_SEED) {
     const existing = await prisma.user.findUnique({ where: { schoolId } });
     if (existing) continue;
 
@@ -90,12 +99,13 @@ async function seedMentors() {
         role: "MENTOR",
         firstName: "Advisor",
         passwordHash,
+        program,
         mustChangePassword: true,
       },
     });
-    console.log(`  Mentor ${schoolId} temporary password: ${temporaryPassword}`);
+    console.log(`  Mentor ${schoolId} (${program}) temporary password: ${temporaryPassword}`);
   }
-  console.log("Seeded 2 mentor accounts (password change forced on first login).");
+  console.log(`Seeded ${MENTOR_SEED.length} mentor accounts (password change forced on first login).`);
 }
 
 async function seedRoleplayPathways() {
