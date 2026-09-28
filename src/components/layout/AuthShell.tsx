@@ -14,7 +14,7 @@ export function AuthShell({
   return (
     <main className="shell-diamond-bg flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8">
-        <Logo className="h-9 w-auto brightness-0 invert" />
+        <Logo className="h-9 w-auto" />
       </Link>
       <div className="relative w-full max-w-md overflow-visible rounded-2xl border border-border bg-background-elevated p-6 shadow-lg sm:p-8">
         <Sticker kind="tape" />
