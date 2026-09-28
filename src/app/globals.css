@@ -388,6 +388,28 @@ body {
   border-bottom: 3px solid #2a58b8;
 }
 
+/* NorCal specific prep (/roleplay/norcal-prep) — see
+   design_handoff_norcal_resources/norcal-reference.html (.badge). Scoped to
+   this screen's competition countdown notes only. */
+.roleplay-date-badge {
+  border-radius: 50% / 46%;
+  border: 2px solid #c0392b;
+  transform: rotate(-4deg);
+}
+
+/* Resources (/resources) — see
+   design_handoff_norcal_resources/resources-reference.html (.res). Scoped
+   to this screen's resource cards only. */
+.resource-index-card {
+  border: 1px solid rgba(18, 58, 122, 0.16);
+  background-image: linear-gradient(
+    transparent 38px,
+    #e9b8b8 38px,
+    #e9b8b8 40px,
+    transparent 40px
+  );
+}
+
 .roleplay-clip-note {
   box-shadow: 3px 3px 0 rgba(18, 58, 122, 0.12);
 }

@@ -33,8 +33,12 @@ export function CaseStudyDrawer({
 }: {
   caseStudies: CaseStudy[];
   /** "clip" is the yellow paper-clipped note used by /roleplay/start's
-   * restyle; every other caller (e.g. norcal-prep) keeps the plain button. */
-  variant?: "button" | "clip";
+   * restyle. "clip-counted" is the same note used by norcal-prep's restyle —
+   * same visual style, but positioned right:-14px (vs. right:0) and with
+   * the real case-study count on its second line, per
+   * design_handoff_norcal_resources. Every other caller keeps the plain
+   * button. */
+  variant?: "button" | "clip" | "clip-counted";
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [reading, setReading] = useState<CaseStudy | null>(null);
@@ -63,15 +67,21 @@ export function CaseStudyDrawer({
 
   return (
     <>
-      {variant === "clip" ? (
+      {variant === "clip" || variant === "clip-counted" ? (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="roleplay-clip-note absolute right-0 top-[26px] rounded-r-[10px] px-4 py-3.5 pl-5 text-left"
-          style={{ background: "#fff6dc", transform: "rotate(2deg)" }}
+          className="roleplay-clip-note absolute top-[26px] rounded-r-[10px] px-4 py-3.5 pl-5 text-left"
+          style={{
+            background: "#fff6dc",
+            transform: "rotate(2deg)",
+            right: variant === "clip-counted" ? "-14px" : 0,
+          }}
         >
           <div className="font-display text-[13px] font-bold text-[#6b4c08]">Case studies</div>
-          <div className="font-hand text-sm text-[#8a6412]">past prompts →</div>
+          <div className="font-hand text-sm text-[#8a6412]">
+            {variant === "clip-counted" ? `${caseStudies.length} past prompts →` : "past prompts →"}
+          </div>
         </button>
       ) : (
         <Button variant="secondary" onClick={() => setIsOpen(true)}>

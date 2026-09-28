@@ -1,57 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Link as LinkIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
 import { getCaseStudyPreview } from "@/lib/case-study-format";
-import { Card } from "@/components/ui/Card";
 
-type Resource = {
+export type Resource = {
   id: string;
   name: string;
   type: string;
   description: string | null;
   fileUrl: string | null;
   externalUrl: string | null;
+  competitionLevel: string | null;
   resourceAreas: { instructionalArea: { name: string } }[];
 };
 
-export function ResourceCard({ resource }: { resource: Resource }) {
+/**
+ * Index-card resource tile — see
+ * design_handoff_norcal_resources/resources-reference.html (.res). A
+ * text-only resource (no file/external URL — every case study, since its
+ * content lives in `description`) keeps the app's existing in-app
+ * slide-over reader instead of the reference's plain external link, which
+ * assumes every resource has somewhere to send the browser. A resource with
+ * a real file/URL opens it in a new tab exactly like the reference.
+ */
+export function ResourceCard({
+  resource,
+  typeLabel,
+  tiltDeg,
+}: {
+  resource: Resource;
+  typeLabel: string;
+  tiltDeg: number;
+}) {
   const [reading, setReading] = useState(false);
   const isTextOnly = !resource.fileUrl && !resource.externalUrl;
-  const textOnlyPreview =
-    resource.type === "CASE_STUDY" && resource.description
-      ? getCaseStudyPreview(resource.description)
-      : (resource.description?.split("\n")[0] ?? null);
-  const preview = isTextOnly ? textOnlyPreview : resource.description;
+  const areaLabel = resource.resourceAreas.map((a) => a.instructionalArea.name).join(" · ");
 
-  const inner = (
+  const cardInner = (
     <>
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft">
-        {resource.fileUrl ? (
-          <FileText className="h-4 w-4 text-accent-strong" aria-hidden />
-        ) : (
-          <LinkIcon className="h-4 w-4 text-accent-strong" aria-hidden />
-        )}
-      </span>
-      <div>
-        <p className="font-display font-bold text-foreground">{resource.name}</p>
-        <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
-          {resource.type}
-        </p>
-        {preview && (
-          <p className={`mt-1 text-sm text-foreground-muted ${isTextOnly ? "line-clamp-2" : ""}`}>
-            {preview}
-          </p>
-        )}
-        {resource.resourceAreas.length > 0 && (
-          <p className="mt-1 text-xs text-foreground-subtle">
-            {resource.resourceAreas.map((a) => a.instructionalArea.name).join(" · ")}
-          </p>
+      <div className="res-h flex h-[38px] items-center justify-between px-[18px]">
+        <span
+          className="rounded-[4px] border-[1.5px] border-[#c2562f] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[.1em] text-[#c2562f]"
+          style={{ transform: "rotate(-2deg)" }}
+        >
+          {typeLabel}
+        </span>
+        <span className="font-hand text-[15px] text-accent">open ↗</span>
+      </div>
+      <div className="flex flex-col gap-2 px-[18px] pb-4 pt-3.5">
+        <div className="font-display text-base font-bold leading-[1.35] text-foreground text-pretty">
+          {resource.name}
+        </div>
+        {areaLabel && (
+          <div className="font-hand text-base" style={{ color: "rgba(18,58,122,.62)" }}>
+            {areaLabel}
+          </div>
         )}
       </div>
     </>
   );
+
+  const cardClassName =
+    "resource-index-card flex flex-col bg-white text-foreground no-underline shadow-[3px_4px_0_rgba(18,58,122,.08)] transition-shadow hover:shadow-[4px_6px_0_rgba(18,58,122,.14)]";
+  const cardStyle = { transform: `rotate(${tiltDeg}deg)` };
 
   if (isTextOnly) {
     return (
@@ -62,9 +75,10 @@ export function ResourceCard({ resource }: { resource: Resource }) {
             void logResourceOpen(resource.id);
             setReading(true);
           }}
-          className="flex w-full items-start gap-3 rounded-xl border border-border bg-background-elevated p-5 text-left shadow-sm transition-shadow hover:shadow-md"
+          className={`${cardClassName} text-left`}
+          style={cardStyle}
         >
-          {inner}
+          {cardInner}
         </button>
 
         {reading && (
@@ -93,7 +107,9 @@ export function ResourceCard({ resource }: { resource: Resource }) {
                 </button>
               </div>
               <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
-                {resource.description}
+                {resource.type === "CASE_STUDY" && resource.description
+                  ? getCaseStudyPreview(resource.description)
+                  : resource.description}
               </div>
             </div>
           </div>
@@ -104,16 +120,15 @@ export function ResourceCard({ resource }: { resource: Resource }) {
 
   const href = resource.fileUrl ? `/files/${resource.fileUrl}` : resource.externalUrl!;
   return (
-    <Card className="transition-shadow hover:shadow-md">
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => void logResourceOpen(resource.id)}
-        className="flex items-start gap-3"
-      >
-        {inner}
-      </a>
-    </Card>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => void logResourceOpen(resource.id)}
+      className={cardClassName}
+      style={cardStyle}
+    >
+      {cardInner}
+    </a>
   );
 }
