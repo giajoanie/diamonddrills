@@ -197,41 +197,54 @@ function StudyMode({ terms }: { terms: Term[] }) {
           type="button"
           onClick={() => setFlipped((f) => !f)}
           aria-pressed={flipped}
-          className="relative min-h-[9.5rem] w-full"
-          style={{ transformStyle: "preserve-3d" }}
+          className="relative block w-full"
+          style={{ minHeight: "17rem", transformStyle: "preserve-3d" }}
         >
           <div
-            className="relative min-h-[9.5rem] w-full transition-transform duration-300"
+            className="relative h-full w-full transition-transform duration-300"
             style={{
+              minHeight: "17rem",
               transformStyle: "preserve-3d",
               transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
             }}
           >
+            {/* Both faces are pinned to fill this box exactly — position must
+               be set inline, not via the `absolute` utility class: .progress-note
+               (below) sets `position: relative` as plain CSS loaded after
+               Tailwind's utilities, so it otherwise wins the cascade and the
+               faces stack in normal flow instead of overlapping. */}
             <div
-              className="progress-note absolute inset-0 flex flex-col items-center justify-center rounded-none px-6 py-6 text-center"
-              style={{ background: "#ffffff", backfaceVisibility: "hidden" }}
+              className="progress-note flex flex-col items-center justify-center rounded-none px-8 py-6 text-center"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "#ffffff",
+                backfaceVisibility: "hidden",
+              }}
             >
-              <p className="font-display text-[10px] font-bold uppercase tracking-[.1em] text-accent">
+              <p className="font-display text-[11px] font-bold uppercase tracking-[.1em] text-accent">
                 Term
               </p>
-              <p className="font-display mt-2.5 text-lg font-bold text-foreground">{card.term}</p>
-              <p className="font-hand mt-2.5 text-sm text-[rgba(18,58,122,.5)]">Tap to flip</p>
+              <p className="font-display mt-3 text-2xl font-bold text-foreground">{card.term}</p>
+              <p className="font-hand mt-3 text-base text-[rgba(18,58,122,.5)]">Tap to flip</p>
             </div>
             <div
-              className="progress-note absolute inset-0 flex flex-col items-center justify-center rounded-none px-6 py-6 text-center"
+              className="progress-note flex flex-col items-center justify-center overflow-y-auto rounded-none px-8 py-6 text-center"
               style={{
+                position: "absolute",
+                inset: 0,
                 background: "#eaf2ff",
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
               }}
             >
-              <p className="font-display text-[10px] font-bold uppercase tracking-[.1em] text-accent">
+              <p className="font-display text-[11px] font-bold uppercase tracking-[.1em] text-accent">
                 Definition
               </p>
-              <p className="font-body mt-2.5 text-sm leading-relaxed text-foreground">
+              <p className="font-body mt-3 text-base leading-relaxed text-foreground">
                 {card.definition}
               </p>
-              <p className="font-hand mt-2.5 text-sm text-[rgba(18,58,122,.5)]">Tap to flip back</p>
+              <p className="font-hand mt-3 text-base text-[rgba(18,58,122,.5)]">Tap to flip back</p>
             </div>
           </div>
         </button>
