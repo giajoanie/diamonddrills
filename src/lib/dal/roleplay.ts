@@ -12,7 +12,7 @@ export const getRoleplaySessionForRunner = cache(async (sessionId: string) => {
   const caseStudyResource = session.caseStudyResourceId
     ? await prisma.resource.findUnique({
         where: { id: session.caseStudyResourceId },
-        select: { id: true, name: true, fileUrl: true, externalUrl: true },
+        select: { id: true, name: true, fileUrl: true, externalUrl: true, description: true },
       })
     : null;
 
@@ -38,11 +38,21 @@ export const getRoleplaySessionForJudge = cache(async (sessionId: string) => {
       id: true,
       startedAt: true,
       completedAt: true,
+      caseStudyResourceId: true,
       event: { select: { id: true, name: true } },
       user: { select: { id: true, firstName: true, program: true } },
     },
   });
-  return session;
+  if (!session) return null;
+
+  const caseStudyResource = session.caseStudyResourceId
+    ? await prisma.resource.findUnique({
+        where: { id: session.caseStudyResourceId },
+        select: { name: true, description: true },
+      })
+    : null;
+
+  return { ...session, caseStudyResource };
 });
 
 export const getJudgeScoresForSession = cache(async (sessionId: string) => {

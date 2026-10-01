@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getRoleplaySessionForJudge } from "@/lib/dal/roleplay";
 import { getActiveRubrics } from "@/lib/dal/rubrics";
 import { getSessionUser } from "@/lib/auth/session";
+import { getCaseStudyPerformanceIndicators } from "@/lib/case-study-format";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { JudgeScoreForm } from "./JudgeScoreForm";
 
@@ -26,14 +27,25 @@ export default async function JudgeSessionPage({
     getSessionUser(),
   ]);
 
+  const caseStudyPIs = session.caseStudyResource?.description
+    ? getCaseStudyPerformanceIndicators(session.caseStudyResource.description)
+    : [];
+
   return (
     <AuthShell
+      wide
       title={`Judging: ${session.user.firstName}`}
       subtitle={`${session.event.name} — score this presentation live against a rubric.`}
     >
+      {session.caseStudyResource && (
+        <p className="mb-4 text-sm text-foreground-muted">
+          Case study: <span className="font-medium text-foreground">{session.caseStudyResource.name}</span>
+        </p>
+      )}
       <JudgeScoreForm
         sessionId={session.id}
         rubrics={rubrics}
+        caseStudyPIs={caseStudyPIs}
         judgeDisplayName={viewer ? viewer.firstName : null}
         swapRolesWith={
           viewer && viewer.role === "STUDENT" && viewer.id !== session.user.id

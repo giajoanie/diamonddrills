@@ -3,8 +3,14 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { saveRoleplayNotes, completeRoleplaySession, type CompleteRoleplayState } from "@/lib/actions/roleplay";
 import { formatTime } from "@/lib/format-time";
+import { getCaseStudyPreview, getCaseStudyPerformanceIndicators } from "@/lib/case-study-format";
 import { Button } from "@/components/ui/Button";
 import { Label, Input, FieldError } from "@/components/ui/Field";
+
+// Matches the generic criterion names seed-official-rubrics.ts writes
+// ("Performance Indicator 3", "Standard 2") so position N can be swapped
+// for this session's actual PI text from its case study.
+const PI_CRITERION_NAME = /^(Performance Indicator|Standard) (\d+)$/;
 
 type Criterion = { id: string; name: string; maxPoints: number };
 type Rubric = { id: string; name: string; criteria: Criterion[] };
@@ -32,13 +38,19 @@ export function RoleplayRunner({
   prepSeconds: number;
   presentationSeconds: number;
   initialNotes: string;
-  caseStudy: { name: string; fileUrl: string | null; externalUrl: string | null } | null;
+  caseStudy: {
+    name: string;
+    fileUrl: string | null;
+    externalUrl: string | null;
+    description: string | null;
+  } | null;
   rubrics: Rubric[];
   judgeScores: JudgeScore[];
 }) {
   const startedAt = useMemo(() => new Date(startedAtIso), [startedAtIso]);
   const [now, setNow] = useState(() => Date.now());
   const [notes, setNotes] = useState(initialNotes);
+  const [caseStudyOpen, setCaseStudyOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
@@ -78,6 +90,14 @@ export function RoleplayRunner({
     }
     return map;
   }, [rubrics]);
+  const caseStudyPIs = useMemo(
+    () => (caseStudy?.description ? getCaseStudyPerformanceIndicators(caseStudy.description) : []),
+    [caseStudy],
+  );
+  function piTextFor(criterionName: string): string | undefined {
+    const match = criterionName.match(PI_CRITERION_NAME);
+    return match ? caseStudyPIs[Number(match[2]) - 1] : undefined;
+  }
 
   const [completeState, completeAction, completing] = useActionState<CompleteRoleplayState, FormData>(
     completeRoleplaySession,
@@ -96,14 +116,42 @@ export function RoleplayRunner({
       {caseStudy && (
         <div className="rounded-lg border border-border bg-background-elevated p-5">
           <p className="mb-1 font-medium text-foreground">Case study</p>
-          <a
-            href={caseStudy.fileUrl ? `/files/${caseStudy.fileUrl}` : (caseStudy.externalUrl ?? "#")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-accent hover:underline"
-          >
-            {caseStudy.name}
-          </a>
+          <p className="text-sm text-foreground">{caseStudy.name}</p>
+          {caseStudy.description && (
+            <p className="mt-0.5 text-xs text-foreground-subtle">
+              {getCaseStudyPreview(caseStudy.description)}
+            </p>
+          )}
+
+          {/* Case studies are plain text, not files (see ResourceCard's reader) —
+             an external link only exists for the rare mentor-uploaded case study. */}
+          {caseStudy.fileUrl || caseStudy.externalUrl ? (
+            <a
+              href={caseStudy.fileUrl ? `/files/${caseStudy.fileUrl}` : caseStudy.externalUrl!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-sm text-accent hover:underline"
+            >
+              Open case study ↗
+            </a>
+          ) : (
+            caseStudy.description && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setCaseStudyOpen((o) => !o)}
+                  className="mt-2 text-sm font-medium text-accent hover:underline"
+                >
+                  {caseStudyOpen ? "Hide case study" : "Read case study"}
+                </button>
+                {caseStudyOpen && (
+                  <div className="mt-3 max-h-96 overflow-y-auto whitespace-pre-wrap rounded-md border border-border bg-surface p-3 text-sm leading-relaxed text-foreground-muted">
+                    {caseStudy.description}
+                  </div>
+                )}
+              </>
+            )
+          )}
         </div>
       )}
 
@@ -136,14 +184,19 @@ export function RoleplayRunner({
                     {judgeDisplayName} · {earned} / {possible}
                   </p>
                   <ul className="mt-1 space-y-1 text-sm">
-                    {ids.map((id) => (
-                      <li key={id} className="flex items-center justify-between gap-3">
-                        <span className="text-foreground-muted">{criteriaById.get(id)?.name ?? id}</span>
-                        <span className="text-foreground-subtle">
-                          {scores[id]} / {criteriaById.get(id)?.maxPoints ?? "?"}
-                        </span>
-                      </li>
-                    ))}
+                    {ids.map((id) => {
+                      const criterionName = criteriaById.get(id)?.name ?? id;
+                      return (
+                        <li key={id} className="flex items-center justify-between gap-3">
+                          <span className="text-foreground-muted">
+                            {piTextFor(criterionName) ?? criterionName}
+                          </span>
+                          <span className="text-foreground-subtle">
+                            {scores[id]} / {criteriaById.get(id)?.maxPoints ?? "?"}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                   {js.comments && (
                     <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">{js.comments}</p>
@@ -189,23 +242,30 @@ export function RoleplayRunner({
                 </select>
               </div>
 
-              {selectedRubric?.criteria.map((c) => (
-                <div key={c.id} className="flex items-center justify-between gap-3">
-                  <input type="hidden" name="criterionId" value={c.id} />
-                  <Label htmlFor={`rating-${c.id}`} className="mb-0">
-                    {c.name}
-                  </Label>
-                  <Input
-                    id={`rating-${c.id}`}
-                    name={`rating-${c.id}`}
-                    type="number"
-                    min={0}
-                    max={c.maxPoints}
-                    className="w-24"
-                  />
-                  <span className="w-16 shrink-0 text-sm text-foreground-subtle">/ {c.maxPoints}</span>
-                </div>
-              ))}
+              {selectedRubric?.criteria.map((c) => {
+                const piText = piTextFor(c.name);
+                return (
+                  <div key={c.id} className="border-b border-border pb-3">
+                    <input type="hidden" name="criterionId" value={c.id} />
+                    <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
+                      {c.name}
+                    </p>
+                    {piText && <p className="mt-0.5 text-sm text-foreground">{piText}</p>}
+                    <div className="mt-2 flex items-center gap-2">
+                      <Input
+                        id={`rating-${c.id}`}
+                        name={`rating-${c.id}`}
+                        type="number"
+                        min={0}
+                        max={c.maxPoints}
+                        className="w-20"
+                        aria-label={`Self-rating for ${c.name}`}
+                      />
+                      <span className="text-sm text-foreground-subtle">/ {c.maxPoints}</span>
+                    </div>
+                  </div>
+                );
+              })}
 
               <div className="flex flex-wrap gap-2">
                 <Button type="submit" disabled={completing}>

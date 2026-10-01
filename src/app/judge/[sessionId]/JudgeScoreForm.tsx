@@ -6,18 +6,25 @@ import { submitJudgeScore, type SubmitJudgeScoreState } from "@/lib/actions/judg
 import { Button } from "@/components/ui/Button";
 import { Label, Input, FieldError } from "@/components/ui/Field";
 
-type Criterion = { id: string; name: string; maxPoints: number };
+type Criterion = { id: string; name: string; description: string | null; maxPoints: number };
 type Rubric = { id: string; name: string; criteria: Criterion[] };
 type SwapRolesWith = { partnerId: string; partnerName: string };
+
+// Matches the generic criterion names seed-official-rubrics.ts writes
+// ("Performance Indicator 3", "Standard 2") so position N can be swapped
+// for that session's actual PI text from its case study.
+const PI_CRITERION_NAME = /^(Performance Indicator|Standard) (\d+)$/;
 
 export function JudgeScoreForm({
   sessionId,
   rubrics,
+  caseStudyPIs,
   judgeDisplayName,
   swapRolesWith,
 }: {
   sessionId: string;
   rubrics: Rubric[];
+  caseStudyPIs: string[];
   judgeDisplayName: string | null;
   swapRolesWith: SwapRolesWith | null;
 }) {
@@ -88,24 +95,33 @@ export function JudgeScoreForm({
         </select>
       </div>
 
-      {selectedRubric?.criteria.map((c) => (
-        <div key={c.id} className="flex items-center justify-between gap-3">
-          <input type="hidden" name="criterionId" value={c.id} />
-          <Label htmlFor={`score-${c.id}`} className="mb-0">
-            {c.name}
-          </Label>
-          <Input
-            id={`score-${c.id}`}
-            name={`score-${c.id}`}
-            type="number"
-            min={0}
-            max={c.maxPoints}
-            className="w-24"
-            required
-          />
-          <span className="w-16 shrink-0 text-sm text-foreground-subtle">/ {c.maxPoints}</span>
-        </div>
-      ))}
+      {selectedRubric?.criteria.map((c) => {
+        const piMatch = c.name.match(PI_CRITERION_NAME);
+        const piText = piMatch ? caseStudyPIs[Number(piMatch[2]) - 1] : undefined;
+
+        return (
+          <div key={c.id} className="border-b border-border pb-3">
+            <input type="hidden" name="criterionId" value={c.id} />
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
+              {c.name}
+            </p>
+            <p className="mt-0.5 text-sm text-foreground">{piText ?? c.description}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <Input
+                id={`score-${c.id}`}
+                name={`score-${c.id}`}
+                type="number"
+                min={0}
+                max={c.maxPoints}
+                className="w-20"
+                aria-label={`Score for ${c.name}`}
+                required
+              />
+              <span className="text-sm text-foreground-subtle">/ {c.maxPoints}</span>
+            </div>
+          </div>
+        );
+      })}
 
       <div>
         <Label htmlFor="comments">Comments (optional)</Label>

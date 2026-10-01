@@ -28,12 +28,33 @@ export async function startRoleplaySession(
 
   const preset = getRoleplayTimerPreset(enrollment.event.format);
 
+  // The case study picker on /roleplay/start is optional — most students
+  // skip it. Without one, the student has nothing to prep against and the
+  // judge has no idea which performance indicators apply, so fall back to
+  // a random case study from this event rather than leaving the session
+  // with none at all.
+  let resolvedCaseStudyId =
+    typeof caseStudyResourceId === "string" && caseStudyResourceId ? caseStudyResourceId : null;
+  if (!resolvedCaseStudyId) {
+    const candidates = await prisma.resource.findMany({
+      where: {
+        type: "CASE_STUDY",
+        isActive: true,
+        uploader: { program: student.program },
+        resourceEvents: { some: { eventId } },
+      },
+      select: { id: true },
+    });
+    if (candidates.length > 0) {
+      resolvedCaseStudyId = candidates[Math.floor(Math.random() * candidates.length)].id;
+    }
+  }
+
   const session = await prisma.roleplayPracticeSession.create({
     data: {
       userId: student.id,
       eventId,
-      caseStudyResourceId:
-        typeof caseStudyResourceId === "string" && caseStudyResourceId ? caseStudyResourceId : null,
+      caseStudyResourceId: resolvedCaseStudyId,
       prepSeconds: preset.prepSeconds,
       presentationSeconds: preset.presentationSeconds,
     },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatCaseStudy } from "./case-study-format";
+import { formatCaseStudy, getCaseStudyPerformanceIndicators } from "./case-study-format";
 import { CASE_STUDY_SEED } from "./case-study-seed-data";
 
 describe("formatCaseStudy", () => {
@@ -43,5 +43,23 @@ describe("formatCaseStudy", () => {
         expect(c.performanceIndicators).toHaveLength(5);
       }
     }
+  });
+});
+
+describe("getCaseStudyPerformanceIndicators", () => {
+  const event = CASE_STUDY_SEED[0];
+  const caseStudy = event.cases[0];
+  const text = formatCaseStudy(event, caseStudy);
+
+  it("extracts each PI's description, in order, with its code", () => {
+    const result = getCaseStudyPerformanceIndicators(text);
+    expect(result).toHaveLength(caseStudy.performanceIndicators.length);
+    caseStudy.performanceIndicators.forEach((pi, i) => {
+      expect(result[i]).toBe(`${pi.description} (${pi.code})`);
+    });
+  });
+
+  it("returns an empty list when there's no PERFORMANCE INDICATORS section", () => {
+    expect(getCaseStudyPerformanceIndicators("just some unrelated text")).toEqual([]);
   });
 });

@@ -91,3 +91,26 @@ export function getCaseStudyPreview(description: string): string | null {
   const match = metaLine?.match(/Instructional Area: (.+)$/);
   return match ? `Instructional area: ${match[1]}` : null;
 }
+
+/**
+ * Pulls the ordered performance-indicator lines back out of a
+ * formatCaseStudy() description. A rubric's "Performance Indicator N" /
+ * "Standard N" criteria are seeded once per event (see
+ * seed-official-rubrics.ts), but which specific PIs they cover depends on
+ * which of that event's case studies this particular session drew — so the
+ * judge/student screens look this up per session rather than the rubric
+ * carrying static PI text.
+ */
+export function getCaseStudyPerformanceIndicators(description: string): string[] {
+  const lines = description.split("\n");
+  const start = lines.indexOf("PERFORMANCE INDICATORS");
+  if (start === -1) return [];
+  const items: string[] = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) break;
+    const match = line.match(/^\d+\.\s*(.+)$/);
+    if (match) items.push(match[1]);
+  }
+  return items;
+}
