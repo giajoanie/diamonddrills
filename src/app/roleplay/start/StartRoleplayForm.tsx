@@ -8,6 +8,7 @@ import { KeyTermsList } from "@/components/roleplay/KeyTermsList";
 
 type Term = { id: string; term: string; definition: string };
 type Peer = { id: string; firstName: string };
+type Resource = { id: string; name: string };
 type Event = {
   id: string;
   name: string;
@@ -18,23 +19,24 @@ type Event = {
   pis: { tierLabel: string; items: string[] }[];
   terms: Term[];
   peers: Peer[];
+  caseStudies: Resource[];
 };
-type Resource = { id: string; name: string };
 
 /**
  * Event-picker note + PI/key-terms columns for /roleplay/start — see
  * design_handoff_progress_roleplay/roleplay-reference.html. Owns the
- * selected-event state so the format strip, PI cards, and key terms all
- * update together when the event changes, per the handoff's "Changing the
- * event updates the format strip, PIs, and key terms."
+ * selected-event state so the format strip, PI cards, key terms, and case
+ * study options all update together when the event changes, per the
+ * handoff's "Changing the event updates the format strip, PIs, and key
+ * terms." A case study is required, not optional — without one assigned,
+ * the student has nothing to prep against and the judge has no PIs to
+ * score — so the picker always defaults to a real selection, never "None".
  */
 export function StartRoleplayForm({
   events,
-  caseStudies,
   defaultPartnerId,
 }: {
   events: Event[];
-  caseStudies: Resource[];
   defaultPartnerId: string;
 }) {
   const [state, action, pending] = useActionState<StartRoleplayState, FormData>(
@@ -43,6 +45,14 @@ export function StartRoleplayForm({
   );
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const event = events.find((e) => e.id === eventId) ?? events[0];
+
+  const [caseStudyId, setCaseStudyId] = useState(event?.caseStudies[0]?.id ?? "");
+
+  function handleEventChange(nextEventId: string) {
+    setEventId(nextEventId);
+    const nextEvent = events.find((e) => e.id === nextEventId);
+    setCaseStudyId(nextEvent?.caseStudies[0]?.id ?? "");
+  }
 
   return (
     <>
@@ -66,7 +76,7 @@ export function StartRoleplayForm({
               id="eventId"
               name="eventId"
               value={eventId}
-              onChange={(e) => setEventId(e.target.value)}
+              onChange={(e) => handleEventChange(e.target.value)}
               className="font-body min-w-0 flex-1 appearance-none rounded-[10px] border-[1.5px] border-[rgba(18,58,122,.22)] bg-white bg-[right_16px_center] bg-no-repeat px-4 py-3 pr-10 text-[15px] font-semibold text-foreground"
               style={{
                 backgroundImage:
@@ -101,12 +111,17 @@ export function StartRoleplayForm({
             </div>
           )}
 
-          {caseStudies.length > 0 && (
+          {event && event.caseStudies.length > 0 && (
             <div className="mt-4">
-              <Label htmlFor="caseStudyResourceId">Case study (optional)</Label>
-              <Select id="caseStudyResourceId" name="caseStudyResourceId" defaultValue="">
-                <option value="">None</option>
-                {caseStudies.map((c) => (
+              <Label htmlFor="caseStudyResourceId">Case study</Label>
+              <Select
+                id="caseStudyResourceId"
+                name="caseStudyResourceId"
+                value={caseStudyId}
+                onChange={(e) => setCaseStudyId(e.target.value)}
+                required
+              >
+                {event.caseStudies.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>

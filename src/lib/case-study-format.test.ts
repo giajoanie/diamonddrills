@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { formatCaseStudy, getCaseStudyPerformanceIndicators } from "./case-study-format";
+import {
+  formatCaseStudy,
+  getCaseStudyPerformanceIndicators,
+  getCaseStudyForParticipant,
+} from "./case-study-format";
 import { CASE_STUDY_SEED } from "./case-study-seed-data";
 
 describe("formatCaseStudy", () => {
@@ -61,5 +65,28 @@ describe("getCaseStudyPerformanceIndicators", () => {
 
   it("returns an empty list when there's no PERFORMANCE INDICATORS section", () => {
     expect(getCaseStudyPerformanceIndicators("just some unrelated text")).toEqual([]);
+  });
+});
+
+describe("getCaseStudyForParticipant", () => {
+  const event = CASE_STUDY_SEED[0];
+  const caseStudy = event.cases[0];
+  const text = formatCaseStudy(event, caseStudy);
+
+  it("strips the judge's script and questions from the participant-facing text", () => {
+    const result = getCaseStudyForParticipant(text);
+    expect(result).not.toContain("FOR YOUR PRACTICE PARTNER (JUDGE ROLE)");
+    expect(result).not.toContain(caseStudy.judgeQuestions[0]);
+    expect(result).not.toContain(caseStudy.judgeQuestions[1]);
+  });
+
+  it("keeps everything before the judge section, including the event situation", () => {
+    const result = getCaseStudyForParticipant(text);
+    expect(result).toContain(caseStudy.eventSituation);
+    expect(result).toContain("PERFORMANCE INDICATORS");
+  });
+
+  it("returns the text unchanged when there's no judge section to strip", () => {
+    expect(getCaseStudyForParticipant("just some unrelated text")).toBe("just some unrelated text");
   });
 });

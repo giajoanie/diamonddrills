@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
+import { getCaseStudyForParticipant } from "@/lib/case-study-format";
 
 export type Resource = {
   id: string;
@@ -106,7 +107,9 @@ export function ResourceCard({
                 </button>
               </div>
               <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
-                {resource.description}
+                {resource.type === "CASE_STUDY" && resource.description
+                  ? getCaseStudyForParticipant(resource.description)
+                  : resource.description}
               </div>
             </div>
           </div>

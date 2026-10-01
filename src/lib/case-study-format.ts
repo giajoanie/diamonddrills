@@ -78,6 +78,21 @@ export function formatCaseStudy(event: EventCaseStudySeed, caseStudy: CaseStudyS
   return lines.join("\n");
 }
 
+const JUDGE_SECTION_MARKER = "FOR YOUR PRACTICE PARTNER (JUDGE ROLE)";
+
+/**
+ * The participant-safe view of a formatted case study — everything except
+ * the "FOR YOUR PRACTICE PARTNER (JUDGE ROLE)" section, which hands the
+ * judge their script and the exact questions they'll ask. Showing that to
+ * the competitor who's supposed to be presenting cold would spoil the
+ * roleplay, so every student-facing case study reader uses this instead of
+ * the raw Resource.description.
+ */
+export function getCaseStudyForParticipant(description: string): string {
+  const idx = description.indexOf(JUDGE_SECTION_MARKER);
+  return idx === -1 ? description : description.slice(0, idx).trimEnd();
+}
+
 /**
  * A short list-preview line for a formatted case study — its instructional
  * area, read back off the "Career Cluster: ... | Instructional Area: ..."

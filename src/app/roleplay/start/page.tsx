@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getCurrentEnrollments } from "@/lib/dal/events";
-import { getVisibleResourcesForStudent } from "@/lib/dal/resources";
+import { getVisibleResourcesForStudent, getCaseStudiesByEvent } from "@/lib/dal/resources";
 import { getPerformanceIndicatorsForEvent } from "@/lib/dal/performance-indicators";
 import { getFlashcardsForCluster } from "@/lib/dal/flashcards";
 import { getRoleplayPeers } from "@/lib/dal/practice-invites";
@@ -27,6 +27,10 @@ export default async function StartRoleplayPage({
   ]);
 
   const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
+  const caseStudiesByEvent = await getCaseStudiesByEvent(
+    user.id,
+    roleplayEnrollments.map((e) => e.event.id),
+  );
 
   const events = await Promise.all(
     roleplayEnrollments.map(async (e) => {
@@ -53,6 +57,7 @@ export default async function StartRoleplayPage({
         })),
         terms: cards,
         peers,
+        caseStudies: caseStudiesByEvent.get(event.id) ?? [],
       };
     }),
   );
@@ -87,11 +92,7 @@ export default async function StartRoleplayPage({
           </div>
 
           {events.length > 0 ? (
-            <StartRoleplayForm
-              events={events}
-              caseStudies={caseStudies}
-              defaultPartnerId={invitePartnerId ?? ""}
-            />
+            <StartRoleplayForm events={events} defaultPartnerId={invitePartnerId ?? ""} />
           ) : (
             <p className="mt-6 text-foreground-muted">You don&apos;t have a current roleplay event.</p>
           )}

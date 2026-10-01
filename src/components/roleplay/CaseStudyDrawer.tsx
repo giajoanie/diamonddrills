@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, FileText, Link as LinkIcon, Pause, Play, RotateCcw, X } from "lucide-react";
 import { logResourceOpen } from "@/lib/actions/resources";
-import { getCaseStudyPreview } from "@/lib/case-study-format";
+import { getCaseStudyPreview, getCaseStudyForParticipant } from "@/lib/case-study-format";
 import { Button } from "@/components/ui/Button";
 
 type CaseStudy = {
@@ -237,7 +237,7 @@ function CaseStudyReader({ caseStudy, onBack }: { caseStudy: CaseStudy; onBack: 
       </button>
       <h2 className="mt-3 font-display text-lg font-bold text-foreground">{caseStudy.name}</h2>
       <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
-        {caseStudy.description}
+        {caseStudy.description && getCaseStudyForParticipant(caseStudy.description)}
       </div>
     </>
   );

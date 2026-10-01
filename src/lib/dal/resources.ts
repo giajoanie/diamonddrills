@@ -67,6 +67,39 @@ export const getVisibleResourcesForStudent = cache(
   },
 );
 
+/**
+ * Case studies grouped by the single roleplay event each is tagged to (see
+ * scripts/seed-case-studies.ts's resourceEvents.create — one event per case
+ * study, never allEvents/cluster-wide for this type). Used by
+ * /roleplay/start to scope its per-event case-study picker instead of
+ * offering every event's case studies regardless of which one is selected.
+ */
+export const getCaseStudiesByEvent = cache(async (userId: string, eventIds: string[]) => {
+  const ctx = await getStudentVisibilityContext(userId);
+
+  const resources = await prisma.resource.findMany({
+    where: {
+      type: "CASE_STUDY",
+      isActive: true,
+      uploader: { program: ctx.program },
+      resourceEvents: { some: { eventId: { in: eventIds } } },
+    },
+    select: { id: true, name: true, resourceEvents: { select: { eventId: true } } },
+    orderBy: { name: "asc" },
+  });
+
+  const byEvent = new Map<string, { id: string; name: string }[]>();
+  for (const resource of resources) {
+    for (const { eventId } of resource.resourceEvents) {
+      if (!eventIds.includes(eventId)) continue;
+      const list = byEvent.get(eventId) ?? [];
+      list.push({ id: resource.id, name: resource.name });
+      byEvent.set(eventId, list);
+    }
+  }
+  return byEvent;
+});
+
 /** Resources tagged to any of the student's weakest instructional areas, visible per the usual rules. */
 export const getRecommendedResources = cache(
   async (userId: string, weakAreaIds: string[]) => {

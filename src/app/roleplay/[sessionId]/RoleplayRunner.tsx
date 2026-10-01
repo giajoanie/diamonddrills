@@ -3,7 +3,11 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { saveRoleplayNotes, completeRoleplaySession, type CompleteRoleplayState } from "@/lib/actions/roleplay";
 import { formatTime } from "@/lib/format-time";
-import { getCaseStudyPreview, getCaseStudyPerformanceIndicators } from "@/lib/case-study-format";
+import {
+  getCaseStudyPreview,
+  getCaseStudyPerformanceIndicators,
+  getCaseStudyForParticipant,
+} from "@/lib/case-study-format";
 import { Button } from "@/components/ui/Button";
 import { Label, Input, FieldError } from "@/components/ui/Field";
 
@@ -146,7 +150,7 @@ export function RoleplayRunner({
                 </button>
                 {caseStudyOpen && (
                   <div className="mt-3 max-h-96 overflow-y-auto whitespace-pre-wrap rounded-md border border-border bg-surface p-3 text-sm leading-relaxed text-foreground-muted">
-                    {caseStudy.description}
+                    {getCaseStudyForParticipant(caseStudy.description)}
                   </div>
                 )}
               </>
