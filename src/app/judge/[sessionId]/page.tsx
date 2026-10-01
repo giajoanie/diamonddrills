@@ -38,9 +38,25 @@ export default async function JudgeSessionPage({
       subtitle={`${session.event.name} — score this presentation live against a rubric.`}
     >
       {session.caseStudyResource && (
-        <p className="mb-4 text-sm text-foreground-muted">
-          Case study: <span className="font-medium text-foreground">{session.caseStudyResource.name}</span>
-        </p>
+        <div className="mb-4">
+          <p className="text-sm text-foreground-muted">
+            Case study:{" "}
+            <span className="font-medium text-foreground">{session.caseStudyResource.name}</span>
+          </p>
+          {session.caseStudyResource.description && (
+            <details className="mt-2 rounded-md border border-border bg-surface-hover p-3 text-sm">
+              <summary className="cursor-pointer font-medium text-foreground">
+                Case study &amp; your judging instructions
+              </summary>
+              {/* Unlike every student-facing reader, the judge sees this
+                 unredacted — the "FOR YOUR PRACTICE PARTNER (JUDGE ROLE)"
+                 section at the end is exactly what they're supposed to ask. */}
+              <div className="mt-2 whitespace-pre-wrap text-foreground-muted">
+                {session.caseStudyResource.description}
+              </div>
+            </details>
+          )}
+        </div>
       )}
       <JudgeScoreForm
         sessionId={session.id}
