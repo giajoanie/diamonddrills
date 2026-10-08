@@ -82,6 +82,7 @@ describe("SignupSchema", () => {
       program: "EBL",
       grade: "7",
       writtenEventId: undefined,
+      roleplayEventId2: "evt_roleplay2",
     });
     expect(result.success).toBe(true);
   });
@@ -92,8 +93,33 @@ describe("SignupSchema", () => {
       program: "EBL",
       grade: "7",
       writtenEventId: null,
+      roleplayEventId2: "evt_roleplay2",
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects EBL without a second roleplay event", () => {
+    const result = SignupSchema.safeParse({
+      ...valid,
+      program: "EBL",
+      grade: "7",
+      writtenEventId: undefined,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.roleplayEventId2).toBeDefined();
+    }
+  });
+
+  it("rejects EBL when roleplayEventId2 is null (formData.get() on an absent field, not undefined)", () => {
+    const result = SignupSchema.safeParse({
+      ...valid,
+      program: "EBL",
+      grade: "7",
+      writtenEventId: undefined,
+      roleplayEventId2: null,
+    });
+    expect(result.success).toBe(false);
   });
 
   it.each(["5", "9"])("rejects out-of-range EBL grade %s", (grade) => {

@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/Button";
 import { AreaScoreBar } from "@/components/ui/AreaScoreBar";
 import { ScoreTrendChart } from "@/components/charts/ScoreTrendChart";
 import { EventSwitcher } from "./EventSwitcher";
+import { AddRoleplayEventForm } from "./AddRoleplayEventForm";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -44,11 +45,14 @@ export default async function DashboardPage() {
   ]);
   const now = new Date();
 
-  const roleplay = enrollments.find((e) => e.event.category === "ROLEPLAY");
+  // EBL students carry two current roleplay enrollments (Principles + Series
+  // or Team Decision Making — see addSecondRoleplayEvent); HIGH_SCHOOL has
+  // just one. Either way, every current roleplay enrollment gets its own card.
+  const roleplayEnrollments = enrollments.filter((e) => e.event.category === "ROLEPLAY");
   const written = enrollments.find((e) => e.event.category === "WRITTEN");
 
-  const [roleplayTeam, writtenTeam] = await Promise.all([
-    roleplay ? getTeamForStudentEvent(user.id, roleplay.event.id) : null,
+  const [roleplayTeams, writtenTeam] = await Promise.all([
+    Promise.all(roleplayEnrollments.map((e) => getTeamForStudentEvent(user.id, e.event.id))),
     written ? getTeamForStudentEvent(user.id, written.event.id) : null,
   ]);
 
@@ -286,18 +290,15 @@ export default async function DashboardPage() {
           )}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
-                Roleplay event
-              </p>
-              <p className="mt-1 font-display font-bold text-foreground">
-                {roleplay?.event.name}
-              </p>
-              <p className="text-sm text-foreground-muted">
-                {roleplay?.event.cluster.name}
-              </p>
-              {roleplay && (
-                <>
+            {roleplayEnrollments.map((roleplay, i) => {
+              const roleplayTeam = roleplayTeams[i];
+              return (
+                <Card key={roleplay.event.id}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
+                    Roleplay event
+                  </p>
+                  <p className="mt-1 font-display font-bold text-foreground">{roleplay.event.name}</p>
+                  <p className="text-sm text-foreground-muted">{roleplay.event.cluster.name}</p>
                   {roleplayTeam && (
                     <p className="mt-1 text-sm text-foreground-muted">
                       Team:{" "}
@@ -326,9 +327,25 @@ export default async function DashboardPage() {
                     currentEventId={roleplay.event.id}
                     clusters={clusters}
                   />
-                </>
-              )}
-            </Card>
+                </Card>
+              );
+            })}
+
+            {user.program === "EBL" && roleplayEnrollments.length < 2 && (
+              <Card>
+                <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">
+                  Second roleplay event
+                </p>
+                <p className="mt-1 text-sm text-foreground-muted">
+                  EBL competes in two roleplay events: one Principles event and one Series or Team
+                  Decision Making event.
+                </p>
+                <AddRoleplayEventForm
+                  clusters={clusters}
+                  currentFormats={roleplayEnrollments.map((e) => e.event.format)}
+                />
+              </Card>
+            )}
 
             <Card>
               <p className="text-xs font-semibold uppercase tracking-wide text-foreground-subtle">

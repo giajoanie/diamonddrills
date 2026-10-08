@@ -12,8 +12,12 @@ type Clusters = Awaited<ReturnType<typeof getSignupEventOptions>>;
 
 const STEP_FIELDS = [
   ["schoolId", "firstName", "password", "confirmPassword", "program", "grade"],
-  ["roleplayEventId", "writtenEventId", "projectManagementEventId"],
+  ["roleplayEventId", "roleplayEventId2", "writtenEventId", "projectManagementEventId"],
 ] as const;
+
+// EBL takes two roleplay events — one Principles-format, one Series or Team
+// Decision Making-format — rather than HIGH_SCHOOL's single unrestricted pick.
+const EBL_SLOT_2_FORMATS = ["SERIES", "TEAM_DECISION_MAKING"];
 
 const GRADE_OPTIONS: Record<"HIGH_SCHOOL" | "EBL", number[]> = {
   HIGH_SCHOOL: [9, 10, 11, 12],
@@ -176,27 +180,88 @@ export function SignupForm({ clusters }: { clusters: Clusters }) {
           </div>
 
           <div className={step === 1 ? "space-y-4" : "hidden"}>
-            <div>
-              <Label htmlFor="roleplayEventId">Roleplay event</Label>
-              <Select id="roleplayEventId" name="roleplayEventId" defaultValue="" required={step === 1}>
-                <option value="" disabled>
-                  Select a roleplay event
-                </option>
-                {clusters.map(
-                  (cluster) =>
-                    cluster.roleplayEvents.length > 0 && (
-                      <optgroup key={cluster.id} label={cluster.name}>
-                        {cluster.roleplayEvents.map((event) => (
-                          <option key={event.id} value={event.id}>
-                            {event.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ),
-                )}
-              </Select>
-              <FieldError messages={state?.errors?.roleplayEventId} />
-            </div>
+            {isHighSchool ? (
+              <div>
+                <Label htmlFor="roleplayEventId">Roleplay event</Label>
+                <Select id="roleplayEventId" name="roleplayEventId" defaultValue="" required={step === 1}>
+                  <option value="" disabled>
+                    Select a roleplay event
+                  </option>
+                  {clusters.map(
+                    (cluster) =>
+                      cluster.roleplayEvents.length > 0 && (
+                        <optgroup key={cluster.id} label={cluster.name}>
+                          {cluster.roleplayEvents.map((event) => (
+                            <option key={event.id} value={event.id}>
+                              {event.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ),
+                  )}
+                </Select>
+                <FieldError messages={state?.errors?.roleplayEventId} />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="roleplayEventId">Roleplay event — Principles</Label>
+                  <Select id="roleplayEventId" name="roleplayEventId" defaultValue="" required={step === 1}>
+                    <option value="" disabled>
+                      Select a Principles event
+                    </option>
+                    {clusters.map((cluster) => {
+                      const events = cluster.roleplayEvents.filter((e) => e.format === "PRINCIPLES");
+                      return (
+                        events.length > 0 && (
+                          <optgroup key={cluster.id} label={cluster.name}>
+                            {events.map((event) => (
+                              <option key={event.id} value={event.id}>
+                                {event.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )
+                      );
+                    })}
+                  </Select>
+                  <FieldError messages={state?.errors?.roleplayEventId} />
+                </div>
+
+                <div>
+                  <Label htmlFor="roleplayEventId2">
+                    Roleplay event — Series or Team Decision Making
+                  </Label>
+                  <Select
+                    id="roleplayEventId2"
+                    name="roleplayEventId2"
+                    defaultValue=""
+                    required={step === 1}
+                  >
+                    <option value="" disabled>
+                      Select a Series or Team Decision Making event
+                    </option>
+                    {clusters.map((cluster) => {
+                      const events = cluster.roleplayEvents.filter((e) =>
+                        EBL_SLOT_2_FORMATS.includes(e.format),
+                      );
+                      return (
+                        events.length > 0 && (
+                          <optgroup key={cluster.id} label={cluster.name}>
+                            {events.map((event) => (
+                              <option key={event.id} value={event.id}>
+                                {event.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )
+                      );
+                    })}
+                  </Select>
+                  <FieldError messages={state?.errors?.roleplayEventId2} />
+                </div>
+              </>
+            )}
 
             {isHighSchool && (
               <div>

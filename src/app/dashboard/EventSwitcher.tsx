@@ -26,6 +26,7 @@ export function EventSwitcher({
   return (
     <form action={action} className="mt-3 flex items-center gap-2">
       <input type="hidden" name="category" value={category} />
+      <input type="hidden" name="oldEventId" value={currentEventId} />
       <Select name="newEventId" defaultValue={currentEventId} className="flex-1">
         {clusters.map(
           (cluster) =>

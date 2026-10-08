@@ -40,6 +40,7 @@ export async function signup(
     program: formData.get("program"),
     grade: formData.get("grade"),
     roleplayEventId: formData.get("roleplayEventId"),
+    roleplayEventId2: formData.get("roleplayEventId2"),
     writtenEventId: formData.get("writtenEventId"),
     projectManagementEventId: formData.get("projectManagementEventId"),
   });
@@ -55,13 +56,17 @@ export async function signup(
     program,
     grade,
     roleplayEventId,
+    roleplayEventId2,
     writtenEventId,
     projectManagementEventId,
   } = validated.data;
   const isHighSchool = program === "HIGH_SCHOOL";
 
-  const [roleplayEvent, writtenEvent, projectManagementEvent] = await Promise.all([
+  const [roleplayEvent, roleplayEvent2, writtenEvent, projectManagementEvent] = await Promise.all([
     prisma.event.findUnique({ where: { id: roleplayEventId } }),
+    !isHighSchool && roleplayEventId2
+      ? prisma.event.findUnique({ where: { id: roleplayEventId2 } })
+      : Promise.resolve(null),
     isHighSchool && writtenEventId
       ? prisma.event.findUnique({ where: { id: writtenEventId } })
       : Promise.resolve(null),
@@ -72,6 +77,23 @@ export async function signup(
 
   if (!roleplayEvent || roleplayEvent.category !== "ROLEPLAY" || !roleplayEvent.isActive) {
     return { message: "Choose a valid roleplay event." };
+  }
+  // EBL takes two roleplay events — one Principles-format, one Series or
+  // Team Decision Making-format — rather than HIGH_SCHOOL's single pick.
+  if (!isHighSchool) {
+    if (roleplayEvent.format !== "PRINCIPLES") {
+      return { message: "Your first roleplay event must be a Principles event." };
+    }
+    if (
+      !roleplayEvent2 ||
+      roleplayEvent2.category !== "ROLEPLAY" ||
+      !roleplayEvent2.isActive ||
+      (roleplayEvent2.format !== "SERIES" && roleplayEvent2.format !== "TEAM_DECISION_MAKING")
+    ) {
+      return {
+        message: "Your second roleplay event must be a Series or Team Decision Making event.",
+      };
+    }
   }
   // EBL (Emerging Business Leaders, middle school) is roleplay-only — a
   // written event is never created for it, even if one was somehow posted.
@@ -113,6 +135,7 @@ export async function signup(
     await tx.eventEnrollment.createMany({
       data: [
         { userId: created.id, eventId: roleplayEvent.id },
+        ...(roleplayEvent2 ? [{ userId: created.id, eventId: roleplayEvent2.id }] : []),
         ...(writtenEvent ? [{ userId: created.id, eventId: writtenEvent.id }] : []),
         ...(projectManagementEvent ? [{ userId: created.id, eventId: projectManagementEvent.id }] : []),
       ],

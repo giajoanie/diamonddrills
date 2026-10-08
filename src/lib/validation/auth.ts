@@ -24,6 +24,12 @@ export const SignupSchema = z
     program: ProgramSchema,
     grade: z.coerce.number().int(),
     roleplayEventId: z.string().min(1, { error: "Choose a roleplay event." }),
+    // EBL picks two roleplay events — one Principles-format, one
+    // Series/Team Decision Making-format (format itself is checked in the
+    // signup action, which has the event rows; this field is just "present
+    // for EBL"). HIGH_SCHOOL's form omits it from the DOM entirely, same
+    // reasoning as writtenEventId below re: null vs undefined.
+    roleplayEventId2: z.string().nullable().optional(),
     // EBL's signup form omits this field from the DOM entirely (rather than
     // just hiding it), so formData.get() returns null, not undefined —
     // .optional() alone doesn't accept null.
@@ -48,6 +54,13 @@ export const SignupSchema = z
     } else {
       if (data.grade < 6 || data.grade > 8) {
         ctx.addIssue({ code: "custom", message: "Grade must be 6-8.", path: ["grade"] });
+      }
+      if (!data.roleplayEventId2) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Choose your second roleplay event.",
+          path: ["roleplayEventId2"],
+        });
       }
     }
   });
