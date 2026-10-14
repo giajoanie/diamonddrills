@@ -19,6 +19,7 @@ export const INSTRUCTIONAL_AREA_CODE_NAMES: Record<string, string> = {
   EI: "Emotional Intelligence",
   EN: "Entrepreneurship",
   FI: "Financial Analysis",
+  FM: "Financial-Information Management",
   HR: "Human Resources Management",
   IM: "Marketing-Information Management",
   KM: "Knowledge Management",
