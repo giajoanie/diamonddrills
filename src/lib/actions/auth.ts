@@ -28,7 +28,11 @@ export async function signup(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  if (isRateLimited(`signup:${await clientIp()}`, 5, 60 * 60 * 1000)) {
+  // Keyed per IP, so every student on the same school network shares one
+  // bucket — a whole class (or several) signing up together during one
+  // period is the normal case here, not abuse, so this needs real headroom
+  // above that rather than a number tuned for an individual's home network.
+  if (isRateLimited(`signup:${await clientIp()}`, 300, 60 * 60 * 1000)) {
     return { message: "Too many signup attempts from this network. Try again later." };
   }
 
